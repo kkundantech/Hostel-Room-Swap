@@ -1,0 +1,45 @@
+# Core
+Django>=5.1,<5.3
+djangorestframework>=3.15,<4.0
+django-cors-headers>=4.4,<5.0
+django-filter>=24.3,<25.0
+drf-spectacular>=0.27,<1.0
+
+# Database
+psycopg2-binary>=2.9,<3.0
+
+# Authentication
+djangorestframework-simplejwt>=5.3,<6.0
+
+# Celery & Redis
+celery>=5.4,<6.0
+redis>=5.0,<6.0
+django-celery-beat>=2.6,<3.0
+
+# Graph algorithms
+networkx>=3.3,<4.0
+
+# PDF generation
+reportlab>=4.2,<5.0
+
+# Environment
+python-dotenv>=1.0,<2.0
+
+# CSV export
+# (built-in csv module)
+
+# Utilities
+python-dateutil>=2.9,<3.0
+
+# Rate limiting
+django-ratelimit>=4.1,<5.0
+
+# Testing
+pytest>=8.3,<9.0
+pytest-django>=4.8,<5.0
+pytest-cov>=5.0,<6.0
+factory-boy>=3.3,<4.0
+faker>=28.0,<35.0
+
+# Production
+gunicorn>=22.0,<24.0
