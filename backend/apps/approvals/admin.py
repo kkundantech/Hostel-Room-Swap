@@ -1,3 +1,17 @@
+"""
+Module: backend/apps/approvals/admin.py
+
+Work / Purpose:
+    Django admin site model registrations (ApprovalAdmin) for apps.approvals.
+
+Connected Modules (Used By / Routes):
+    - django.contrib.admin autodiscover
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/approvals/models.py
+    - django (external library / framework)
+"""
+
 from django.contrib import admin
 from .models import Approval
 

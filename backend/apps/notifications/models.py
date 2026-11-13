@@ -1,4 +1,21 @@
-"""In-app and email notification models."""
+"""
+Module: backend/apps/notifications/models.py
+
+Work / Purpose:
+    Defines the Notification model for persistent in-app alerts linked to users and swap events.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/notifications/serializers.py
+    - backend/apps/notifications/services.py
+    - backend/apps/notifications/views.py
+    - backend/tests/test_student_dashboard_features.py
+
+Helpful / Supporting Modules (Dependencies):
+    - django (external library / framework)
+
+Original Module Notes:
+    In-app and email notification models.
+"""
 from django.db import models
 from django.conf import settings
 

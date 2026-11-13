@@ -1,6 +1,26 @@
 """
-Super Admin Account Authorization & Management Views.
-Strict server-side role enforcement and append-only audit logging.
+Module: backend/apps/accounts/views_super_admin.py
+
+Work / Purpose:
+    Implements Super Admin endpoints for managing authorized identities, suspending/reactivating/revoking accounts, audit logs, and system metrics.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/accounts/otp.py
+    - backend/apps/accounts/permissions.py
+    - backend/apps/accounts/serializers.py
+    - backend/apps/audit/models.py
+    - backend/apps/audit/serializers.py
+    - backend/apps/audit/services.py
+    - django (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Super Admin Account Authorization & Management Views.
+    Strict server-side role enforcement and append-only audit logging.
 """
 import csv
 import io
@@ -8,6 +28,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from django.db import transaction, models
+from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.core.validators import validate_email
@@ -32,6 +53,7 @@ from .otp import create_identity_otp_challenge
 from apps.audit.models import AuditEntry
 from apps.audit.serializers import AuditEntrySerializer
 from apps.audit.services import log_audit_event
+from drf_spectacular.utils import extend_schema, OpenApiTypes
 
 User = get_user_model()
 
@@ -62,11 +84,9 @@ class SuperAdminIdentityViewSet(viewsets.ModelViewSet):
         if search:
             search = search.strip()
             qs = qs.filter(
-                institution_id__icontains=search
-            ) | qs.filter(
-                name__icontains=search
-            ) | qs.filter(
-                trusted_email__icontains=search
+                Q(institution_id__icontains=search) |
+                Q(name__icontains=search) |
+                Q(trusted_email__icontains=search)
             )
         return qs
 
@@ -391,6 +411,7 @@ class SuperAdminIdentityViewSet(viewsets.ModelViewSet):
 # ACCOUNT STATUS MANAGEMENT & SESSION REVOCATION
 # ============================================================================
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([IsSuperAdminOrAdmin])
 def suspend_account_view(request, pk):
@@ -450,6 +471,7 @@ def suspend_account_view(request, pk):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([IsSuperAdminOrAdmin])
 def reactivate_account_view(request, pk):
@@ -503,6 +525,7 @@ def reactivate_account_view(request, pk):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([IsSuperAdminOrAdmin])
 def revoke_account_view(request, pk):
@@ -564,6 +587,7 @@ def revoke_account_view(request, pk):
 # AUDIT LOGS & EXECUTIVE METRICS
 # ============================================================================
 
+@extend_schema(responses={200: OpenApiTypes.OBJECT})
 @api_view(['GET'])
 @permission_classes([IsSuperAdminOrAdmin])
 def super_admin_audit_logs_view(request):
@@ -580,7 +604,7 @@ def super_admin_audit_logs_view(request):
         qs = qs.filter(user_id=user_id)
     if search:
         search = search.strip()
-        qs = qs.filter(description__icontains=search) | qs.filter(action__icontains=search)
+        qs = qs.filter(Q(description__icontains=search) | Q(action__icontains=search))
 
     # Paginate manually or return up to 100 recent
     entries = qs[:100]
@@ -588,6 +612,7 @@ def super_admin_audit_logs_view(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@extend_schema(responses={200: OpenApiTypes.OBJECT})
 @api_view(['GET'])
 @permission_classes([IsSuperAdminOrAdmin])
 def super_admin_metrics_view(request):

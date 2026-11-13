@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/pages/InteractiveDemo.jsx
+ *
+ * Work / Purpose:
+ *   Interactive walkthrough page demonstrating multi-party room swap cycle formation without requiring backend mutations.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/CycleGraphVisualizer.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { CycleGraphVisualizer } from '../components/CycleGraphVisualizer';
@@ -213,7 +229,7 @@ export const InteractiveDemo = () => {
             <button
               onClick={step2_allAccept}
               disabled={running}
-              className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/25 flex items-center gap-2"
+              className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-[#f78c30] hover:bg-[#f78c30] shadow-md shadow-[#f78c30]/25 flex items-center gap-2"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>Accept as All 4 Students</span>

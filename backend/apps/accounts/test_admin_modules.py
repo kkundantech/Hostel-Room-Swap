@@ -1,22 +1,44 @@
 """
-Comprehensive Unit & Integration Test Suite for RoomSwap Admin Dashboard Quick Actions.
+Module: backend/apps/accounts/test_admin_modules.py
 
-Tests all 15 security, data integrity, and workflow requirements:
-1. Duplicate student authorization
-2. Unauthorized email mismatch
-3. OTP expiry and reuse
-4. Warden role escalation attempts
-5. Warden access outside assigned hostels
-6. Duplicate room or hostel references
-7. P03 sync failure and stale data handling
-8. Gender/hostel eligibility enforcement
-9. Missing participant acceptance rejection
-10. Expired proposal approval attempts
-11. Policy changes and audit history
-12. CSV validation and duplicate handling
-13. Unauthorized report exports
-14. Concurrent transfer attempts / row locking
-15. Transaction rollback on transfer failure
+Work / Purpose:
+    Unit and integration test suite verifying Admin dashboard quick actions, approvals, and atomic transfer execution.
+
+Connected Modules (Used By / Routes):
+    - pytest / Django test runner (automated verification suite)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/accounts/otp.py
+    - backend/apps/approvals/models.py
+    - backend/apps/approvals/services.py
+    - backend/apps/audit/models.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/hostels/models.py
+    - backend/apps/policies/models.py
+    - backend/apps/proposals/models.py
+    - django (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Comprehensive Unit & Integration Test Suite for RoomSwap Admin Dashboard Quick Actions.
+
+    Tests all 15 security, data integrity, and workflow requirements:
+    1. Duplicate student authorization
+    2. Unauthorized email mismatch
+    3. OTP expiry and reuse
+    4. Warden role escalation attempts
+    5. Warden access outside assigned hostels
+    6. Duplicate room or hostel references
+    7. P03 sync failure and stale data handling
+    8. Gender/hostel eligibility enforcement
+    9. Missing participant acceptance rejection
+    10. Expired proposal approval attempts
+    11. Policy changes and audit history
+    12. CSV validation and duplicate handling
+    13. Unauthorized report exports
+    14. Concurrent transfer attempts / row locking
+    15. Transaction rollback on transfer failure
 """
 from django.test import TestCase, TransactionTestCase
 from django.utils import timezone

@@ -1,7 +1,39 @@
 """
-Django settings for Hostel Room Exchange Platform.
+Module: backend/config/settings.py
 
-Environment-based configuration for development, testing, and production.
+Work / Purpose:
+    Central Django settings module configuring PostgreSQL 16 (port 5433), SimpleJWT, Celery/Redis, logging, CORS, and production security hardening.
+
+Connected Modules (Used By / Routes):
+    - Django runtime across all installed apps
+    - backend/config/asgi.py
+    - backend/config/celery.py
+    - backend/config/wsgi.py
+    - backend/manage.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/__init__.py
+    - backend/apps/accounts/authentication.py
+    - backend/apps/accounts/exception_handler.py
+    - backend/apps/analytics/__init__.py
+    - backend/apps/approvals/__init__.py
+    - backend/apps/audit/__init__.py
+    - backend/apps/exchange_requests/__init__.py
+    - backend/apps/hostels/__init__.py
+    - backend/apps/integrations/__init__.py
+    - backend/apps/matching/__init__.py
+    - backend/apps/notifications/__init__.py
+    - backend/apps/policies/__init__.py
+    - backend/apps/proposals/__init__.py
+    - backend/apps/transfers/__init__.py
+    - backend/config/urls.py
+    - backend/config/wsgi.py
+    - dotenv (external library / framework)
+
+Original Module Notes:
+    Django settings for Hostel Room Exchange Platform.
+
+    Environment-based configuration for development, testing, and production.
 """
 import os
 from pathlib import Path
@@ -99,11 +131,12 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
-            'NAME': os.getenv('DATABASE_NAME', 'hostel_exchange'),
-            'USER': os.getenv('DATABASE_USER', 'postgres'),
-            'PASSWORD': os.getenv('DATABASE_PASSWORD', 'postgres'),
-            'HOST': os.getenv('DATABASE_HOST', 'localhost'),
-            'PORT': os.getenv('DATABASE_PORT', '5432'),
+            'NAME': os.getenv('DATABASE_NAME') or os.getenv('DB_NAME') or 'hostel_exchange',
+            'USER': os.getenv('DATABASE_USER') or os.getenv('DB_USER') or 'postgres',
+            'PASSWORD': os.getenv('DATABASE_PASSWORD') or os.getenv('DB_PASSWORD') or 'postgres',
+            'HOST': os.getenv('DATABASE_HOST') or os.getenv('DB_HOST') or 'localhost',
+            'PORT': str(os.getenv('DATABASE_PORT') or os.getenv('DB_PORT') or '5433'),
+            'CONN_MAX_AGE': int(os.getenv('DATABASE_CONN_MAX_AGE', '0' if DEBUG else '60')),
             'OPTIONS': {
                 'connect_timeout': 10,
             },
@@ -164,6 +197,11 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'apps.accounts.exception_handler.custom_exception_handler',
 }
 
+if not DEBUG:
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
+        'rest_framework.renderers.JSONRenderer',
+    ]
+
 # JWT Settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
@@ -176,7 +214,8 @@ SIMPLE_JWT = {
 
 # CORS
 CORS_ALLOWED_ORIGINS = os.getenv(
-    'CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173'
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173',
 ).split(',')
 CORS_ALLOW_CREDENTIALS = True
 
@@ -188,6 +227,20 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
     'SCHEMA_PATH_PREFIX': '/api/v1/',
     'COMPONENT_SPLIT_REQUEST': True,
+    'ENUM_NAME_OVERRIDES': {
+        'RoleEnum': (
+            ('SUPER_ADMIN', 'Super Administrator'),
+            ('STUDENT', 'Student'),
+            ('WARDEN', 'Warden'),
+            ('CHIEF_WARDEN', 'Chief Warden'),
+            ('HOSTEL_ADMIN', 'Hostel Administrator'),
+            ('DEAN', 'Dean of Student Welfare'),
+        ),
+        'WardenRoleEnum': (
+            ('WARDEN', 'Warden'),
+            ('CHIEF_WARDEN', 'Chief Warden'),
+        ),
+    },
 }
 
 # Celery settings
@@ -222,7 +275,7 @@ else:
     DEFAULT_FROM_EMAIL = 'RoomSwap Security <noreply@hostel.edu>'
 
 # Frontend URL
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 
 # Platform policy defaults
 POLICY_DEFAULTS = {
@@ -232,8 +285,13 @@ POLICY_DEFAULTS = {
     'MAX_CYCLE_LENGTH': int(os.getenv('DEFAULT_MAX_CYCLE_LENGTH', '5')),
 }
 
-# Integration mode
+# Integration mode & institutional endpoint configuration
 INTEGRATION_MOCK_MODE = os.getenv('INTEGRATION_MOCK_MODE', 'True').lower() in ('true', '1')
+P03_API_URL = (os.getenv('P03_API_URL') or os.getenv('P03_API_BASE_URL', '')).strip()
+P03_API_KEY = (os.getenv('P03_API_KEY') or os.getenv('P03_API_CLIENT_SECRET', '')).strip()
+ERP_API_URL = os.getenv('ERP_API_URL', '').strip()
+ERP_API_KEY = os.getenv('ERP_API_KEY', '').strip()
+INTEGRATION_HTTP_TIMEOUT = int(os.getenv('P03_SYNC_TIMEOUT_SECONDS', '10'))
 
 # Logging
 LOGGING = {
@@ -255,23 +313,25 @@ LOGGING = {
             'formatter': 'verbose',
         },
         'file': {
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR / 'logs' / 'django.log',
+            'maxBytes': 5 * 1024 * 1024,  # 5 MB per log file
+            'backupCount': 5,
             'formatter': 'verbose',
         },
     },
     'root': {
-        'handlers': ['console'],
+        'handlers': ['console'] if DEBUG else ['console', 'file'],
         'level': 'INFO',
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['console'] if DEBUG else ['console', 'file'],
             'level': 'INFO',
             'propagate': False,
         },
         'apps': {
-            'handlers': ['console'],
+            'handlers': ['console'] if DEBUG else ['console', 'file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False,
         },
@@ -280,3 +340,15 @@ LOGGING = {
 
 # Create logs directory if it doesn't exist
 (BASE_DIR / 'logs').mkdir(exist_ok=True)
+
+# Production Security Hardening (active automatically when DJANGO_DEBUG=False)
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+    SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'True').lower() in ('true', '1')
+    CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'True').lower() in ('true', '1')
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False').lower() in ('true', '1')
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True

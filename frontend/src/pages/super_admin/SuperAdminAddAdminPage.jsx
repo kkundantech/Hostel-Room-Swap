@@ -1,3 +1,20 @@
+/**
+ * Module: frontend/src/pages/super_admin/SuperAdminAddAdminPage.jsx
+ *
+ * Work / Purpose:
+ *   Super Admin form page for provisioning administrative and dean accounts.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
@@ -99,7 +116,7 @@ export const SuperAdminAddAdminPage = () => {
         <div className="flex items-center gap-3">
           <Link
             to="/super-admin/users"
-            className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#5D38F0] shadow-2xs transition"
+            className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#f78c30] shadow-2xs transition"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>

@@ -1,3 +1,17 @@
+"""
+Module: backend/apps/transfers/admin.py
+
+Work / Purpose:
+    Django admin site model registrations (TransferRecordAdmin) for apps.transfers.
+
+Connected Modules (Used By / Routes):
+    - django.contrib.admin autodiscover
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/transfers/models.py
+    - django (external library / framework)
+"""
+
 from django.contrib import admin
 from .models import TransferRecord
 

@@ -1,8 +1,27 @@
 """
-Policy engine service.
+Module: backend/apps/policies/services.py
 
-Provides configurable eligibility validation for exchange requests.
-Checks are performed before matching and again before execution.
+Work / Purpose:
+    Implements eligibility validation helpers checking active allocations, cooling-off periods, fee/disciplinary status, and gender isolation.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/exchange_requests/serializers.py
+    - backend/apps/exchange_requests/views.py
+    - backend/apps/matching/views.py
+    - backend/apps/proposals/services.py
+    - backend/tests/test_policies.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/hostels/models.py
+    - backend/apps/policies/models.py
+    - backend/apps/transfers/models.py
+    - django (external library / framework)
+
+Original Module Notes:
+    Policy engine service.
+
+    Provides configurable eligibility validation for exchange requests.
+    Checks are performed before matching and again before execution.
 """
 import logging
 from datetime import timedelta

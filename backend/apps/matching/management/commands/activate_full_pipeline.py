@@ -1,11 +1,33 @@
 """
-Management command to activate and populate full platform lifecycle:
-- Exchange requests forming 2-way, 3-way, and multi-party cycles
-- Matching engine cycle detection execution
-- Acceptance responses across participants
-- Warden approval and Two-Phase Atomic Swap execution
-- Transfer records, letters, and audit trails
-- Analytics metrics and historical records
+Module: backend/apps/matching/management/commands/activate_full_pipeline.py
+
+Work / Purpose:
+    Django management command (activate_full_pipeline) to run end-to-end matching pipeline initialization across sample data.
+
+Connected Modules (Used By / Routes):
+    - Standalone / discovered dynamically via Django app registry or runtime
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/approvals/services.py
+    - backend/apps/audit/services.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/hostels/models.py
+    - backend/apps/matching/engine.py
+    - backend/apps/proposals/models.py
+    - backend/apps/proposals/services.py
+    - backend/apps/transfers/models.py
+    - django (external library / framework)
+    - random (external library / framework)
+
+Original Module Notes:
+    Management command to activate and populate full platform lifecycle:
+    - Exchange requests forming 2-way, 3-way, and multi-party cycles
+    - Matching engine cycle detection execution
+    - Acceptance responses across participants
+    - Warden approval and Two-Phase Atomic Swap execution
+    - Transfer records, letters, and audit trails
+    - Analytics metrics and historical records
 """
 from django.core.management.base import BaseCommand
 from django.utils import timezone

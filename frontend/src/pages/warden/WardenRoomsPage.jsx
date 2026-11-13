@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/pages/warden/WardenRoomsPage.jsx
+ *
+ * Work / Purpose:
+ *   Warden rooms inspector page for managing and searching rooms and beds within assigned hostels.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';
@@ -195,7 +211,7 @@ export const WardenRoomsPage = () => {
         {/* Header Title & Metrics */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/70 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-[#5B4DF5] uppercase tracking-wider mb-1">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#f78c30] uppercase tracking-wider mb-1">
               <Bed className="w-4 h-4" />
               <span>{selectedHostel?.name || selectedHostel?.code || 'Hostel'} Inventory</span>
             </div>
@@ -214,7 +230,7 @@ export const WardenRoomsPage = () => {
             </div>
             <div className="bg-[#f4f7fb] border border-slate-200/80 px-4 py-3 rounded-2xl text-center min-w-[90px]">
               <p className="text-[10px] font-bold text-slate-400 uppercase">Beds Filled</p>
-              <p className="text-xl font-black text-[#5B4DF5]">{occupiedBeds} / {totalBeds}</p>
+              <p className="text-xl font-black text-[#f78c30]">{occupiedBeds} / {totalBeds}</p>
             </div>
             <div className="bg-[#f4f7fb] border border-slate-200/80 px-4 py-3 rounded-2xl text-center min-w-[90px]">
               <p className="text-[10px] font-bold text-slate-400 uppercase">Maintenance</p>
@@ -232,7 +248,7 @@ export const WardenRoomsPage = () => {
               placeholder="Search by room number (e.g. 101) or resident name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#5B4DF5]/20 focus:border-[#5B4DF5] transition"
+              className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30] transition"
             />
           </div>
 
@@ -241,7 +257,7 @@ export const WardenRoomsPage = () => {
             <select
               value={selectedFloor}
               onChange={(e) => setSelectedFloor(e.target.value)}
-              className="bg-[#f4f7fb] border border-slate-200/80 text-xs font-semibold text-slate-700 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:border-[#5B4DF5]"
+              className="bg-[#f4f7fb] border border-slate-200/80 text-xs font-semibold text-slate-700 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:border-[#f78c30]"
             >
               <option value="ALL">All Floors</option>
               <option value="1">1st Floor</option>
@@ -254,7 +270,7 @@ export const WardenRoomsPage = () => {
             <select
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="bg-[#f4f7fb] border border-slate-200/80 text-xs font-semibold text-slate-700 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:border-[#5B4DF5]"
+              className="bg-[#f4f7fb] border border-slate-200/80 text-xs font-semibold text-slate-700 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:border-[#f78c30]"
             >
               <option value="ALL">All Room Types</option>
               <option value="1">1 Seater</option>
@@ -266,7 +282,7 @@ export const WardenRoomsPage = () => {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="bg-[#f4f7fb] border border-slate-200/80 text-xs font-semibold text-slate-700 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:border-[#5B4DF5]"
+              className="bg-[#f4f7fb] border border-slate-200/80 text-xs font-semibold text-slate-700 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:border-[#f78c30]"
             >
               <option value="ALL">All Statuses</option>
               <option value="OCCUPIED">Fully Occupied</option>
@@ -280,7 +296,7 @@ export const WardenRoomsPage = () => {
         {/* Room Grid */}
         {filteredRooms.length === 0 ? (
           <div className="bg-white rounded-3xl p-12 border border-slate-200/70 shadow-xs text-center">
-            <div className="w-16 h-16 rounded-3xl bg-indigo-50 text-[#5B4DF5] flex items-center justify-center mx-auto mb-3.5 border border-indigo-100">
+            <div className="w-16 h-16 rounded-3xl bg-orange-50 text-[#f78c30] flex items-center justify-center mx-auto mb-3.5 border border-orange-100">
               <Bed className="w-8 h-8" />
             </div>
             <h3 className="text-base font-black text-slate-900">
@@ -333,7 +349,7 @@ export const WardenRoomsPage = () => {
                           Maintenance
                         </span>
                       ) : isFull ? (
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-50 text-[#5B4DF5] border border-purple-200">
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-50 text-[#f78c30] border border-purple-200">
                           Full ({room.capacity}/{room.capacity})
                         </span>
                       ) : (
@@ -425,7 +441,7 @@ export const WardenRoomsPage = () => {
             <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-[#5B4DF5] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-2xl bg-orange-50 text-[#f78c30] flex items-center justify-center">
                     <Bed className="w-5 h-5" />
                   </div>
                   <div>
@@ -482,7 +498,7 @@ export const WardenRoomsPage = () => {
                     placeholder="Enter reason for maintenance hold or inspection..."
                     value={maintenanceNote}
                     onChange={(e) => setMaintenanceNote(e.target.value)}
-                    className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-3 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                    className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-3 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                   />
                 </div>
               </div>
@@ -500,7 +516,7 @@ export const WardenRoomsPage = () => {
                     setSelectedRoomModal(null);
                   }}
                   className={`px-5 py-2.5 rounded-2xl text-xs font-bold text-white shadow-md transition ${
-                    selectedRoomModal.maintenance ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-[#5B4DF5] hover:bg-[#4d3ef0]'
+                    selectedRoomModal.maintenance ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-[#f78c30] hover:bg-[#e27518]'
                   }`}
                 >
                   {selectedRoomModal.maintenance ? 'Mark as Available' : 'Place on Maintenance Hold'}

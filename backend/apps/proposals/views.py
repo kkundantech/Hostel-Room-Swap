@@ -1,4 +1,25 @@
-"""Proposal views."""
+"""
+Module: backend/apps/proposals/views.py
+
+Work / Purpose:
+    Provides ExchangeProposalViewSet endpoints for listing proposals, viewing cycle legs, and submitting student accept/decline responses.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/proposals/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/permissions.py
+    - backend/apps/audit/services.py
+    - backend/apps/proposals/models.py
+    - backend/apps/proposals/serializers.py
+    - backend/apps/proposals/services.py
+    - django (external library / framework)
+    - django_filters (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Proposal views.
+"""
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -24,6 +45,8 @@ class ExchangeProposalViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ['status', 'is_cross_hostel', 'cycle_length']
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False) or not self.request.user.is_authenticated:
+            return ExchangeProposal.objects.none()
         user = self.request.user
         qs = ExchangeProposal.objects.prefetch_related(
             'participants__student',

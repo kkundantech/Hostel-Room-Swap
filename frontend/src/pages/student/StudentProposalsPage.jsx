@@ -1,3 +1,23 @@
+/**
+ * Module: frontend/src/pages/student/StudentProposalsPage.jsx
+ *
+ * Work / Purpose:
+ *   Dedicated Student page for reviewing matched swap cycle proposals and accepting or declining participation.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/common/ConfirmationModal.jsx
+ *   - frontend/src/components/common/EmptyState.jsx
+ *   - frontend/src/components/common/StatusBadge.jsx
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/context/AuthContext.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';

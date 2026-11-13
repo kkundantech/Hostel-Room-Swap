@@ -1,8 +1,33 @@
-"""Exchange request views."""
+"""
+Module: backend/apps/exchange_requests/views.py
+
+Work / Purpose:
+    Provides ExchangeRequestViewSet endpoints for submitting, listing, filtering, and withdrawing student exchange requests.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/exchange_requests/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/permissions.py
+    - backend/apps/audit/services.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/exchange_requests/serializers.py
+    - backend/apps/hostels/views.py
+    - backend/apps/matching/engine.py
+    - backend/apps/policies/services.py
+    - backend/apps/proposals/services.py
+    - django (external library / framework)
+    - django_filters (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Exchange request views.
+"""
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
@@ -12,7 +37,7 @@ from .serializers import (
     ExchangeRequestSerializer,
     ExchangeRequestUpdateSerializer,
 )
-from apps.accounts.permissions import IsStudent, IsStaffRole
+from apps.accounts.permissions import IsStudent, IsStaffRole, IsAdminOrWarden
 from apps.policies.services import validate_student_eligibility
 from apps.audit.services import log_audit_event
 
@@ -30,6 +55,8 @@ class ExchangeRequestViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False) or not self.request.user.is_authenticated:
+            return ExchangeRequest.objects.none()
         user = self.request.user
         qs = ExchangeRequest.objects.select_related(
             'student__student_profile',
@@ -57,6 +84,8 @@ class ExchangeRequestViewSet(viewsets.ModelViewSet):
             return [IsStudent()]
         if self.action in ('update', 'partial_update', 'destroy'):
             return [IsStudent()]
+        if self.action in ('assign_review', 'add_review_note'):
+            return [IsAdminOrWarden()]
         return [IsAuthenticated()]
 
     def perform_create(self, serializer):
@@ -110,14 +139,18 @@ class ExchangeRequestViewSet(viewsets.ModelViewSet):
                 {'detail': 'You can only withdraw your own requests.'},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        if req.status not in (ExchangeRequest.Status.OPEN,):
-            return Response(
-                {'detail': f'Cannot withdraw a request with status "{req.status}".'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
-        req.status = ExchangeRequest.Status.WITHDRAWN
-        req.save(update_fields=['status', 'updated_at'])
+        with transaction.atomic():
+            locked_req = ExchangeRequest.objects.select_for_update().get(id=req.id)
+            if locked_req.status not in (ExchangeRequest.Status.OPEN,):
+                return Response(
+                    {'detail': f'Cannot withdraw a request with status "{locked_req.status}".'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            locked_req.status = ExchangeRequest.Status.WITHDRAWN
+            locked_req.save(update_fields=['status', 'updated_at'])
+            req = locked_req
 
         log_audit_event(
             user=request.user,

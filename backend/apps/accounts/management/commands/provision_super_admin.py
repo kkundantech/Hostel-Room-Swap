@@ -1,6 +1,19 @@
 """
-Secure Initial Super Admin Provisioning Management Command.
-Enforces non-public, controlled setup for the highest-privilege role.
+Module: backend/apps/accounts/management/commands/provision_super_admin.py
+
+Work / Purpose:
+    Django management command (provision_super_admin) for securely provisioning the initial SUPER_ADMIN account with environment credentials.
+
+Connected Modules (Used By / Routes):
+    - Standalone / discovered dynamically via Django app registry or runtime
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - django (external library / framework)
+
+Original Module Notes:
+    Secure Initial Super Admin Provisioning Management Command.
+    Enforces non-public, controlled setup for the highest-privilege role.
 """
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model

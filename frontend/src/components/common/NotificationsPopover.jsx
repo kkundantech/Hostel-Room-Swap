@@ -1,3 +1,18 @@
+/**
+ * Module: frontend/src/components/common/NotificationsPopover.jsx
+ *
+ * Work / Purpose:
+ *   Header notification popover listing recent unread alerts and quick mark-as-read actions.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/components/layout/ExecutiveLayout.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../services/api';
 import { Bell, Check, CheckCheck, Clock, X } from 'lucide-react';

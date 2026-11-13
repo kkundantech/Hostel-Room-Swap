@@ -1,5 +1,27 @@
 """
-Authentication, registration, OTP verification, and user management views.
+Module: backend/apps/accounts/views.py
+
+Work / Purpose:
+    Implements authentication, password reset, student/warden OTP registration, profile (/me), and admin roster management API views.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/authentication.py
+    - backend/apps/accounts/models.py
+    - backend/apps/accounts/otp.py
+    - backend/apps/accounts/permissions.py
+    - backend/apps/accounts/serializers.py
+    - backend/apps/audit/services.py
+    - backend/apps/hostels/models.py
+    - django (external library / framework)
+    - django_filters (external library / framework)
+    - rest_framework (external library / framework)
+    - rest_framework_simplejwt (external library / framework)
+
+Original Module Notes:
+    Authentication, registration, OTP verification, and user management views.
 """
 import csv
 import io
@@ -48,6 +70,7 @@ from .otp import (
 )
 from apps.accounts.permissions import IsHostelAdmin
 from apps.audit.services import log_audit_event
+from drf_spectacular.utils import extend_schema, OpenApiTypes
 
 User = get_user_model()
 
@@ -69,6 +92,7 @@ def mask_email(email: str) -> str:
 # LOGIN / LOGOUT / ME
 # ============================================================================
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
@@ -101,6 +125,7 @@ def login_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
@@ -116,6 +141,7 @@ def logout_view(request):
     return Response({'detail': 'Logged out successfully.'}, status=status.HTTP_200_OK)
 
 
+@extend_schema(responses={200: OpenApiTypes.OBJECT})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me_view(request):
@@ -124,6 +150,7 @@ def me_view(request):
     return Response(serializer.data)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password_view(request):
@@ -132,7 +159,8 @@ def change_password_view(request):
     serializer.is_valid(raise_exception=True)
 
     request.user.set_password(serializer.validated_data['new_password'])
-    request.user.save()
+    request.user.session_version += 1
+    request.user.save(update_fields=['password', 'session_version'])
 
     log_audit_event(
         user=request.user,
@@ -148,6 +176,7 @@ def change_password_view(request):
 # STUDENT REGISTRATION (OTP + 12-CHAR PASSWORD)
 # ============================================================================
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def student_signup_request_otp_view(request):
@@ -185,6 +214,7 @@ def student_signup_request_otp_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def student_signup_verify_otp_view(request):
@@ -211,6 +241,7 @@ def student_signup_verify_otp_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def student_signup_complete_view(request):
@@ -309,8 +340,8 @@ def student_signup_complete_view(request):
             request=request,
         )
 
-    # Issue JWT tokens
-    refresh = RefreshToken.for_user(user)
+    # Issue JWT tokens with embedded session_version and role claims
+    refresh = get_tokens_for_user(user)
 
     return Response({
         'detail': 'Student registration completed successfully.',
@@ -324,6 +355,7 @@ def student_signup_complete_view(request):
 # WARDEN REGISTRATION (DEDICATED FLOW + ASSIGNED HOSTEL SCOPE)
 # ============================================================================
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def warden_signup_request_otp_view(request):
@@ -355,6 +387,7 @@ def warden_signup_request_otp_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def warden_signup_verify_otp_view(request):
@@ -381,6 +414,7 @@ def warden_signup_verify_otp_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def warden_signup_complete_view(request):
@@ -456,7 +490,7 @@ def warden_signup_complete_view(request):
             request=request,
         )
 
-    refresh = RefreshToken.for_user(user)
+    refresh = get_tokens_for_user(user)
 
     return Response({
         'detail': 'Warden registration completed successfully.',
@@ -471,6 +505,7 @@ def warden_signup_complete_view(request):
 # PASSWORD RESET VIA 6-DIGIT OTP
 # ============================================================================
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def password_reset_otp_request_view(request):
@@ -515,6 +550,7 @@ def password_reset_otp_request_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def password_reset_otp_verify_view(request):
@@ -538,6 +574,7 @@ def password_reset_otp_verify_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def password_reset_otp_complete_view(request):
@@ -574,7 +611,8 @@ def password_reset_otp_complete_view(request):
         return Response({'detail': 'User account not found.'}, status=status.HTTP_400_BAD_REQUEST)
 
     user.set_password(new_password)
-    user.save()
+    user.session_version += 1
+    user.save(update_fields=['password', 'session_version'])
 
     log_audit_event(
         user=user,
@@ -592,6 +630,7 @@ def password_reset_otp_complete_view(request):
 # LEGACY PASSWORD RESET (Link Based)
 # ============================================================================
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def password_reset_request_view(request):
@@ -618,6 +657,7 @@ def password_reset_request_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def password_reset_confirm_view(request):

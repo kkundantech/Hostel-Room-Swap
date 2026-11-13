@@ -1,4 +1,27 @@
-"""Views for policy rule management."""
+"""
+Module: backend/apps/policies/views.py
+
+Work / Purpose:
+    Provides PolicyRuleViewSet endpoints for reading and updating institutional exchange policies.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/policies/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/permissions.py
+    - backend/apps/audit/models.py
+    - backend/apps/audit/services.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/policies/models.py
+    - backend/apps/policies/serializers.py
+    - backend/apps/proposals/models.py
+    - django (external library / framework)
+    - django_filters (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Views for policy rule management.
+"""
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response

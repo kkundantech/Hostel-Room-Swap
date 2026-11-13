@@ -1,8 +1,31 @@
 """
-Audit logging service.
+Module: backend/apps/audit/services.py
 
-Provides a simple interface for logging audit events from anywhere
-in the application.
+Work / Purpose:
+    Provides log_audit_event and client IP extraction helpers used across backend services and views for traceability.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/otp.py
+    - backend/apps/accounts/views.py
+    - backend/apps/accounts/views_activation.py
+    - backend/apps/accounts/views_super_admin.py
+    - backend/apps/analytics/views.py
+    - backend/apps/approvals/services.py
+    - backend/apps/exchange_requests/tasks.py
+    - backend/apps/exchange_requests/views.py
+    - backend/apps/integrations/views.py
+    - backend/apps/matching/management/commands/activate_full_pipeline.py
+    - backend/apps/policies/views.py
+    - backend/apps/proposals/views.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/audit/models.py
+
+Original Module Notes:
+    Audit logging service.
+
+    Provides a simple interface for logging audit events from anywhere
+    in the application.
 """
 import logging
 from .models import AuditEntry

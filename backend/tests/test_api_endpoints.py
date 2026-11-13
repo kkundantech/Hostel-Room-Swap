@@ -1,10 +1,23 @@
 """
-REST API tests for the Room Exchange platform.
-Verifies:
-- JWT Authentication (obtain token, refresh token)
-- Exchange request creation and listing
-- Unauthenticated access rejection
-- Analytics dashboard endpoints
+Module: backend/tests/test_api_endpoints.py
+
+Work / Purpose:
+    Integration test suite verifying JWT auth, RBAC endpoints, requests, matching, proposals, approvals, and transfers APIs.
+
+Connected Modules (Used By / Routes):
+    - pytest / Django test runner (automated verification suite)
+
+Helpful / Supporting Modules (Dependencies):
+    - pytest (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    REST API tests for the Room Exchange platform.
+    Verifies:
+    - JWT Authentication (obtain token, refresh token)
+    - Exchange request creation and listing
+    - Unauthenticated access rejection
+    - Analytics dashboard endpoints
 """
 import pytest
 from rest_framework import status

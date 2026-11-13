@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/pages/auth/SetPasswordPage.jsx
+ *
+ * Work / Purpose:
+ *   Account activation final step page enforcing strong password setup via verified activation grant.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../services/api';
@@ -81,7 +97,7 @@ export const SetPasswordPage = () => {
       {/* Top Header */}
       <header className="max-w-5xl w-full mx-auto flex items-center justify-between py-3">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#5B4DF5] to-[#7B61FF] flex items-center justify-center text-white shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#f78c30] to-[#f9a154] flex items-center justify-center text-white shadow-md shadow-[#f78c30]/25 group-hover:scale-105 transition-transform">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
@@ -116,7 +132,7 @@ export const SetPasswordPage = () => {
 
               <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs space-y-1">
                 <div className="text-slate-400 font-medium text-[11px]">Role</div>
-                <div className="font-bold text-[#5B4DF5] text-sm uppercase">
+                <div className="font-bold text-[#f78c30] text-sm uppercase">
                   {activatedSuccess.role || 'Authorized Member'}
                 </div>
                 <div className="text-[11px] font-mono text-slate-500">
@@ -128,7 +144,7 @@ export const SetPasswordPage = () => {
                 type="button"
                 id="sign-in-now-btn"
                 onClick={() => navigate(`/login?identifier=${encodeURIComponent(activatedSuccess.institution_id || identifier)}`)}
-                className="w-full py-3 px-4 rounded-xl text-xs font-semibold bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white shadow-md shadow-[#5B4DF5]/20 hover:shadow-[#5B4DF5]/30 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 px-4 rounded-xl text-xs font-semibold bg-[#f78c30] hover:bg-[#e27518] text-white shadow-md shadow-[#f78c30]/20 hover:shadow-[#f78c30]/30 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Sign In to Dashboard</span>
                 <ArrowRight className="w-4 h-4" />
@@ -139,7 +155,7 @@ export const SetPasswordPage = () => {
             <>
               {/* Header Icon & Title */}
               <div className="text-center mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100/80 flex items-center justify-center text-[#5B4DF5] mx-auto mb-3.5 shadow-2xs">
+                <div className="w-12 h-12 rounded-2xl bg-orange-50 border border-orange-100/80 flex items-center justify-center text-[#f78c30] mx-auto mb-3.5 shadow-2xs">
                   <Lock className="w-5 h-5" />
                 </div>
                 <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -181,7 +197,7 @@ export const SetPasswordPage = () => {
                         setError('');
                       }}
                       placeholder="Enter new password"
-                      className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200/90 bg-[#f8f9fc] text-xs text-slate-900 font-medium focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#5B4DF5]/20 focus:border-[#5B4DF5] transition placeholder:text-slate-400"
+                      className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200/90 bg-[#f8f9fc] text-xs text-slate-900 font-medium focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30] transition placeholder:text-slate-400"
                     />
                     <button
                       type="button"
@@ -215,7 +231,7 @@ export const SetPasswordPage = () => {
                         setError('');
                       }}
                       placeholder="Re-enter password"
-                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-[#f8f9fc] text-xs text-slate-900 font-medium focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#5B4DF5]/20 focus:border-[#5B4DF5] transition placeholder:text-slate-400"
+                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-[#f8f9fc] text-xs text-slate-900 font-medium focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30] transition placeholder:text-slate-400"
                     />
                   </div>
                 </div>
@@ -248,7 +264,7 @@ export const SetPasswordPage = () => {
                   type="submit"
                   id="activate-account-button"
                   disabled={loading || !allRulesPassed}
-                  className="w-full !mt-5 py-3 px-4 rounded-xl text-xs font-semibold bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white shadow-md shadow-[#5B4DF5]/20 hover:shadow-[#5B4DF5]/30 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                  className="w-full !mt-5 py-3 px-4 rounded-xl text-xs font-semibold bg-[#f78c30] hover:bg-[#e27518] text-white shadow-md shadow-[#f78c30]/20 hover:shadow-[#f78c30]/30 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

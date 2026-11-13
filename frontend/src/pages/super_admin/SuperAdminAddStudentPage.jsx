@@ -1,3 +1,20 @@
+/**
+ * Module: frontend/src/pages/super_admin/SuperAdminAddStudentPage.jsx
+ *
+ * Work / Purpose:
+ *   Super Admin form page for pre-authorizing new student identities into the platform.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
@@ -131,7 +148,7 @@ export const SuperAdminAddStudentPage = () => {
         <div className="flex items-center gap-3">
           <Link
             to="/super-admin/users"
-            className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#5D38F0] shadow-2xs transition"
+            className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#f78c30] shadow-2xs transition"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
@@ -200,7 +217,7 @@ export const SuperAdminAddStudentPage = () => {
                     value={formData.registration_number}
                     onChange={(e) => setFormData({ ...formData, registration_number: e.target.value.toUpperCase() })}
                     placeholder="e.g. 12345678"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5D38F0]/20 focus:border-[#5D38F0]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30]"
                   />
                   <span className="text-[10px] text-slate-400 mt-1 block">Must be unique across the platform.</span>
                 </div>
@@ -216,7 +233,7 @@ export const SuperAdminAddStudentPage = () => {
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                     placeholder="e.g. Aman Sharma"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5D38F0]/20 focus:border-[#5D38F0]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30]"
                   />
                 </div>
 
@@ -231,7 +248,7 @@ export const SuperAdminAddStudentPage = () => {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value.toLowerCase() })}
                     placeholder="student@hostel.edu or name@lpu.in"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5D38F0]/20 focus:border-[#5D38F0]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30]"
                   />
                   <span className="text-[10px] text-slate-400 mt-1 block">
                     The single-use activation OTP will be dispatched exclusively to this verified address.
@@ -276,7 +293,7 @@ export const SuperAdminAddStudentPage = () => {
                     value={formData.department}
                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                     placeholder="e.g. Computer Science & Engineering"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5D38F0]/20"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20"
                   />
                 </div>
 
@@ -307,7 +324,7 @@ export const SuperAdminAddStudentPage = () => {
                   type="submit"
                   id="create-student-btn"
                   disabled={loading}
-                  className="px-6 py-2.5 rounded-xl font-bold bg-[#5D38F0] hover:bg-[#4d2bd4] text-white shadow-md shadow-[#5D38F0]/20 transition flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-xl font-bold bg-[#f78c30] hover:bg-[#4d2bd4] text-white shadow-md shadow-[#f78c30]/20 transition flex items-center gap-2 disabled:opacity-50"
                 >
                   {loading ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -324,7 +341,7 @@ export const SuperAdminAddStudentPage = () => {
         ) : (
           /* Bulk CSV Upload Form */
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-orange-50/70 border border-orange-100">
               <div className="space-y-0.5">
                 <h3 className="font-extrabold text-slate-900 text-sm">Download Template First</h3>
                 <p className="text-xs text-slate-600">
@@ -334,7 +351,7 @@ export const SuperAdminAddStudentPage = () => {
               <button
                 type="button"
                 onClick={downloadSampleCsv}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-indigo-200 text-[#5D38F0] font-bold text-xs hover:bg-indigo-50 shadow-2xs transition self-start sm:self-auto"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-orange-200 text-[#f78c30] font-bold text-xs hover:bg-orange-50 shadow-2xs transition self-start sm:self-auto"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Download Sample CSV</span>
@@ -375,10 +392,10 @@ export const SuperAdminAddStudentPage = () => {
             )}
 
             <form onSubmit={handleBulkUpload} className="space-y-4">
-              <div className="border-2 border-dashed border-slate-300 rounded-3xl p-8 text-center hover:border-[#5D38F0] transition bg-slate-50/50">
+              <div className="border-2 border-dashed border-slate-300 rounded-3xl p-8 text-center hover:border-[#f78c30] transition bg-slate-50/50">
                 <UploadCloud className="w-12 h-12 text-slate-400 mx-auto mb-2" />
                 <label className="cursor-pointer">
-                  <span className="text-xs font-bold text-[#5D38F0] hover:underline block">
+                  <span className="text-xs font-bold text-[#f78c30] hover:underline block">
                     Choose a CSV file to authorize
                   </span>
                   <input
@@ -398,7 +415,7 @@ export const SuperAdminAddStudentPage = () => {
                   type="submit"
                   id="import-csv-btn"
                   disabled={csvLoading || !csvFile}
-                  className="px-6 py-2.5 rounded-xl font-bold bg-[#5D38F0] hover:bg-[#4d2bd4] text-white text-xs shadow-md shadow-[#5D38F0]/20 transition flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-xl font-bold bg-[#f78c30] hover:bg-[#4d2bd4] text-white text-xs shadow-md shadow-[#f78c30]/20 transition flex items-center gap-2 disabled:opacity-50"
                 >
                   {csvLoading ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

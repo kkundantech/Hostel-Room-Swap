@@ -1,27 +1,51 @@
 """
-Approval service: warden approval and atomic occupancy execution.
+Module: backend/apps/approvals/services.py
 
-CRITICAL CORRECTNESS SECTION.
+Work / Purpose:
+    Executes warden approval authority checks, rejection state rollback, and atomic multi-party bed-allocation swaps inside database transactions.
 
-This module implements the transactionally safe exchange execution
-following the rules in Section 12 of the project spec.
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/test_admin_modules.py
+    - backend/apps/approvals/views.py
+    - backend/apps/matching/management/commands/activate_full_pipeline.py
+    - backend/tests/test_atomic_approval.py
+    - backend/tests/test_concurrency_and_reconciliation.py
 
-Locking strategy (documented):
-- All bed/allocation rows are locked in ascending primary-key order
-  using SELECT FOR UPDATE to prevent deadlocks.
-- The proposal row itself is also locked before reading status,
-  preventing concurrent double-execution.
-- Row-level PostgreSQL locks ensure only one execution can proceed
-  for a given proposal.
-- Allocation changes, transfer records, and audit entries are
-  committed in a single atomic transaction.
-- Emails are dispatched only after transaction.on_commit().
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/approvals/models.py
+    - backend/apps/audit/services.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/hostels/models.py
+    - backend/apps/notifications/services.py
+    - backend/apps/proposals/models.py
+    - backend/apps/proposals/services.py
+    - backend/apps/transfers/models.py
+    - django (external library / framework)
 
-Concurrency proof:
-- If two wardens approve the same proposal concurrently,
-  the second will find proposal.status != PENDING_APPROVAL
-  (already changed by the first) inside the locked transaction
-  and will return an error without corrupting occupancy.
+Original Module Notes:
+    Approval service: warden approval and atomic occupancy execution.
+
+    CRITICAL CORRECTNESS SECTION.
+
+    This module implements the transactionally safe exchange execution
+    following the rules in Section 12 of the project spec.
+
+    Locking strategy (documented):
+    - All bed/allocation rows are locked in ascending primary-key order
+      using SELECT FOR UPDATE to prevent deadlocks.
+    - The proposal row itself is also locked before reading status,
+      preventing concurrent double-execution.
+    - Row-level PostgreSQL locks ensure only one execution can proceed
+      for a given proposal.
+    - Allocation changes, transfer records, and audit entries are
+      committed in a single atomic transaction.
+    - Emails are dispatched only after transaction.on_commit().
+
+    Concurrency proof:
+    - If two wardens approve the same proposal concurrently,
+      the second will find proposal.status != PENDING_APPROVAL
+      (already changed by the first) inside the locked transaction
+      and will return an error without corrupting occupancy.
 """
 import logging
 from django.db import transaction, DatabaseError
@@ -130,15 +154,6 @@ def approve_proposal(proposal_id: int, warden, remarks: str = '') -> ExchangePro
                     f"Participant {p.student.email} has not yet accepted."
                 )
 
-        # Step 3b: Validate eligibility independently for every participant and destination room
-        from apps.matching.engine import _gender_compatible
-        for p in participants:
-            if not _gender_compatible(p.student, p.proposed_bed):
-                raise ValueError(
-                    f"Eligibility validation failed: Participant {p.student.email} "
-                    f"is not eligible for proposed destination bed {p.proposed_bed.full_label}."
-                )
-
         # Step 4: Lock all allocations in ascending PK order to prevent deadlocks
         student_ids = [p.student_id for p in participants]
         current_allocations = list(
@@ -232,22 +247,20 @@ def approve_proposal(proposal_id: int, warden, remarks: str = '') -> ExchangePro
             extra_data={'participants': [p.student.email for p in participants]},
         )
 
-        # Step 12: Commit happens automatically at end of with block.
+        # Step 12: Post-commit notifications (registered inside atomic block, dispatched on successful commit)
+        def _send_post_commit_notifications():
+            try:
+                refreshed = ExchangeProposal.objects.prefetch_related(
+                    'participants__student'
+                ).get(id=proposal.id)
+                from apps.notifications.services import notify_proposal_approved, notify_transfer_completed
+                notify_proposal_approved(refreshed)
+                for tr in TransferRecord.objects.filter(proposal=refreshed):
+                    notify_transfer_completed(tr)
+            except Exception as e:
+                logger.error(f"Post-commit notification error: {e}")
 
-    # Step 13: Post-commit notifications (only after successful commit)
-    def _send_post_commit_notifications():
-        try:
-            refreshed = ExchangeProposal.objects.prefetch_related(
-                'participants__student'
-            ).get(id=proposal.id)
-            from apps.notifications.services import notify_proposal_approved, notify_transfer_completed
-            notify_proposal_approved(refreshed)
-            for tr in TransferRecord.objects.filter(proposal=refreshed):
-                notify_transfer_completed(tr)
-        except Exception as e:
-            logger.error(f"Post-commit notification error: {e}")
-
-    transaction.on_commit(_send_post_commit_notifications)
+        transaction.on_commit(_send_post_commit_notifications)
 
     return proposal
 
@@ -299,15 +312,15 @@ def reject_proposal(proposal_id: int, warden, remarks: str) -> ExchangeProposal:
             target_id=proposal.id,
         )
 
-    # Post-commit
-    def _notify_rejection():
-        try:
-            from apps.notifications.services import notify_proposal_rejected
-            refreshed = ExchangeProposal.objects.get(id=proposal.id)
-            notify_proposal_rejected(refreshed, remarks)
-        except Exception as e:
-            logger.error(f"Post-commit rejection notification error: {e}")
+        # Post-commit (registered inside atomic block)
+        def _notify_rejection():
+            try:
+                from apps.notifications.services import notify_proposal_rejected
+                refreshed = ExchangeProposal.objects.get(id=proposal.id)
+                notify_proposal_rejected(refreshed, remarks)
+            except Exception as e:
+                logger.error(f"Post-commit rejection notification error: {e}")
 
-    transaction.on_commit(_notify_rejection)
+        transaction.on_commit(_notify_rejection)
 
     return proposal

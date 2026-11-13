@@ -1,7 +1,25 @@
 """
-Seed data management command.
-Creates demo accounts, hostels, rooms, beds, and allocations for development.
-Run with: python manage.py seed_demo_data
+Module: backend/apps/hostels/management/commands/seed_demo_data.py
+
+Work / Purpose:
+    Django management command (seed_demo_data) that populates hostels, blocks, rooms, beds, students, wardens, policies, and exchange sample data.
+
+Connected Modules (Used By / Routes):
+    - Standalone / discovered dynamically via Django app registry or runtime
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/hostels/models.py
+    - backend/apps/policies/models.py
+    - backend/apps/proposals/models.py
+    - backend/apps/transfers/models.py
+    - django (external library / framework)
+
+Original Module Notes:
+    Seed data management command.
+    Creates demo accounts, hostels, rooms, beds, and allocations for development.
+    Run with: python manage.py seed_demo_data
 """
 from django.core.management.base import BaseCommand
 from django.db import transaction

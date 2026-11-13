@@ -1,3 +1,19 @@
+"""
+Module: backend/apps/notifications/views.py
+
+Work / Purpose:
+    Provides NotificationViewSet endpoints for listing notifications, counting unread items, and marking notifications as read.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/notifications/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/notifications/models.py
+    - backend/apps/notifications/serializers.py
+    - django (external library / framework)
+    - rest_framework (external library / framework)
+"""
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -14,6 +30,8 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False) or not self.request.user.is_authenticated:
+            return Notification.objects.none()
         return Notification.objects.filter(recipient=self.request.user)
 
     @action(detail=True, methods=['post'], url_path='read')

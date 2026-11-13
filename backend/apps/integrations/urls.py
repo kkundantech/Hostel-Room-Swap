@@ -1,3 +1,19 @@
+"""
+Module: backend/apps/integrations/urls.py
+
+Work / Purpose:
+    URL routing table registering REST API endpoints exposed by apps.integrations.
+
+Connected Modules (Used By / Routes):
+    - backend/config/urls.py
+    - backend/config/urls.py (included under /api/v1/)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/integrations/__init__.py
+    - backend/apps/integrations/views.py
+    - django (external library / framework)
+"""
+
 from django.urls import path
 from . import views
 

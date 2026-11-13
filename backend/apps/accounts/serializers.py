@@ -1,5 +1,26 @@
 """
-Serializers for authentication and user management.
+Module: backend/apps/accounts/serializers.py
+
+Work / Purpose:
+    Defines DRF serializers for login, user profiles, password changes/resets, OTP signup flows, warden assignments, and authorized identity/student/warden rosters.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/views.py
+    - backend/apps/accounts/views_activation.py
+    - backend/apps/accounts/views_super_admin.py
+    - backend/apps/audit/serializers.py
+    - backend/apps/exchange_requests/serializers.py
+    - backend/apps/hostels/serializers.py
+    - backend/apps/proposals/serializers.py
+    - backend/apps/transfers/serializers.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - django (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Serializers for authentication and user management.
 """
 from rest_framework import serializers
 from django.contrib.auth import authenticate
@@ -200,7 +221,7 @@ class UserMinimalSerializer(serializers.ModelSerializer):
         fields = ['id', 'email', 'first_name', 'last_name', 'full_name', 'role', 'registration_number']
         read_only_fields = fields
 
-    def get_full_name(self, obj):
+    def get_full_name(self, obj) -> str:
         return obj.get_full_name()
 
 
@@ -542,7 +563,7 @@ class AuthorizedWardenSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'is_registered', 'created_at', 'updated_at']
 
-    def get_assigned_hostels_details(self, obj):
+    def get_assigned_hostels_details(self, obj) -> list[dict]:
         return [
             {'id': h.id, 'name': h.name, 'code': h.code, 'category': h.hostel_category}
             for h in obj.assigned_hostels.all()
@@ -610,17 +631,17 @@ class AuthorizedIdentitySerializer(serializers.ModelSerializer):
             'activated_at', 'revoked_at', 'last_invitation_sent_at', 'last_login_at',
         ]
 
-    def get_masked_email(self, obj):
+    def get_masked_email(self, obj) -> str:
         return mask_email(obj.trusted_email)
 
-    def get_created_by_name(self, obj):
+    def get_created_by_name(self, obj) -> str:
         if obj.created_by:
             return obj.created_by.get_full_name() or obj.created_by.email
         return 'System Setup'
 
-    def get_last_login_at(self, obj):
+    def get_last_login_at(self, obj) -> str | None:
         user = obj.user_accounts.first()
-        return user.last_login_at if user else None
+        return user.last_login_at.isoformat() if user and user.last_login_at else None
 
 
 class AddStudentIdentitySerializer(serializers.Serializer):

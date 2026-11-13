@@ -1,12 +1,42 @@
 """
-Custom User model and Student Profile for the Hostel Room Exchange Platform.
+Module: backend/apps/accounts/models.py
 
-Roles:
-- STUDENT: Can create exchange requests, accept/decline proposals
-- WARDEN: Can approve/reject proposals for assigned hostels
-- CHIEF_WARDEN: Can approve cross-hostel exchanges
-- HOSTEL_ADMIN: Can manage hostel data, policies, roles
-- DEAN: Read-only analytics access
+Work / Purpose:
+    Defines custom User, StudentProfile, WardenAssignment, AuthorizedStudent, AuthorizedWarden, AuthorizedIdentity, OTPChallenge, and EmailVerificationChallenge models.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/admin.py
+    - backend/apps/accounts/management/commands/provision_super_admin.py
+    - backend/apps/accounts/otp.py
+    - backend/apps/accounts/serializers.py
+    - backend/apps/accounts/test_admin_modules.py
+    - backend/apps/accounts/test_otp_authorization.py
+    - backend/apps/accounts/views.py
+    - backend/apps/accounts/views_activation.py
+    - backend/apps/accounts/views_super_admin.py
+    - backend/apps/analytics/views.py
+    - backend/apps/hostels/management/commands/seed_demo_data.py
+    - backend/apps/integrations/views.py
+    - backend/apps/matching/management/commands/activate_full_pipeline.py
+    - backend/apps/notifications/services.py
+    - backend/config/settings.py (AUTH_USER_MODEL = 'accounts.User')
+    - backend/tests/conftest.py
+    - backend/tests/test_atomic_approval.py
+    - backend/tests/test_auth_and_eligibility.py
+    - backend/tests/test_concurrency_and_reconciliation.py
+
+Helpful / Supporting Modules (Dependencies):
+    - django (external library / framework)
+
+Original Module Notes:
+    Custom User model and Student Profile for the Hostel Room Exchange Platform.
+
+    Roles:
+    - STUDENT: Can create exchange requests, accept/decline proposals
+    - WARDEN: Can approve/reject proposals for assigned hostels
+    - CHIEF_WARDEN: Can approve cross-hostel exchanges
+    - HOSTEL_ADMIN: Can manage hostel data, policies, roles
+    - DEAN: Read-only analytics access
 """
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
@@ -28,7 +58,7 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('role', User.Role.HOSTEL_ADMIN)
+        extra_fields.setdefault('role', self.model.Role.SUPER_ADMIN)
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
@@ -100,12 +130,8 @@ class User(AbstractUser):
     )
     account_status = models.CharField(
         max_length=20,
-        choices=[
-            ('ACTIVE', 'Active'),
-            ('SUSPENDED', 'Suspended'),
-            ('REVOKED', 'Revoked'),
-        ],
-        default='ACTIVE',
+        choices=AccountStatus.choices,
+        default=AccountStatus.ACTIVE,
         db_index=True,
         help_text='Authoritative account status for security revocation',
     )

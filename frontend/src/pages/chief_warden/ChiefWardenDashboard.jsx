@@ -1,3 +1,22 @@
+/**
+ * Module: frontend/src/pages/chief_warden/ChiefWardenDashboard.jsx
+ *
+ * Work / Purpose:
+ *   Chief Warden oversight dashboard aggregating multi-hostel occupancy, proposals, and transfer activity.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/common/EmptyState.jsx
+ *   - frontend/src/components/common/StatusBadge.jsx
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../services/api';

@@ -1,3 +1,17 @@
+"""
+Module: backend/apps/proposals/admin.py
+
+Work / Purpose:
+    Django admin site model registrations (ExchangeProposalAdmin, ProposalParticipantAdmin) for apps.proposals.
+
+Connected Modules (Used By / Routes):
+    - django.contrib.admin autodiscover
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/proposals/models.py
+    - django (external library / framework)
+"""
+
 from django.contrib import admin
 from .models import ExchangeProposal, ProposalParticipant
 

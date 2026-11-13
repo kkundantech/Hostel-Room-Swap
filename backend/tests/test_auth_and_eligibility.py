@@ -1,14 +1,33 @@
 """
-Comprehensive test suite for:
-- Student Registration (OTP + 12-char Password + Authorized Roster validation)
-- Warden Registration (Dedicated pre-authorized workflow + scope assignment)
-- OTP security (hashing, expiry, attempt limits, cooldown)
-- Password Reset via OTP (preserves roles & permissions)
-- Role escalation prevention (server-enforced roles)
-- Gender-based hostel & room isolation (Boys/Girls server-side filtering & IDOR protection)
-- Warden hostel scope enforcement
-- Chief Warden institutional access
-- Multi-party cycle eligibility verification
+Module: backend/tests/test_auth_and_eligibility.py
+
+Work / Purpose:
+    Test suite covering OTP registration, password policies, eligibility checks, gender isolation, and warden scope enforcement.
+
+Connected Modules (Used By / Routes):
+    - pytest / Django test runner (automated verification suite)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/accounts/otp.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/hostels/models.py
+    - backend/apps/proposals/models.py
+    - django (external library / framework)
+    - pytest (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Comprehensive test suite for:
+    - Student Registration (OTP + 12-char Password + Authorized Roster validation)
+    - Warden Registration (Dedicated pre-authorized workflow + scope assignment)
+    - OTP security (hashing, expiry, attempt limits, cooldown)
+    - Password Reset via OTP (preserves roles & permissions)
+    - Role escalation prevention (server-enforced roles)
+    - Gender-based hostel & room isolation (Boys/Girls server-side filtering & IDOR protection)
+    - Warden hostel scope enforcement
+    - Chief Warden institutional access
+    - Multi-party cycle eligibility verification
 """
 import pytest
 from datetime import timedelta

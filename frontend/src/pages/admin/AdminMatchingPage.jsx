@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/pages/admin/AdminMatchingPage.jsx
+ *
+ * Work / Purpose:
+ *   Hostel Admin matching engine control page to run cycle detection and inspect graph match statistics.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState } from 'react';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';

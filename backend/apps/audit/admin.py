@@ -1,3 +1,17 @@
+"""
+Module: backend/apps/audit/admin.py
+
+Work / Purpose:
+    Django admin site model registrations (AuditEntryAdmin) for apps.audit.
+
+Connected Modules (Used By / Routes):
+    - django.contrib.admin autodiscover
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/audit/models.py
+    - django (external library / framework)
+"""
+
 from django.contrib import admin
 from .models import AuditEntry
 

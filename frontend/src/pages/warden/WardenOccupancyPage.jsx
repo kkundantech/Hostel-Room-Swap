@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/pages/warden/WardenOccupancyPage.jsx
+ *
+ * Work / Purpose:
+ *   Warden occupancy management page displaying block/room utilization and student bed assignments.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';
@@ -112,7 +128,7 @@ export const WardenOccupancyPage = () => {
         {/* Header Title */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/70 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-[#5B4DF5] uppercase tracking-wider mb-1">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#f78c30] uppercase tracking-wider mb-1">
               <Users className="w-4 h-4" />
               <span>Hostel Capacity & Live Occupancy</span>
             </div>
@@ -133,7 +149,7 @@ export const WardenOccupancyPage = () => {
                   cx="50"
                   cy="50"
                   r="40"
-                  stroke="#5B4DF5"
+                  stroke="#f78c30"
                   strokeWidth="12"
                   strokeDasharray="251.2"
                   strokeDashoffset={strokeDashoffset}
@@ -160,22 +176,22 @@ export const WardenOccupancyPage = () => {
                 onClick={() => setSelectedFloor(selectedFloor === f.floor.toString() ? 'ALL' : f.floor.toString())}
                 className={`p-4 rounded-3xl border transition text-left ${
                   selectedFloor === f.floor.toString()
-                    ? 'bg-[#5B4DF5] text-white border-[#5B4DF5] shadow-md shadow-[#5B4DF5]/20'
+                    ? 'bg-[#f78c30] text-white border-[#f78c30] shadow-md shadow-[#f78c30]/20'
                     : 'bg-white text-slate-800 border-slate-200/70 hover:border-slate-300 shadow-xs'
                 }`}
               >
-                <p className={`text-[10px] font-bold uppercase tracking-wider ${selectedFloor === f.floor.toString() ? 'text-indigo-100' : 'text-slate-400'}`}>
+                <p className={`text-[10px] font-bold uppercase tracking-wider ${selectedFloor === f.floor.toString() ? 'text-orange-100' : 'text-slate-400'}`}>
                   {f.name}
                 </p>
                 <div className="flex items-baseline justify-between mt-2">
                   <span className="text-xl font-black">{f.occupied}</span>
-                  <span className={`text-xs font-semibold ${selectedFloor === f.floor.toString() ? 'text-indigo-200' : 'text-slate-400'}`}>
+                  <span className={`text-xs font-semibold ${selectedFloor === f.floor.toString() ? 'text-orange-200' : 'text-slate-400'}`}>
                     / {f.total}
                   </span>
                 </div>
                 <div className="w-full bg-black/10 rounded-full h-1.5 mt-2.5 overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${selectedFloor === f.floor.toString() ? 'bg-white' : 'bg-[#5B4DF5]'}`}
+                    className={`h-full rounded-full ${selectedFloor === f.floor.toString() ? 'bg-white' : 'bg-[#f78c30]'}`}
                     style={{ width: `${f.pct}%` }}
                   />
                 </div>
@@ -193,7 +209,7 @@ export const WardenOccupancyPage = () => {
               placeholder="Search room (e.g. 101) or resident name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#5B4DF5]/20 focus:border-[#5B4DF5] transition"
+              className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30] transition"
             />
           </div>
 
@@ -202,7 +218,7 @@ export const WardenOccupancyPage = () => {
             <select
               value={selectedFloor}
               onChange={(e) => setSelectedFloor(e.target.value)}
-              className="bg-[#f4f7fb] border border-slate-200/80 text-xs font-bold text-slate-700 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:border-[#5B4DF5]"
+              className="bg-[#f4f7fb] border border-slate-200/80 text-xs font-bold text-slate-700 rounded-2xl px-3.5 py-2.5 focus:outline-none focus:border-[#f78c30]"
             >
               <option value="ALL">All Floors</option>
               {distinctFloors.map((fl) => (
@@ -222,7 +238,7 @@ export const WardenOccupancyPage = () => {
             </h3>
             <div className="flex items-center gap-4 text-xs font-medium text-slate-500">
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#5B4DF5]"></span> Full (100%)
+                <span className="w-2.5 h-2.5 rounded-full bg-[#f78c30]"></span> Full (100%)
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Available Bed
@@ -235,7 +251,7 @@ export const WardenOccupancyPage = () => {
 
           {filteredGrid.length === 0 ? (
             <div className="py-12 px-4 text-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-[#5B4DF5] flex items-center justify-center mx-auto mb-3 border border-indigo-100">
+              <div className="w-14 h-14 rounded-2xl bg-orange-50 text-[#f78c30] flex items-center justify-center mx-auto mb-3 border border-orange-100">
                 <Bed className="w-7 h-7" />
               </div>
               <h4 className="text-sm font-bold text-slate-900">
@@ -263,14 +279,14 @@ export const WardenOccupancyPage = () => {
                         ? 'bg-amber-50/50 border-amber-200'
                         : isPartial
                         ? 'bg-emerald-50/40 border-emerald-200'
-                        : 'bg-white border-slate-200/80 hover:border-[#5B4DF5]'
+                        : 'bg-white border-slate-200/80 hover:border-[#f78c30]'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black text-slate-900">{r.room}</span>
                       <span
                         className={`w-2 h-2 rounded-full ${
-                          isMaintenance ? 'bg-amber-500' : isPartial ? 'bg-emerald-500' : 'bg-[#5B4DF5]'
+                          isMaintenance ? 'bg-amber-500' : isPartial ? 'bg-emerald-500' : 'bg-[#f78c30]'
                         }`}
                       ></span>
                     </div>
@@ -308,7 +324,7 @@ export const WardenOccupancyPage = () => {
             <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-[#5B4DF5] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-2xl bg-orange-50 text-[#f78c30] flex items-center justify-center">
                     <Bed className="w-5 h-5" />
                   </div>
                   <div>
@@ -363,7 +379,7 @@ export const WardenOccupancyPage = () => {
               <div className="pt-4 border-t border-slate-100 flex justify-end">
                 <button
                   onClick={() => setSelectedRoomDetails(null)}
-                  className="px-5 py-2.5 rounded-2xl text-xs font-bold bg-[#5B4DF5] text-white hover:bg-[#4d3ef0] transition shadow-md shadow-[#5B4DF5]/20"
+                  className="px-5 py-2.5 rounded-2xl text-xs font-bold bg-[#f78c30] text-white hover:bg-[#e27518] transition shadow-md shadow-[#f78c30]/20"
                 >
                   Close
                 </button>

@@ -1,3 +1,20 @@
+/**
+ * Module: frontend/src/pages/dean/DeanDashboard.jsx
+ *
+ * Work / Purpose:
+ *   Dean read-only institutional oversight dashboard presenting campus KPIs and Recharts trend visualizations.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - recharts (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';

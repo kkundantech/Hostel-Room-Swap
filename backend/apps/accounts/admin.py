@@ -1,3 +1,17 @@
+"""
+Module: backend/apps/accounts/admin.py
+
+Work / Purpose:
+    Django admin site model registrations (UserAdmin, StudentProfileAdmin, WardenAssignmentAdmin) for apps.accounts.
+
+Connected Modules (Used By / Routes):
+    - django.contrib.admin autodiscover
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - django (external library / framework)
+"""
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User, StudentProfile, WardenAssignment

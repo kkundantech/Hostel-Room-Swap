@@ -1,14 +1,45 @@
 """
-Exchange Request model.
+Module: backend/apps/exchange_requests/models.py
 
-Represents a student's desire to exchange their hostel room.
-Lifecycle: OPEN → MATCHED → COMPLETED | WITHDRAWN | EXPIRED | CANCELLED
+Work / Purpose:
+    Defines the ExchangeRequest model capturing student preferences, target hostels/rooms, expiry timestamps, and request lifecycle statuses.
 
-Design notes:
-- A student can only have ONE active request (OPEN or MATCHED) at a time.
-- State transitions are managed through explicit service methods, not generic PATCH.
-- Preferences are stored as a JSON object for flexibility.
-- The request expires automatically via a Celery Beat task.
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/test_admin_modules.py
+    - backend/apps/analytics/views.py
+    - backend/apps/approvals/services.py
+    - backend/apps/exchange_requests/admin.py
+    - backend/apps/exchange_requests/serializers.py
+    - backend/apps/exchange_requests/tasks.py
+    - backend/apps/exchange_requests/views.py
+    - backend/apps/hostels/management/commands/seed_demo_data.py
+    - backend/apps/hostels/views.py
+    - backend/apps/matching/engine.py
+    - backend/apps/matching/management/commands/activate_full_pipeline.py
+    - backend/apps/matching/views.py
+    - backend/apps/policies/views.py
+    - backend/apps/proposals/services.py
+    - backend/tests/conftest.py
+    - backend/tests/test_atomic_approval.py
+    - backend/tests/test_auth_and_eligibility.py
+    - backend/tests/test_concurrency_and_reconciliation.py
+    - backend/tests/test_matching_engine.py
+    - backend/tests/test_student_dashboard_features.py
+
+Helpful / Supporting Modules (Dependencies):
+    - django (external library / framework)
+
+Original Module Notes:
+    Exchange Request model.
+
+    Represents a student's desire to exchange their hostel room.
+    Lifecycle: OPEN → MATCHED → COMPLETED | WITHDRAWN | EXPIRED | CANCELLED
+
+    Design notes:
+    - A student can only have ONE active request (OPEN or MATCHED) at a time.
+    - State transitions are managed through explicit service methods, not generic PATCH.
+    - Preferences are stored as a JSON object for flexibility.
+    - The request expires automatically via a Celery Beat task.
 """
 from django.db import models
 from django.conf import settings

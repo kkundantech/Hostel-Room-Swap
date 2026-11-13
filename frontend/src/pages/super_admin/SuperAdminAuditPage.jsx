@@ -1,3 +1,20 @@
+/**
+ * Module: frontend/src/pages/super_admin/SuperAdminAuditPage.jsx
+ *
+ * Work / Purpose:
+ *   Super Admin full security audit log viewer tracking identity provisioning and account state changes.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../services/api';
@@ -58,7 +75,7 @@ export const SuperAdminAuditPage = () => {
       return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">{action}</span>;
     }
     if (action.includes('OTP') || action.includes('INVITATION')) {
-      return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">{action}</span>;
+      return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-900 border border-orange-200">{action}</span>;
     }
     return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">{action}</span>;
   };
@@ -74,7 +91,7 @@ export const SuperAdminAuditPage = () => {
         <div className="flex items-center gap-3">
           <Link
             to="/super-admin/dashboard"
-            className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#5D38F0] shadow-2xs transition"
+            className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-[#f78c30] shadow-2xs transition"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
@@ -107,7 +124,7 @@ export const SuperAdminAuditPage = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search description, user or action..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5D38F0]/20 focus:border-[#5D38F0] transition placeholder:text-slate-400 font-medium"
+            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30] transition placeholder:text-slate-400 font-medium"
           />
         </form>
 
@@ -149,7 +166,7 @@ export const SuperAdminAuditPage = () => {
               {loading && logs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-slate-400">
-                    <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <div className="w-6 h-6 border-2 border-[#f78c30] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                     <span>Loading audit records...</span>
                   </td>
                 </tr>
@@ -161,7 +178,7 @@ export const SuperAdminAuditPage = () => {
                 </tr>
               ) : (
                 logs.map((entry) => (
-                  <tr key={entry.id} className="hover:bg-indigo-50/20 transition">
+                  <tr key={entry.id} className="hover:bg-orange-50/70 transition">
                     <td className="py-3.5 px-4 font-mono text-[11px] text-slate-500 whitespace-nowrap">
                       {new Date(entry.created_at).toLocaleString()}
                     </td>

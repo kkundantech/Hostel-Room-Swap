@@ -1,12 +1,26 @@
 """
-Comprehensive tests for graph-based multi-party room exchange matching engine.
-Verifies:
-- 2-person direct swaps
-- 3-person multi-party cycles
-- 4-person rotation cycles
-- Gender-compatibility pruning
-- Bed availability & active status pruning
-- Deduplication of equivalent cycles (canonical key)
+Module: backend/tests/test_matching_engine.py
+
+Work / Purpose:
+    Unit and graph tests verifying 2-way and N-way cycle discovery, preference compatibility, and policy filtering.
+
+Connected Modules (Used By / Routes):
+    - pytest / Django test runner (automated verification suite)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/matching/engine.py
+    - pytest (external library / framework)
+
+Original Module Notes:
+    Comprehensive tests for graph-based multi-party room exchange matching engine.
+    Verifies:
+    - 2-person direct swaps
+    - 3-person multi-party cycles
+    - 4-person rotation cycles
+    - Gender-compatibility pruning
+    - Bed availability & active status pruning
+    - Deduplication of equivalent cycles (canonical key)
 """
 import pytest
 from apps.matching.engine import build_compatibility_graph, find_cycles, run_matching

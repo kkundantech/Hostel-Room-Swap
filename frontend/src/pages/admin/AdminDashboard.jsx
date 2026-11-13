@@ -1,7 +1,26 @@
+/**
+ * Module: frontend/src/pages/admin/AdminDashboard.jsx
+ *
+ * Work / Purpose:
+ *   Primary Hostel Admin dashboard providing platform-wide KPIs, matching engine trigger, pending queues, and charts.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/admin/AdminQuickAuthModals.jsx
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';
+import AdminQuickAuthModals from '../../components/admin/AdminQuickAuthModals';
 import {
   Users,
   Building,
@@ -371,7 +390,7 @@ export const AdminDashboard = () => {
         {/* 1. Header Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-[#5B4DF5] uppercase tracking-wider mb-1">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#f78c30] uppercase tracking-wider mb-1">
               <Sparkles className="w-4 h-4" />
               <span>Institutional Oversight & Control</span>
             </div>
@@ -390,7 +409,7 @@ export const AdminDashboard = () => {
               className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition border border-slate-200 shadow-2xs"
               title="Refresh live metrics"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-[#5B4DF5] ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-[#f78c30] ${refreshing ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">{refreshing ? 'Updating...' : 'Refresh'}</span>
             </button>
 
@@ -406,9 +425,9 @@ export const AdminDashboard = () => {
           {/* Total Students */}
           <Link
             to="/admin/authorized-students"
-            className="bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs flex items-center gap-4 hover:shadow-md hover:border-indigo-200 transition group"
+            className="bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs flex items-center gap-4 hover:shadow-md hover:border-orange-200 transition group"
           >
-            <div className="w-12 h-12 rounded-2xl bg-[#f4f3ff] text-[#5B4DF5] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+            <div className="w-12 h-12 rounded-2xl bg-[#fff8f1] text-[#f78c30] flex items-center justify-center shrink-0 group-hover:scale-105 transition">
               <Users className="w-6 h-6" />
             </div>
             <div className="min-w-0">
@@ -500,7 +519,7 @@ export const AdminDashboard = () => {
                 </div>
                 <div className="flex items-center gap-3 text-[11px] font-semibold text-slate-500">
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-[#5B4DF5]" /> Occupied
+                    <span className="w-2.5 h-2.5 rounded-sm bg-[#f78c30]" /> Occupied
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-sm bg-[#e2d9fc]" /> Available
@@ -519,7 +538,7 @@ export const AdminDashboard = () => {
                       </span>
                       <div className="w-full bg-[#e2d9fc] rounded-t-xl overflow-hidden flex flex-col justify-end h-48 relative">
                         <div
-                          className="w-full bg-[#5B4DF5] rounded-t-lg transition-all duration-700"
+                          className="w-full bg-[#f78c30] rounded-t-lg transition-all duration-700"
                           style={{ height: `${occupiedPct}%` }}
                         />
                       </div>
@@ -537,7 +556,7 @@ export const AdminDashboard = () => {
 
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
               <span className="text-slate-400 font-medium">Synced with P03 Allocation Adapter</span>
-              <Link to="/admin/hostels" className="font-bold text-[#5B4DF5] hover:text-[#4d3ef0] flex items-center gap-1">
+              <Link to="/admin/hostels" className="font-bold text-[#f78c30] hover:text-[#e27518] flex items-center gap-1">
                 <span>Manage Hostels</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
@@ -554,7 +573,7 @@ export const AdminDashboard = () => {
                 </div>
                 <Link
                   to="/admin/requests"
-                  className="text-xs font-bold text-[#5B4DF5] hover:text-[#4d3ef0] transition"
+                  className="text-xs font-bold text-[#f78c30] hover:text-[#e27518] transition"
                 >
                   View All ({exchangeRequests.length})
                 </Link>
@@ -613,7 +632,7 @@ export const AdminDashboard = () => {
 
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
               <span className="text-slate-400 font-medium">Gender isolated by backend</span>
-              <Link to="/admin/requests" className="font-bold text-[#5B4DF5] hover:text-[#4d3ef0] flex items-center gap-1">
+              <Link to="/admin/requests" className="font-bold text-[#f78c30] hover:text-[#e27518] flex items-center gap-1">
                 <span>Manage Requests</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
@@ -627,7 +646,7 @@ export const AdminDashboard = () => {
                 <h3 className="text-sm font-bold text-slate-900">
                   Quick Actions
                 </h3>
-                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold text-[#f78c30] bg-orange-50 px-2 py-0.5 rounded-full">
                   Admin Tools
                 </span>
               </div>
@@ -637,14 +656,14 @@ export const AdminDashboard = () => {
                 <button
                   type="button"
                   onClick={() => setShowQuickStudentModal(true)}
-                  className="w-full p-2.5 rounded-2xl bg-[#f4f3ff] hover:bg-[#edeaff] border border-indigo-100/70 flex items-center justify-between transition group text-left cursor-pointer"
+                  className="w-full p-2.5 rounded-2xl bg-[#fff8f1] hover:bg-[#edeaff] border border-orange-100/80 flex items-center justify-between transition group text-left cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-[#5B4DF5] text-white flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition">
+                    <div className="w-8 h-8 rounded-xl bg-[#f78c30] text-white flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition">
                       <UserPlus className="w-4 h-4" />
                     </div>
                     <div>
-                      <span className="text-xs font-bold text-slate-800 block group-hover:text-[#5B4DF5] transition">
+                      <span className="text-xs font-bold text-slate-800 block group-hover:text-[#f78c30] transition">
                         Authorize Student
                       </span>
                       <span className="text-[10px] text-slate-400">Modal quick pre-authorization</span>
@@ -755,7 +774,7 @@ export const AdminDashboard = () => {
 
             <div className="pt-3 border-t border-slate-100">
               <Link to="/admin/reports" className="w-full py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition flex items-center justify-center gap-1.5">
-                <BarChart3 className="w-3.5 h-3.5 text-[#5B4DF5]" />
+                <BarChart3 className="w-3.5 h-3.5 text-[#f78c30]" />
                 <span>Executive Reports & Analytics</span>
               </Link>
             </div>
@@ -822,7 +841,7 @@ export const AdminDashboard = () => {
 
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
               <span className="text-slate-400 font-medium">Detailed Transfer Ledger</span>
-              <Link to="/transfers" className="font-bold text-[#5B4DF5] hover:text-[#4d3ef0] flex items-center gap-1">
+              <Link to="/transfers" className="font-bold text-[#f78c30] hover:text-[#e27518] flex items-center gap-1">
                 <span>View Ledger</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
@@ -837,7 +856,7 @@ export const AdminDashboard = () => {
                   <h3 className="text-sm font-bold text-slate-900">Cycle Architecture Distribution</h3>
                   <p className="text-[11px] text-slate-400">Rotational multi-party swap sizes</p>
                 </div>
-                <Link to="/admin/matching" className="text-xs font-bold text-[#5B4DF5] hover:text-[#4d3ef0]">
+                <Link to="/admin/matching" className="text-xs font-bold text-[#f78c30] hover:text-[#e27518]">
                   Configure
                 </Link>
               </div>
@@ -847,7 +866,7 @@ export const AdminDashboard = () => {
                 <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
                   <svg className="w-36 h-36 transform -rotate-90" viewBox="0 0 100 100">
                     <circle cx="50" cy="50" r="40" stroke="#f1f5f9" strokeWidth="12" fill="transparent" />
-                    <circle cx="50" cy="50" r="40" stroke="#5B4DF5" strokeWidth="12" strokeDasharray="90 251.2" strokeDashoffset="0" fill="transparent" />
+                    <circle cx="50" cy="50" r="40" stroke="#f78c30" strokeWidth="12" strokeDasharray="90 251.2" strokeDashoffset="0" fill="transparent" />
                     <circle cx="50" cy="50" r="40" stroke="#38bdf8" strokeWidth="12" strokeDasharray="60 251.2" strokeDashoffset="-90" fill="transparent" />
                     <circle cx="50" cy="50" r="40" stroke="#34d399" strokeWidth="12" strokeDasharray="50 251.2" strokeDashoffset="-150" fill="transparent" />
                     <circle cx="50" cy="50" r="40" stroke="#fbbf24" strokeWidth="12" strokeDasharray="51.2 251.2" strokeDashoffset="-200" fill="transparent" />
@@ -863,7 +882,7 @@ export const AdminDashboard = () => {
                 {/* Legend */}
                 <div className="space-y-2 text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#5B4DF5]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#f78c30]" />
                     <span className="text-slate-600">2-Way Direct</span>
                     <span className="font-bold text-slate-900">Direct</span>
                   </div>
@@ -890,7 +909,7 @@ export const AdminDashboard = () => {
               <span className="text-slate-400 font-medium">DFS directed cycle graph search</span>
               <button
                 onClick={handleTriggerMatchingQuick}
-                className="font-bold text-[#5B4DF5] hover:text-[#4d3ef0] flex items-center gap-1"
+                className="font-bold text-[#f78c30] hover:text-[#e27518] flex items-center gap-1"
               >
                 <span>Trigger Detection</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -906,7 +925,7 @@ export const AdminDashboard = () => {
                   <h3 className="text-sm font-bold text-slate-900">System Activity Feed</h3>
                   <p className="text-[11px] text-slate-400">Chronological security & audit events</p>
                 </div>
-                <Link to="/admin/audit" className="text-xs font-bold text-[#5B4DF5] hover:text-[#4d3ef0]">
+                <Link to="/admin/audit" className="text-xs font-bold text-[#f78c30] hover:text-[#e27518]">
                   View All
                 </Link>
               </div>
@@ -921,7 +940,7 @@ export const AdminDashboard = () => {
                   auditLogs.slice(0, 5).map((act, i) => (
                     <div key={act.id || i} className="flex items-start gap-3">
                       <div className="w-7 h-7 rounded-full bg-[#f8faff] border border-slate-200/60 flex items-center justify-center shrink-0 mt-0.5">
-                        <Activity className="w-3.5 h-3.5 text-[#5B4DF5]" />
+                        <Activity className="w-3.5 h-3.5 text-[#f78c30]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-slate-900 truncate">
@@ -942,7 +961,7 @@ export const AdminDashboard = () => {
 
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
               <span className="text-slate-400 font-medium">Immutable audit trail</span>
-              <Link to="/admin/audit" className="font-bold text-[#5B4DF5] hover:text-[#4d3ef0] flex items-center gap-1">
+              <Link to="/admin/audit" className="font-bold text-[#f78c30] hover:text-[#e27518] flex items-center gap-1">
                 <span>Inspect Logs</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
@@ -968,7 +987,7 @@ export const AdminDashboard = () => {
                   <button
                     onClick={handleTriggerP03Sync}
                     disabled={syncingP03}
-                    className="px-3 py-1 rounded-xl text-xs font-bold text-[#5B4DF5] bg-indigo-50 hover:bg-indigo-100 transition flex items-center gap-1"
+                    className="px-3 py-1 rounded-xl text-xs font-bold text-[#f78c30] bg-orange-50 hover:bg-orange-100 transition flex items-center gap-1"
                   >
                     <RefreshCw className={`w-3 h-3 ${syncingP03 ? 'animate-spin' : ''}`} />
                     <span>{syncingP03 ? 'Syncing...' : 'Sync P03'}</span>
@@ -977,7 +996,7 @@ export const AdminDashboard = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#f8faff] border border-slate-100 hover:border-indigo-200 transition">
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#f8faff] border border-slate-100 hover:border-orange-200 transition">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
                       <Database className="w-4 h-4" />
@@ -990,9 +1009,9 @@ export const AdminDashboard = () => {
                   <span className="text-[11px] font-bold text-emerald-600">Connected</span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#f8faff] border border-slate-100 hover:border-indigo-200 transition">
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#f8faff] border border-slate-100 hover:border-orange-200 transition">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-indigo-50 text-[#5B4DF5] flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#f78c30] flex items-center justify-center">
                       <Mail className="w-4 h-4" />
                     </div>
                     <div>
@@ -1003,7 +1022,7 @@ export const AdminDashboard = () => {
                   <span className="text-[11px] font-bold text-emerald-600">Connected</span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#f8faff] border border-slate-100 hover:border-indigo-200 transition">
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#f8faff] border border-slate-100 hover:border-orange-200 transition">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                       <Users className="w-4 h-4" />
@@ -1016,7 +1035,7 @@ export const AdminDashboard = () => {
                   <span className="text-[11px] font-bold text-emerald-600">Connected</span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#f8faff] border border-slate-100 hover:border-indigo-200 transition">
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#f8faff] border border-slate-100 hover:border-orange-200 transition">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
                       <ShieldCheck className="w-4 h-4" />
@@ -1033,7 +1052,7 @@ export const AdminDashboard = () => {
 
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs mt-3">
               <span className="text-slate-400 font-medium">Automatic rollback on conflict</span>
-              <Link to="/admin/integrations/p03" className="font-bold text-[#5B4DF5] hover:text-[#4d3ef0] flex items-center gap-1">
+              <Link to="/admin/integrations/p03" className="font-bold text-[#f78c30] hover:text-[#e27518] flex items-center gap-1">
                 <span>View Full Integrations Hub</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
@@ -1048,7 +1067,7 @@ export const AdminDashboard = () => {
                   <h3 className="text-sm font-bold text-slate-900">Platform Health & Telemetry</h3>
                   <p className="text-[11px] text-slate-400">Subsystem diagnostics and latency</p>
                 </div>
-                <Link to="/admin/integrations/p03" className="text-xs font-bold text-[#5B4DF5] hover:text-[#4d3ef0]">
+                <Link to="/admin/integrations/p03" className="text-xs font-bold text-[#f78c30] hover:text-[#e27518]">
                   View Details
                 </Link>
               </div>
@@ -1103,326 +1122,21 @@ export const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* MODAL 1: QUICK AUTHORIZE STUDENT */}
-        {showQuickStudentModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
-            <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#5B4DF5] flex items-center justify-center">
-                    <UserPlus className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900">Authorize Student</h3>
-                    <p className="text-xs text-slate-400">Pre-authorizes 8-digit registration & hostel eligibility</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowQuickStudentModal(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleQuickAddStudent} className="py-4 space-y-3.5 text-xs">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Registration Number <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      maxLength={8}
-                      placeholder="e.g. 12108676"
-                      value={studentForm.registration_number}
-                      onChange={(e) =>
-                        setStudentForm({ ...studentForm, registration_number: e.target.value.toUpperCase() })
-                      }
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 font-mono uppercase focus:outline-none focus:border-[#5B4DF5]"
-                    />
-                    <p className="text-[10px] text-slate-400 mt-0.5">Must be 8 characters</p>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Institutional Email <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="e.g. student@hostel.edu"
-                      value={studentForm.email}
-                      onChange={(e) =>
-                        setStudentForm({ ...studentForm, email: e.target.value.toLowerCase() })
-                      }
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Kundan Pandit"
-                    value={studentForm.full_name}
-                    onChange={(e) => setStudentForm({ ...studentForm, full_name: e.target.value })}
-                    className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Gender</label>
-                    <select
-                      value={studentForm.gender}
-                      onChange={(e) => {
-                        const g = e.target.value;
-                        setStudentForm({
-                          ...studentForm,
-                          gender: g,
-                          approved_eligibility: g === 'MALE' ? 'BOYS' : 'GIRLS',
-                          initial_hostel_code: g === 'MALE' ? 'BH1' : 'GH1',
-                        });
-                      }}
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
-                    >
-                      <option value="MALE">Male</option>
-                      <option value="FEMALE">Female</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Approved Eligibility</label>
-                    <select
-                      value={studentForm.approved_eligibility}
-                      onChange={(e) => setStudentForm({ ...studentForm, approved_eligibility: e.target.value })}
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 font-bold text-indigo-700 focus:outline-none focus:border-[#5B4DF5]"
-                    >
-                      <option value="BOYS">Boys' Hostel Only</option>
-                      <option value="GIRLS">Girls' Hostel Only</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Department</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. CSE"
-                      value={studentForm.department}
-                      onChange={(e) => setStudentForm({ ...studentForm, department: e.target.value })}
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Initial Hostel Code</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. BH1 or GH1"
-                      value={studentForm.initial_hostel_code}
-                      onChange={(e) =>
-                        setStudentForm({ ...studentForm, initial_hostel_code: e.target.value.toUpperCase() })
-                      }
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 font-mono focus:outline-none focus:border-[#5B4DF5]"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <Link
-                    to="/admin/authorized-students"
-                    onClick={() => setShowQuickStudentModal(false)}
-                    className="text-xs font-bold text-[#5B4DF5] hover:text-[#4d3ef0]"
-                  >
-                    Open Full Student Roster &rarr;
-                  </Link>
-
-                  <div className="flex items-center gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setShowQuickStudentModal(false)}
-                      className="px-4 py-2 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-100"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submittingStudent}
-                      className="px-5 py-2 rounded-2xl text-xs font-bold text-white bg-[#5B4DF5] hover:bg-[#4d3ef0] shadow-md shadow-[#5B4DF5]/20 disabled:opacity-50"
-                    >
-                      {submittingStudent ? 'Authorizing...' : 'Authorize Student'}
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* MODAL 2: QUICK PRE-AUTHORIZE WARDEN */}
-        {showQuickWardenModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
-            <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900">Pre-Authorize Warden</h3>
-                    <p className="text-xs text-slate-400">Grant approval authority & assign hostel jurisdictions</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowQuickWardenModal(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleQuickAddWarden} className="py-4 space-y-3.5 text-xs">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Warden / Employee ID <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. W105"
-                      value={wardenForm.warden_id}
-                      onChange={(e) =>
-                        setWardenForm({ ...wardenForm, warden_id: e.target.value.toUpperCase() })
-                      }
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 font-mono uppercase focus:outline-none focus:border-blue-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Official Email <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="e.g. warden.bh3@hostel.edu"
-                      value={wardenForm.email}
-                      onChange={(e) =>
-                        setWardenForm({ ...wardenForm, email: e.target.value.toLowerCase() })
-                      }
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Full Name</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Dr. Ramesh Kumar"
-                      value={wardenForm.full_name}
-                      onChange={(e) => setWardenForm({ ...wardenForm, full_name: e.target.value })}
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Role / Authority</label>
-                    <select
-                      value={wardenForm.role}
-                      onChange={(e) => setWardenForm({ ...wardenForm, role: e.target.value })}
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 font-bold text-blue-700 focus:outline-none focus:border-blue-600"
-                    >
-                      <option value="WARDEN">Hostel Warden (Assigned Hostels)</option>
-                      <option value="CHIEF_WARDEN">Chief Warden (Cross-Hostel Authority)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Phone Number (Optional)</label>
-                  <input
-                    type="tel"
-                    placeholder="e.g. +91 98765 43210"
-                    value={wardenForm.phone}
-                    onChange={(e) => setWardenForm({ ...wardenForm, phone: e.target.value })}
-                    className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600"
-                  />
-                </div>
-
-                {wardenForm.role === 'WARDEN' && hostels.length > 0 && (
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Assign Hostel Jurisdiction</label>
-                    <div className="grid grid-cols-2 gap-2 p-2.5 bg-slate-50 rounded-2xl border border-slate-100 max-h-32 overflow-y-auto">
-                      {hostels.map((h) => {
-                        const isAssigned = wardenForm.assigned_hostels.includes(h.id);
-                        return (
-                          <label key={h.id} className="flex items-center gap-2 cursor-pointer text-xs">
-                            <input
-                              type="checkbox"
-                              checked={isAssigned}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setWardenForm({
-                                    ...wardenForm,
-                                    assigned_hostels: [...wardenForm.assigned_hostels, h.id],
-                                  });
-                                } else {
-                                  setWardenForm({
-                                    ...wardenForm,
-                                    assigned_hostels: wardenForm.assigned_hostels.filter((id) => id !== h.id),
-                                  });
-                                }
-                              }}
-                              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="font-semibold text-slate-800">{h.name}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <Link
-                    to="/admin/authorized-wardens"
-                    onClick={() => setShowQuickWardenModal(false)}
-                    className="text-xs font-bold text-blue-600 hover:text-blue-800"
-                  >
-                    Open Full Warden Directory &rarr;
-                  </Link>
-
-                  <div className="flex items-center gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => setShowQuickWardenModal(false)}
-                      className="px-4 py-2 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-100"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submittingWarden}
-                      className="px-5 py-2 rounded-2xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20 disabled:opacity-50"
-                    >
-                      {submittingWarden ? 'Authorizing...' : 'Authorize Warden'}
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+        <AdminQuickAuthModals
+          showQuickStudentModal={showQuickStudentModal}
+          setShowQuickStudentModal={setShowQuickStudentModal}
+          studentForm={studentForm}
+          setStudentForm={setStudentForm}
+          handleQuickAddStudent={handleQuickAddStudent}
+          submittingStudent={submittingStudent}
+          showQuickWardenModal={showQuickWardenModal}
+          setShowQuickWardenModal={setShowQuickWardenModal}
+          wardenForm={wardenForm}
+          setWardenForm={setWardenForm}
+          handleQuickAddWarden={handleQuickAddWarden}
+          submittingWarden={submittingWarden}
+          hostels={hostels}
+        />
       </div>
     </AppLayout>
   );

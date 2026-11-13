@@ -1,4 +1,21 @@
-"""Serializers for audit entries."""
+"""
+Module: backend/apps/audit/serializers.py
+
+Work / Purpose:
+    Serializes AuditEntry records for read-only admin and super-admin audit log APIs.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/views_super_admin.py
+    - backend/apps/audit/views.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/serializers.py
+    - backend/apps/audit/models.py
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Serializers for audit entries.
+"""
 from rest_framework import serializers
 from .models import AuditEntry
 from apps.accounts.serializers import UserMinimalSerializer

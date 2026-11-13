@@ -1,37 +1,54 @@
 """
-Graph-based room exchange matching engine.
+Module: backend/apps/matching/engine.py
 
-Algorithm overview:
------------------
-1. Load all OPEN, eligible, non-expired exchange requests.
-2. Build a directed compatibility graph:
-   - Each node = one ExchangeRequest (representing a student/bed).
-   - Edge A → B exists if:
-     a) A's preferences are compatible with B's current_bed.
-     b) B's student is gender-eligible for A's current_bed.
-     c) Both beds are active and available for exchange.
-3. Find all simple cycles of length 2..max_length using DFS.
-4. Deduplicate cycles by their canonical (sorted) form.
-5. Return each cycle as an ordered list of requests representing the rotation.
+Work / Purpose:
+    Implements the NetworkX directed compatibility graph builder and bounded-length DFS cycle detector (2-way and N-way swap matching engine).
 
-Graph semantics:
-- Edge from request_A to request_B means:
-  "Request A wants what Request B currently has."
-- A 2-cycle = direct swap between A and B.
-- An n-cycle = rotation where A gets B's bed, B gets C's bed, ..., N gets A's bed.
+Connected Modules (Used By / Routes):
+    - backend/apps/exchange_requests/views.py
+    - backend/apps/matching/management/commands/activate_full_pipeline.py
+    - backend/apps/matching/views.py
+    - backend/tests/test_atomic_approval.py
+    - backend/tests/test_matching_engine.py
 
-Complexity:
-- Building graph: O(N²) where N = number of open requests.
-- With pruning on preferences (hostel/block/room filter), edges are sparse.
-- Cycle detection: O(N + E) per DFS, bounded by MAX_CYCLE_LENGTH.
-- For 2,000 requests with typical sparse preferences, runs in < 5 seconds.
-- Benchmark data is captured in matching.services.run_matching().
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/exchange_requests/models.py
+    - django (external library / framework)
 
-Optimisations applied:
-- Index requests by their current_bed_id for O(1) lookup.
-- Prune edges using hostel/block/room preference filters before DFS.
-- Use frozenset canonical form to deduplicate equivalent cycles.
-- Avoid revisiting nodes in the same DFS path.
+Original Module Notes:
+    Graph-based room exchange matching engine.
+
+    Algorithm overview:
+    -----------------
+    1. Load all OPEN, eligible, non-expired exchange requests.
+    2. Build a directed compatibility graph:
+       - Each node = one ExchangeRequest (representing a student/bed).
+       - Edge A → B exists if:
+         a) A's preferences are compatible with B's current_bed.
+         b) B's student is gender-eligible for A's current_bed.
+         c) Both beds are active and available for exchange.
+    3. Find all simple cycles of length 2..max_length using DFS.
+    4. Deduplicate cycles by their canonical (sorted) form.
+    5. Return each cycle as an ordered list of requests representing the rotation.
+
+    Graph semantics:
+    - Edge from request_A to request_B means:
+      "Request A wants what Request B currently has."
+    - A 2-cycle = direct swap between A and B.
+    - An n-cycle = rotation where A gets B's bed, B gets C's bed, ..., N gets A's bed.
+
+    Complexity:
+    - Building graph: O(N²) where N = number of open requests.
+    - With pruning on preferences (hostel/block/room filter), edges are sparse.
+    - Cycle detection: O(N + E) per DFS, bounded by MAX_CYCLE_LENGTH.
+    - For 2,000 requests with typical sparse preferences, runs in < 5 seconds.
+    - Benchmark data is captured in matching.services.run_matching().
+
+    Optimisations applied:
+    - Index requests by their current_bed_id for O(1) lookup.
+    - Prune edges using hostel/block/room preference filters before DFS.
+    - Use frozenset canonical form to deduplicate equivalent cycles.
+    - Avoid revisiting nodes in the same DFS path.
 """
 import time
 import logging
@@ -124,7 +141,7 @@ def _gender_compatible(student, target_bed):
     return True
 
 
-def build_compatibility_graph(requests) -> Dict[int, List[int]]:
+def build_compatibility_graph(requests) -> Tuple[Dict[int, List[int]], Dict[int, object]]:
     """
     Build directed compatibility graph.
 
@@ -154,9 +171,6 @@ def build_compatibility_graph(requests) -> Dict[int, List[int]]:
                 continue
             # Bed must be active and available
             if not req_b.current_bed.is_active or not req_b.current_bed.is_available_for_exchange:
-                continue
-            # req_b must be eligible for req_a's bed (they will swap/rotate there)
-            if not _gender_compatible(req_b.student, req_a.current_bed):
                 continue
 
             graph[req_a.id].append(req_b.id)

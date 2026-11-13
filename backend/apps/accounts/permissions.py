@@ -1,5 +1,28 @@
 """
-Custom permissions for role-based access control.
+Module: backend/apps/accounts/permissions.py
+
+Work / Purpose:
+    Defines role-based DRF permission classes (IsSuperAdmin, IsSuperAdminOrAdmin, IsStudent, IsWarden, IsChiefWarden, IsWardenOrChiefWarden, IsHostelAdmin, IsDean, IsDeanReadOnly, IsAdminOrWarden).
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/views.py
+    - backend/apps/accounts/views_super_admin.py
+    - backend/apps/analytics/views.py
+    - backend/apps/approvals/views.py
+    - backend/apps/audit/views.py
+    - backend/apps/exchange_requests/views.py
+    - backend/apps/hostels/views.py
+    - backend/apps/integrations/views.py
+    - backend/apps/matching/views.py
+    - backend/apps/policies/views.py
+    - backend/apps/proposals/views.py
+    - backend/apps/transfers/views.py
+
+Helpful / Supporting Modules (Dependencies):
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Custom permissions for role-based access control.
 """
 from rest_framework.permissions import BasePermission
 
@@ -130,7 +153,16 @@ class IsOwnerOrStaff(BasePermission):
     Expects the object to have a 'user' attribute or the view to
     define get_owner_field().
     """
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and getattr(request.user, 'account_status', 'ACTIVE') == 'ACTIVE'
+        )
+
     def has_object_permission(self, request, view, obj):
+        if not (request.user and request.user.is_authenticated):
+            return False
         owner_field = getattr(view, 'owner_field', 'user')
         owner = getattr(obj, owner_field, None)
         if owner == request.user:

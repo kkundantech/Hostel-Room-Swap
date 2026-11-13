@@ -1,4 +1,20 @@
-"""Serializers for policy rules."""
+"""
+Module: backend/apps/policies/serializers.py
+
+Work / Purpose:
+    Validates and serializes PolicyRule records for admin and warden configuration APIs.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/policies/views.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/policies/models.py
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Serializers for policy rules.
+"""
+from typing import Any
 from rest_framework import serializers
 from .models import PolicyRule
 
@@ -14,5 +30,5 @@ class PolicyRuleSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
-    def get_typed_value(self, obj):
+    def get_typed_value(self, obj) -> Any:
         return obj.get_typed_value()

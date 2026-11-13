@@ -1,4 +1,19 @@
-"""Custom exception handler for consistent API error responses."""
+"""
+Module: backend/apps/accounts/exception_handler.py
+
+Work / Purpose:
+    Provides custom_exception_handler for standardized JSON API error envelopes across Django REST Framework views.
+
+Connected Modules (Used By / Routes):
+    - backend/config/settings.py
+
+Helpful / Supporting Modules (Dependencies):
+    - django (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Custom exception handler for consistent API error responses.
+"""
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
 from rest_framework import status

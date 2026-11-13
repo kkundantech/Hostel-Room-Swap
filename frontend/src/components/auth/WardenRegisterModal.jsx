@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/components/auth/WardenRegisterModal.jsx
+ *
+ * Work / Purpose:
+ *   Multi-step warden OTP registration modal verifying authorized warden identity before account activation.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/pages/LandingPage.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/context/AuthContext.jsx
+ *   - frontend/src/services/api.js
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';

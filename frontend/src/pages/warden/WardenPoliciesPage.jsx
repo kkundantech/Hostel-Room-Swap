@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/pages/warden/WardenPoliciesPage.jsx
+ *
+ * Work / Purpose:
+ *   Warden policy viewer inspecting institutional cooling-off, fee, disciplinary, and cycle-length rules.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';
@@ -155,7 +171,7 @@ export const WardenPoliciesPage = () => {
         {/* Header */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/70 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-[#5B4DF5] uppercase tracking-wider mb-1">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#f78c30] uppercase tracking-wider mb-1">
               <ShieldCheck className="w-4 h-4" />
               <span>Administrative Governance</span>
             </div>
@@ -170,7 +186,7 @@ export const WardenPoliciesPage = () => {
           <button
             onClick={handleSavePolicies}
             disabled={saving}
-            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition shadow-md shadow-[#5B4DF5]/25"
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-md shadow-[#f78c30]/25"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? 'Saving...' : 'Save Policy Changes'}</span>
@@ -195,7 +211,7 @@ export const WardenPoliciesPage = () => {
 
           <div className="bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs">
             <p className="text-[10px] font-bold text-slate-400 uppercase">Max Cycle Depth</p>
-            <h3 className="text-2xl font-black text-[#5B4DF5] mt-1">5-Way Swaps</h3>
+            <h3 className="text-2xl font-black text-[#f78c30] mt-1">5-Way Swaps</h3>
             <p className="text-[10px] text-slate-400 font-medium mt-1">Direct, 3-way, 4-way, 5-way</p>
           </div>
 
@@ -225,7 +241,7 @@ export const WardenPoliciesPage = () => {
                   <p className="text-xs text-slate-500 leading-relaxed max-w-2xl">
                     {p.description}
                   </p>
-                  <p className="text-[11px] font-bold text-[#5B4DF5] mt-1">
+                  <p className="text-[11px] font-bold text-[#f78c30] mt-1">
                     Current setting: {p.value}
                   </p>
                 </div>
@@ -235,7 +251,7 @@ export const WardenPoliciesPage = () => {
                   type="button"
                   onClick={() => handleTogglePolicy(p.id)}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    p.enabled ? 'bg-[#5B4DF5]' : 'bg-slate-200'
+                    p.enabled ? 'bg-[#f78c30]' : 'bg-slate-200'
                   }`}
                 >
                   <span

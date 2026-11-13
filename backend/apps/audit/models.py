@@ -1,8 +1,30 @@
 """
-Audit trail model for tracking all important actions.
+Module: backend/apps/audit/models.py
 
-Records are append-only at the application level.
-No update or delete operations are exposed through the API.
+Work / Purpose:
+    Defines the append-only AuditEntry model capturing actor, action type, entity target, metadata, and client IP.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/test_admin_modules.py
+    - backend/apps/accounts/test_otp_authorization.py
+    - backend/apps/accounts/views_super_admin.py
+    - backend/apps/analytics/views.py
+    - backend/apps/audit/admin.py
+    - backend/apps/audit/serializers.py
+    - backend/apps/audit/services.py
+    - backend/apps/audit/views.py
+    - backend/apps/integrations/views.py
+    - backend/apps/policies/views.py
+    - backend/tests/test_atomic_approval.py
+
+Helpful / Supporting Modules (Dependencies):
+    - django (external library / framework)
+
+Original Module Notes:
+    Audit trail model for tracking all important actions.
+
+    Records are append-only at the application level.
+    No update or delete operations are exposed through the API.
 """
 from django.db import models
 from django.conf import settings

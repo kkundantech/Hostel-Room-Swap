@@ -1,15 +1,36 @@
 """
-OTP generation, hashing, rate limiting, and verification service.
+Module: backend/apps/accounts/otp.py
 
-Security guarantees:
-1. 6-digit numeric OTP generated using cryptographically strong PRNG (secrets module).
-2. OTP is NEVER stored in plaintext in the database; only a salted SHA-256 HMAC hash is stored.
-3. OTP expires strictly after 5 minutes.
-4. Resend cooldown of 60 seconds enforced per identifier.
-5. Max 5 verification attempts before challenge is permanently locked/invalidated.
-6. Successful verification produces a single-use verification_token (UUID/URL-safe)
-   required for the final password creation step.
-7. OTP is NEVER returned in API responses or logs.
+Work / Purpose:
+    Provides cryptographic OTP generation, hashing, rate-limiting, verification, and verification-token / activation-grant consumption utilities.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/test_admin_modules.py
+    - backend/apps/accounts/test_otp_authorization.py
+    - backend/apps/accounts/views.py
+    - backend/apps/accounts/views_activation.py
+    - backend/apps/accounts/views_super_admin.py
+    - backend/tests/test_auth_and_eligibility.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/audit/services.py
+    - django (external library / framework)
+    - hmac (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    OTP generation, hashing, rate limiting, and verification service.
+
+    Security guarantees:
+    1. 6-digit numeric OTP generated using cryptographically strong PRNG (secrets module).
+    2. OTP is NEVER stored in plaintext in the database; only a salted SHA-256 HMAC hash is stored.
+    3. OTP expires strictly after 5 minutes.
+    4. Resend cooldown of 60 seconds enforced per identifier.
+    5. Max 5 verification attempts before challenge is permanently locked/invalidated.
+    6. Successful verification produces a single-use verification_token (UUID/URL-safe)
+       required for the final password creation step.
+    7. OTP is NEVER returned in API responses or logs.
 """
 import secrets
 import hashlib
@@ -278,10 +299,24 @@ def create_identity_otp_challenge(
     clean_identifier = identity.institution_id.strip().lower()
     clean_email = (target_email or identity.trusted_email).strip().lower()
 
-    # 1. Authorization checks - self-heal state to allow immediate verification
+    # 1. Authorization checks - do not issue OTP if suspended or revoked
     if identity.authorization_status in ('SUSPENDED', 'REVOKED'):
-        identity.authorization_status = 'ACTIVE'
-        identity.save(update_fields=['authorization_status', 'updated_at'])
+        raise ValidationError({
+            'detail': f'Cannot issue OTP: account authorization is {identity.authorization_status.lower()}.'
+        })
+
+    # 1b. Check resend cooldown
+    recent_challenge = OTPChallenge.objects.filter(
+        identifier=clean_identifier,
+        purpose=purpose,
+        is_consumed=False,
+        resend_available_at__gt=now,
+    ).first()
+    if recent_challenge:
+        remaining_seconds = int((recent_challenge.resend_available_at - now).total_seconds())
+        raise ValidationError({
+            'detail': f'Please wait {max(1, remaining_seconds)} seconds before requesting a new OTP.'
+        })
 
     if identity.activation_status == 'ACTIVE':
         identity.activation_status = 'PENDING_ACTIVATION'
@@ -306,7 +341,7 @@ def create_identity_otp_challenge(
         otp_hash=hashed,
         attempt_count=0,
         max_attempts=10,
-        resend_available_at=now + timedelta(seconds=5),
+        resend_available_at=now + timedelta(seconds=60),
         expires_at=now + timedelta(minutes=15),
         is_consumed=False,
         payload=payload or {},
@@ -319,7 +354,7 @@ def create_identity_otp_challenge(
 
     # 5. Dispatch email asynchronously via configured trusted transactional mailer
     time_stamp = now.strftime('%I:%M %p')
-    subject = f"Your RoomSwap OTP is {raw_otp} — Single-Use Code [{time_stamp}]"
+    subject = f"Your RoomSwap Account Activation Code [{time_stamp}]"
     message = (
         f"Dear {identity.name},\n\n"
         f"You have been authorized by the Super Administrator to activate your RoomSwap account "
@@ -430,6 +465,7 @@ def verify_identity_otp(
     candidates = list(
         OTPChallenge.objects.filter(
             purpose=purpose,
+            is_consumed=False,
             expires_at__gt=now,
         ).filter(
             models.Q(identifier__iexact=clean_identifier) |
@@ -437,15 +473,6 @@ def verify_identity_otp(
             models.Q(authorized_identity__trusted_email__iexact=clean_identifier)
         ).order_by('-created_at')
     )
-
-    if not candidates:
-        # Fallback search across all recent unexpired challenges
-        candidates = list(
-            OTPChallenge.objects.filter(
-                purpose=purpose,
-                expires_at__gt=now,
-            ).order_by('-created_at')[:5]
-        )
 
     matched_challenge = None
     for cand in candidates:
@@ -487,10 +514,24 @@ def verify_identity_otp(
             primary.invalidated_at = now
             primary.save(update_fields=['is_consumed', 'invalidated_at', 'updated_at'])
             raise ValidationError({
-                'detail': 'Invalid verification code. Maximum attempts reached. Please request a new OTP.'
+                'detail': 'Invalid verification code. Maximum attempts exceeded. Please request a new OTP.'
             })
         raise ValidationError({
             'detail': f'Invalid verification code. {remaining} attempt{"s" if remaining > 1 else ""} remaining.'
+        })
+
+    # Check if a challenge existed for this identity but has expired
+    expired_challenge = OTPChallenge.objects.filter(
+        purpose=purpose,
+        expires_at__lte=now,
+    ).filter(
+        models.Q(identifier__iexact=clean_identifier) |
+        models.Q(authorized_identity__institution_id__iexact=clean_identifier) |
+        models.Q(authorized_identity__trusted_email__iexact=clean_identifier)
+    ).order_by('-created_at').first()
+    if expired_challenge:
+        raise ValidationError({
+            'detail': 'Verification code has expired. Please request a new OTP.'
         })
 
     # Fallback to EmailVerificationChallenge if student used alternative flow

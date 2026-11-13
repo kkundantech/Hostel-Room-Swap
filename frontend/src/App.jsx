@@ -1,76 +1,136 @@
-import React from 'react';
+/**
+ * Module: frontend/src/App.jsx
+ *
+ * Work / Purpose:
+ *   Root React application defining AuthProvider, ErrorBoundary, lazy-loaded portal routes, and role-based ProtectedRoute guards.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/main.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/Navbar.jsx
+ *   - frontend/src/components/common/ErrorBoundary.jsx
+ *   - frontend/src/context/AuthContext.jsx
+ *   - frontend/src/pages/InteractiveDemo.jsx
+ *   - frontend/src/pages/LandingPage.jsx
+ *   - frontend/src/pages/LoginPage.jsx
+ *   - frontend/src/pages/admin/AdminAuditPage.jsx
+ *   - frontend/src/pages/admin/AdminAuthorizedStudentsPage.jsx
+ *   - frontend/src/pages/admin/AdminAuthorizedWardensPage.jsx
+ *   - frontend/src/pages/admin/AdminDashboard.jsx
+ *   - frontend/src/pages/admin/AdminHostelsRoomsPage.jsx
+ *   - frontend/src/pages/admin/AdminIntegrationsPage.jsx
+ *   - frontend/src/pages/admin/AdminMatchingPage.jsx
+ *   - frontend/src/pages/admin/AdminPoliciesPage.jsx
+ *   - frontend/src/pages/admin/AdminProposalsPage.jsx
+ *   - frontend/src/pages/admin/AdminReportsPage.jsx
+ *   - frontend/src/pages/admin/AdminRequestsPage.jsx
+ *   - frontend/src/pages/auth/ActivateAccountPage.jsx
+ *   - frontend/src/pages/auth/SetPasswordPage.jsx
+ *   - frontend/src/pages/auth/VerifyOtpPage.jsx
+ *   - frontend/src/pages/chief_warden/ChiefWardenDashboard.jsx
+ *   - frontend/src/pages/dean/DeanDashboard.jsx
+ *   - frontend/src/pages/student/StudentDashboard.jsx
+ *   - frontend/src/pages/student/StudentHistoryPage.jsx
+ *   - frontend/src/pages/student/StudentProposalsPage.jsx
+ *   - frontend/src/pages/student/StudentRequestsPage.jsx
+ *   - frontend/src/pages/super_admin/SuperAdminAddAdminPage.jsx
+ *   - frontend/src/pages/super_admin/SuperAdminAddStudentPage.jsx
+ *   - frontend/src/pages/super_admin/SuperAdminAddWardenPage.jsx
+ *   - frontend/src/pages/super_admin/SuperAdminAuditPage.jsx
+ *   - frontend/src/pages/super_admin/SuperAdminDashboard.jsx
+ *   - frontend/src/pages/super_admin/SuperAdminUsersPage.jsx
+ *   - frontend/src/pages/transfers/TransfersPage.jsx
+ *   - frontend/src/pages/warden/WardenApprovalQueuePage.jsx
+ *   - frontend/src/pages/warden/WardenDashboard.jsx
+ *   - frontend/src/pages/warden/WardenHistoryPage.jsx
+ *   - frontend/src/pages/warden/WardenNotificationsPage.jsx
+ *   - frontend/src/pages/warden/WardenOccupancyPage.jsx
+ *   - frontend/src/pages/warden/WardenPoliciesPage.jsx
+ *   - frontend/src/pages/warden/WardenProfilePage.jsx
+ *   - frontend/src/pages/warden/WardenProposalsPage.jsx
+ *   - frontend/src/pages/warden/WardenReportsPage.jsx
+ *   - frontend/src/pages/warden/WardenRoomsPage.jsx
+ *   - frontend/src/pages/warden/WardenStudentsPage.jsx
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
-import InteractiveDemo from './pages/InteractiveDemo';
+import ErrorBoundary from './components/common/ErrorBoundary';
+
+// Lazy-loaded Route Modules for Production Code-Splitting
+const InteractiveDemo = lazy(() => import('./pages/InteractiveDemo'));
 
 // OTP Activation Pages
-import ActivateAccountPage from './pages/auth/ActivateAccountPage';
-import VerifyOtpPage from './pages/auth/VerifyOtpPage';
-import SetPasswordPage from './pages/auth/SetPasswordPage';
+const ActivateAccountPage = lazy(() => import('./pages/auth/ActivateAccountPage'));
+const VerifyOtpPage = lazy(() => import('./pages/auth/VerifyOtpPage'));
+const SetPasswordPage = lazy(() => import('./pages/auth/SetPasswordPage'));
 
 // Super Admin Pages
-import SuperAdminDashboard from './pages/super_admin/SuperAdminDashboard';
-import SuperAdminUsersPage from './pages/super_admin/SuperAdminUsersPage';
-import SuperAdminAddStudentPage from './pages/super_admin/SuperAdminAddStudentPage';
-import SuperAdminAddWardenPage from './pages/super_admin/SuperAdminAddWardenPage';
-import SuperAdminAddAdminPage from './pages/super_admin/SuperAdminAddAdminPage';
-import SuperAdminAuditPage from './pages/super_admin/SuperAdminAuditPage';
+const SuperAdminDashboard = lazy(() => import('./pages/super_admin/SuperAdminDashboard'));
+const SuperAdminUsersPage = lazy(() => import('./pages/super_admin/SuperAdminUsersPage'));
+const SuperAdminAddStudentPage = lazy(() => import('./pages/super_admin/SuperAdminAddStudentPage'));
+const SuperAdminAddWardenPage = lazy(() => import('./pages/super_admin/SuperAdminAddWardenPage'));
+const SuperAdminAddAdminPage = lazy(() => import('./pages/super_admin/SuperAdminAddAdminPage'));
+const SuperAdminAuditPage = lazy(() => import('./pages/super_admin/SuperAdminAuditPage'));
 
 // Student Pages
-import StudentDashboard from './pages/student/StudentDashboard';
-import StudentRequestsPage from './pages/student/StudentRequestsPage';
-import StudentProposalsPage from './pages/student/StudentProposalsPage';
-import StudentHistoryPage from './pages/student/StudentHistoryPage';
+const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'));
+const StudentRequestsPage = lazy(() => import('./pages/student/StudentRequestsPage'));
+const StudentProposalsPage = lazy(() => import('./pages/student/StudentProposalsPage'));
+const StudentHistoryPage = lazy(() => import('./pages/student/StudentHistoryPage'));
 
 // Warden Pages
-import WardenDashboard from './pages/warden/WardenDashboard';
-import WardenApprovalQueuePage from './pages/warden/WardenApprovalQueuePage';
-import WardenOccupancyPage from './pages/warden/WardenOccupancyPage';
-import WardenHistoryPage from './pages/warden/WardenHistoryPage';
-import WardenRoomsPage from './pages/warden/WardenRoomsPage';
-import WardenProposalsPage from './pages/warden/WardenProposalsPage';
-import WardenPoliciesPage from './pages/warden/WardenPoliciesPage';
-import WardenNotificationsPage from './pages/warden/WardenNotificationsPage';
-import WardenReportsPage from './pages/warden/WardenReportsPage';
-import WardenStudentsPage from './pages/warden/WardenStudentsPage';
-import WardenProfilePage from './pages/warden/WardenProfilePage';
+const WardenDashboard = lazy(() => import('./pages/warden/WardenDashboard'));
+const WardenApprovalQueuePage = lazy(() => import('./pages/warden/WardenApprovalQueuePage'));
+const WardenOccupancyPage = lazy(() => import('./pages/warden/WardenOccupancyPage'));
+const WardenHistoryPage = lazy(() => import('./pages/warden/WardenHistoryPage'));
+const WardenRoomsPage = lazy(() => import('./pages/warden/WardenRoomsPage'));
+const WardenProposalsPage = lazy(() => import('./pages/warden/WardenProposalsPage'));
+const WardenPoliciesPage = lazy(() => import('./pages/warden/WardenPoliciesPage'));
+const WardenNotificationsPage = lazy(() => import('./pages/warden/WardenNotificationsPage'));
+const WardenReportsPage = lazy(() => import('./pages/warden/WardenReportsPage'));
+const WardenStudentsPage = lazy(() => import('./pages/warden/WardenStudentsPage'));
+const WardenProfilePage = lazy(() => import('./pages/warden/WardenProfilePage'));
 
 // Chief Warden Pages
-import ChiefWardenDashboard from './pages/chief_warden/ChiefWardenDashboard';
+const ChiefWardenDashboard = lazy(() => import('./pages/chief_warden/ChiefWardenDashboard'));
 
 // Admin Pages
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminRequestsPage from './pages/admin/AdminRequestsPage';
-import AdminProposalsPage from './pages/admin/AdminProposalsPage';
-import AdminMatchingPage from './pages/admin/AdminMatchingPage';
-import AdminPoliciesPage from './pages/admin/AdminPoliciesPage';
-import AdminAuditPage from './pages/admin/AdminAuditPage';
-import AdminAuthorizedStudentsPage from './pages/admin/AdminAuthorizedStudentsPage';
-import AdminAuthorizedWardensPage from './pages/admin/AdminAuthorizedWardensPage';
-import AdminHostelsRoomsPage from './pages/admin/AdminHostelsRoomsPage';
-import AdminReportsPage from './pages/admin/AdminReportsPage';
-import AdminIntegrationsPage from './pages/admin/AdminIntegrationsPage';
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminRequestsPage = lazy(() => import('./pages/admin/AdminRequestsPage'));
+const AdminProposalsPage = lazy(() => import('./pages/admin/AdminProposalsPage'));
+const AdminMatchingPage = lazy(() => import('./pages/admin/AdminMatchingPage'));
+const AdminPoliciesPage = lazy(() => import('./pages/admin/AdminPoliciesPage'));
+const AdminAuditPage = lazy(() => import('./pages/admin/AdminAuditPage'));
+const AdminAuthorizedStudentsPage = lazy(() => import('./pages/admin/AdminAuthorizedStudentsPage'));
+const AdminAuthorizedWardensPage = lazy(() => import('./pages/admin/AdminAuthorizedWardensPage'));
+const AdminHostelsRoomsPage = lazy(() => import('./pages/admin/AdminHostelsRoomsPage'));
+const AdminReportsPage = lazy(() => import('./pages/admin/AdminReportsPage'));
+const AdminIntegrationsPage = lazy(() => import('./pages/admin/AdminIntegrationsPage'));
 
-// Dean Pages
-import DeanDashboard from './pages/dean/DeanDashboard';
+// Dean & Shared Pages
+const DeanDashboard = lazy(() => import('./pages/dean/DeanDashboard'));
+const TransfersPage = lazy(() => import('./pages/transfers/TransfersPage'));
 
-// Shared Pages
-import TransfersPage from './pages/transfers/TransfersPage';
-import ErrorBoundary from './components/common/ErrorBoundary';
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="w-8 h-8 border-4 border-[#f78c30] border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!user) {
@@ -102,7 +162,8 @@ function App() {
           <Navbar />
           <main className="flex-1 flex flex-col">
             <ErrorBoundary>
-              <Routes>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
               {/* Public Routes */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
@@ -537,8 +598,9 @@ function App() {
 
               {/* Fallback */}
               <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </ErrorBoundary>
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
         </main>
         </div>
       </Router>

@@ -1,4 +1,28 @@
-"""Proposal creation and lifecycle services."""
+"""
+Module: backend/apps/proposals/services.py
+
+Work / Purpose:
+    Handles cycle-to-proposal creation, unanimous participant acceptance tracking, decline rollback, and proposal expiration.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/approvals/services.py
+    - backend/apps/exchange_requests/tasks.py
+    - backend/apps/exchange_requests/views.py
+    - backend/apps/matching/management/commands/activate_full_pipeline.py
+    - backend/apps/matching/views.py
+    - backend/apps/proposals/views.py
+    - backend/tests/test_atomic_approval.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/notifications/services.py
+    - backend/apps/policies/services.py
+    - backend/apps/proposals/models.py
+    - django (external library / framework)
+
+Original Module Notes:
+    Proposal creation and lifecycle services.
+"""
 import logging
 from datetime import timedelta
 from django.utils import timezone
@@ -112,31 +136,37 @@ def process_participant_response(participant: ProposalParticipant, accepted: boo
 
     Returns the updated proposal.
     """
-    proposal = participant.proposal
-
-    # Guard: proposal must be awaiting acceptance
-    if proposal.status != ExchangeProposal.Status.PENDING_ACCEPTANCE:
-        raise ValueError(
-            f"Proposal {proposal.reference_code} is not awaiting acceptance "
-            f"(current status: {proposal.status})"
-        )
-
-    # Guard: expired proposals
-    if timezone.now() > proposal.expires_at:
-        _expire_proposal(proposal)
-        raise ValueError(f"Proposal {proposal.reference_code} has expired.")
-
-    # Guard: participant already responded
-    if participant.accepted or participant.declined:
-        raise ValueError(f"You have already responded to this proposal.")
-
     with transaction.atomic():
+        proposal = ExchangeProposal.objects.select_for_update().get(id=participant.proposal_id)
+        locked_participant = ProposalParticipant.objects.select_for_update().get(id=participant.id)
+
+        # Guard: proposal must be awaiting acceptance
+        if proposal.status != ExchangeProposal.Status.PENDING_ACCEPTANCE:
+            raise ValueError(
+                f"Proposal {proposal.reference_code} is not awaiting acceptance "
+                f"(current status: {proposal.status})"
+            )
+
+        # Guard: expired proposals
+        if timezone.now() > proposal.expires_at:
+            _expire_proposal(proposal)
+            raise ValueError(f"Proposal {proposal.reference_code} has expired.")
+
+        # Guard: participant already responded
+        if locked_participant.accepted or locked_participant.declined:
+            raise ValueError("You have already responded to this proposal.")
+
         now = timezone.now()
+        locked_participant.accepted = accepted
+        locked_participant.declined = not accepted
+        locked_participant.responded_at = now
+        locked_participant.response_note = note
+        locked_participant.save(update_fields=['accepted', 'declined', 'responded_at', 'response_note'])
+
         participant.accepted = accepted
         participant.declined = not accepted
         participant.responded_at = now
         participant.response_note = note
-        participant.save(update_fields=['accepted', 'declined', 'responded_at', 'response_note'])
 
         proposal.refresh_from_db()
 

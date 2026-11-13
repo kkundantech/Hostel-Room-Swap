@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/pages/auth/VerifyOtpPage.jsx
+ *
+ * Work / Purpose:
+ *   OTP verification page validating 6-digit one-time codes before password setup.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../services/api';
@@ -111,7 +127,7 @@ export const VerifyOtpPage = () => {
       {/* Top Header */}
       <header className="max-w-5xl w-full mx-auto flex items-center justify-between py-3">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#5B4DF5] to-[#7B61FF] flex items-center justify-center text-white shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#f78c30] to-[#f9a154] flex items-center justify-center text-white shadow-md shadow-[#f78c30]/25 group-hover:scale-105 transition-transform">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
@@ -126,7 +142,7 @@ export const VerifyOtpPage = () => {
 
         <Link
           to="/activate-account"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-[#5B4DF5] bg-white border border-slate-200/80 shadow-2xs px-4 py-2 rounded-xl transition"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-[#f78c30] bg-white border border-slate-200/80 shadow-2xs px-4 py-2 rounded-xl transition"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Change Email</span>
@@ -138,7 +154,7 @@ export const VerifyOtpPage = () => {
         <div className="bg-white rounded-3xl p-8 sm:p-10 border border-slate-200/80 shadow-xl shadow-slate-200/50">
           {/* Header Icon & Title */}
           <div className="text-center mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100/80 flex items-center justify-center text-[#5B4DF5] mx-auto mb-3.5 shadow-2xs">
+            <div className="w-12 h-12 rounded-2xl bg-orange-50 border border-orange-100/80 flex items-center justify-center text-[#f78c30] mx-auto mb-3.5 shadow-2xs">
               <KeyRound className="w-5 h-5" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -181,7 +197,7 @@ export const VerifyOtpPage = () => {
                   value={otp}
                   onChange={handleOtpChange}
                   placeholder="&bull; &bull; &bull; &bull; &bull; &bull;"
-                  className="w-full text-center py-3 px-4 tracking-[0.55em] text-2xl font-bold font-mono text-slate-900 rounded-xl border border-slate-200/90 bg-[#f8f9fc] focus:bg-white focus:border-[#5B4DF5] focus:ring-2 focus:ring-[#5B4DF5]/20 transition focus:outline-none"
+                  className="w-full text-center py-3 px-4 tracking-[0.55em] text-2xl font-bold font-mono text-slate-900 rounded-xl border border-slate-200/90 bg-[#f8f9fc] focus:bg-white focus:border-[#f78c30] focus:ring-2 focus:ring-[#f78c30]/20 transition focus:outline-none"
                 />
               </div>
 
@@ -199,7 +215,7 @@ export const VerifyOtpPage = () => {
                   className={`text-xs font-semibold transition flex items-center gap-1 ${
                     cooldown > 0
                       ? 'text-slate-400 cursor-not-allowed'
-                      : 'text-[#5B4DF5] hover:underline cursor-pointer'
+                      : 'text-[#f78c30] hover:underline cursor-pointer'
                   }`}
                 >
                   <RotateCw className={`w-3.5 h-3.5 ${resending ? 'animate-spin' : ''}`} />
@@ -213,7 +229,7 @@ export const VerifyOtpPage = () => {
               type="submit"
               id="verify-otp-button"
               disabled={loading || otp.length !== 6}
-              className="w-full py-3 px-4 rounded-xl text-xs font-semibold bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white shadow-md shadow-[#5B4DF5]/20 hover:shadow-[#5B4DF5]/30 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="w-full py-3 px-4 rounded-xl text-xs font-semibold bg-[#f78c30] hover:bg-[#e27518] text-white shadow-md shadow-[#f78c30]/20 hover:shadow-[#f78c30]/30 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

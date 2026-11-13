@@ -1,3 +1,22 @@
+/**
+ * Module: frontend/src/pages/LandingPage.jsx
+ *
+ * Work / Purpose:
+ *   Public landing page introducing the LPU Hostel Room Exchange platform, workflow steps, policies, and login entry points.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/auth/StudentRegisterModal.jsx
+ *   - frontend/src/components/auth/WardenRegisterModal.jsx
+ *   - frontend/src/context/AuthContext.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -58,13 +77,13 @@ export const LandingPage = () => {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-800">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-[#fed7aa] selection:text-black">
       {/* 1. Header Navigation Bar (Pixel-matched to LPU RoomSwap reference) */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Logo & Platform Name */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/20 group-hover:scale-105 transition-transform">
+            <div className="w-11 h-11 rounded-2xl bg-[#f78c30] flex items-center justify-center text-white shadow-md shadow-[#f78c30]/20 group-hover:scale-105 transition-transform">
               <BedIcon className="w-6 h-6" />
             </div>
             <div>
@@ -83,25 +102,25 @@ export const LandingPage = () => {
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
             <a
               href="#home"
-              className="text-indigo-600 font-semibold border-b-2 border-indigo-600 pb-1"
+              className="text-[#f78c30] font-semibold border-b-2 border-[#f78c30] pb-1"
             >
               Home
             </a>
             <a
               href="#features"
-              className="hover:text-indigo-600 transition"
+              className="hover:text-[#f78c30] transition"
             >
               Features
             </a>
             <a
               href="#how-it-works"
-              className="hover:text-indigo-600 transition"
+              className="hover:text-[#f78c30] transition"
             >
               How It Works
             </a>
             <a
               href="#about"
-              className="hover:text-indigo-600 transition"
+              className="hover:text-[#f78c30] transition"
             >
               About
             </a>
@@ -112,7 +131,7 @@ export const LandingPage = () => {
             {user ? (
               <Link
                 to={user.role === 'STUDENT' ? '/student' : user.role === 'WARDEN' ? '/warden' : '/admin'}
-                className="px-5 py-2.5 rounded-full text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-full text-xs font-bold bg-[#f78c30] hover:bg-[#e27518] text-white shadow-md shadow-[#f78c30]/20 transition flex items-center gap-1.5"
               >
                 <span>Dashboard</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -120,7 +139,7 @@ export const LandingPage = () => {
             ) : (
               <Link
                 to="/login"
-                className="px-5 py-2.5 rounded-full text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition"
+                className="px-5 py-2.5 rounded-full text-xs font-bold bg-[#f78c30] hover:bg-[#e27518] text-white shadow-md shadow-[#f78c30]/20 transition"
               >
                 Get Started
               </Link>
@@ -148,14 +167,14 @@ export const LandingPage = () => {
           <div className="max-w-3xl space-y-4">
             {/* Pill Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-100/90 border border-purple-300 text-purple-800 text-xs font-bold tracking-wide shadow-xs">
-              <GraduationCap className="w-4 h-4 text-purple-700" />
+              <GraduationCap className="w-4 h-4 text-[#e27518]" />
               <span>Official &middot; Secure &middot; LPU Verified</span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
               Find Your <br />
-              <span className="text-indigo-600">Better Space</span> <br />
+              <span className="text-[#f78c30]">Better Space</span> <br />
               at LPU
             </h1>
 
@@ -187,7 +206,7 @@ export const LandingPage = () => {
             <div className="flex flex-wrap items-center gap-3 pt-3">
               <Link
                 to="/login"
-                className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-600/25 transition flex items-center gap-2"
+                className="px-6 py-3 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white font-bold text-xs sm:text-sm shadow-lg shadow-[#f78c30]/25 transition flex items-center gap-2"
               >
                 <span>Sign In to RoomSwap</span>
                 <ArrowRight className="w-4 h-4" />
@@ -205,7 +224,7 @@ export const LandingPage = () => {
           <div className="mt-8 pt-4">
             <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-md p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-[#f78c30] shrink-0">
                   <BedIcon className="w-5 h-5" />
                 </div>
                 <div>
@@ -252,7 +271,7 @@ export const LandingPage = () => {
       <section id="features" className="py-20 bg-white border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#f78c30] bg-orange-50 px-3 py-1 rounded-full">
               Platform Capabilities
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
@@ -265,7 +284,7 @@ export const LandingPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:shadow-lg transition space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-purple-100 text-[#e27518] flex items-center justify-center">
                 <GitFork className="w-5 h-5" />
               </div>
               <h3 className="text-base font-bold text-slate-900">Multi-Party Cycle Engine</h3>
@@ -301,7 +320,7 @@ export const LandingPage = () => {
       <section id="how-it-works" className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#f78c30] bg-orange-50 px-3 py-1 rounded-full">
               Simple 4-Step Process
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
@@ -314,7 +333,7 @@ export const LandingPage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="app-card p-5 space-y-3 text-xs relative">
-              <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center font-mono">
+              <div className="w-8 h-8 rounded-full bg-[#f78c30] text-white font-bold flex items-center justify-center font-mono">
                 1
               </div>
               <h4 className="text-sm font-bold text-slate-900">Submit Preference</h4>
@@ -324,7 +343,7 @@ export const LandingPage = () => {
             </div>
 
             <div className="app-card p-5 space-y-3 text-xs relative">
-              <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center font-mono">
+              <div className="w-8 h-8 rounded-full bg-[#f78c30] text-white font-bold flex items-center justify-center font-mono">
                 2
               </div>
               <h4 className="text-sm font-bold text-slate-900">Engine Matches Cycles</h4>
@@ -334,7 +353,7 @@ export const LandingPage = () => {
             </div>
 
             <div className="app-card p-5 space-y-3 text-xs relative">
-              <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center font-mono">
+              <div className="w-8 h-8 rounded-full bg-[#f78c30] text-white font-bold flex items-center justify-center font-mono">
                 3
               </div>
               <h4 className="text-sm font-bold text-slate-900">Student Consensus</h4>
@@ -344,7 +363,7 @@ export const LandingPage = () => {
             </div>
 
             <div className="app-card p-5 space-y-3 text-xs relative">
-              <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center font-mono">
+              <div className="w-8 h-8 rounded-full bg-[#f78c30] text-white font-bold flex items-center justify-center font-mono">
                 4
               </div>
               <h4 className="text-sm font-bold text-slate-900">Warden Approval</h4>
@@ -361,7 +380,7 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#f78c30] bg-orange-50 px-3 py-1 rounded-full">
                 Campus Housing Division
               </span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
@@ -379,7 +398,7 @@ export const LandingPage = () => {
                 </div>
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                   <span className="text-slate-400 font-medium">Cycle Rotation</span>
-                  <div className="text-xl font-bold text-indigo-600 mt-0.5">Up to 5-Way</div>
+                  <div className="text-xl font-bold text-[#f78c30] mt-0.5">Up to 5-Way</div>
                   <span className="text-[11px] text-slate-500 font-semibold">Graph-Powered</span>
                 </div>
               </div>
@@ -394,7 +413,7 @@ export const LandingPage = () => {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent flex flex-col justify-end p-6 text-white">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-600/90 backdrop-blur-md text-xs font-semibold text-white w-fit mb-2 shadow-sm">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#f78c30]/90 backdrop-blur-md text-xs font-semibold text-white w-fit mb-2 shadow-sm">
                     <ShieldCheck className="w-3.5 h-3.5 text-white" />
                     <span>Official University Portal</span>
                   </div>
@@ -415,7 +434,7 @@ export const LandingPage = () => {
       <footer className="bg-slate-900 text-slate-400 py-12 text-xs border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 rounded-xl bg-[#f78c30] flex items-center justify-center text-white font-bold text-sm">
               <BedIcon className="w-4 h-4" />
             </div>
             <div>

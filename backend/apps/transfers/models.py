@@ -1,12 +1,34 @@
 """
-Transfer record model.
+Module: backend/apps/transfers/models.py
 
-Created atomically alongside the allocation changes in the
-approval execution service. Never created for failed transactions.
+Work / Purpose:
+    Defines the TransferRecord model logging completed atomic bed-to-bed student transfers with cycle references.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/analytics/views.py
+    - backend/apps/approvals/services.py
+    - backend/apps/hostels/management/commands/seed_demo_data.py
+    - backend/apps/matching/management/commands/activate_full_pipeline.py
+    - backend/apps/policies/services.py
+    - backend/apps/transfers/admin.py
+    - backend/apps/transfers/serializers.py
+    - backend/apps/transfers/views.py
+    - backend/tests/test_atomic_approval.py
+    - backend/tests/test_concurrency_and_reconciliation.py
+    - backend/tests/test_student_dashboard_features.py
+
+Helpful / Supporting Modules (Dependencies):
+    - django (external library / framework)
+
+Original Module Notes:
+    Transfer record model.
+    Created atomically alongside the allocation changes in the
+    approval execution service. Never created for failed transactions.
 """
 import uuid
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 
 class TransferRecord(models.Model):
@@ -82,7 +104,7 @@ class TransferRecord(models.Model):
         default=Status.COMPLETED,
     )
 
-    completed_at = models.DateTimeField()
+    completed_at = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

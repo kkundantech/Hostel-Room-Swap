@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/pages/admin/AdminHostelsRoomsPage.jsx
+ *
+ * Work / Purpose:
+ *   Hostel Admin inventory management page for creating and configuring hostels, blocks, rooms, and beds.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';
@@ -274,7 +290,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
         {/* Header Banner */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/70 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-[#5B4DF5] uppercase tracking-wider mb-1">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#f78c30] uppercase tracking-wider mb-1">
               <Building className="w-4 h-4" />
               <span>Hostel & Housing Infrastructure</span>
             </div>
@@ -292,14 +308,14 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
               disabled={syncingP03}
               className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#f4f7fb] hover:bg-slate-100 text-slate-700 text-xs font-bold transition border border-slate-200/80 shadow-2xs"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${syncingP03 ? 'animate-spin text-[#5B4DF5]' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${syncingP03 ? 'animate-spin text-[#f78c30]' : ''}`} />
               <span>{syncingP03 ? 'Syncing P03...' : 'Sync with P03'}</span>
             </button>
 
             {activeTab === 'ROOMS' ? (
               <button
                 onClick={() => setShowAddRoomModal(true)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition shadow-md shadow-[#5B4DF5]/20"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-md shadow-[#f78c30]/20"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Room</span>
@@ -307,7 +323,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
             ) : (
               <button
                 onClick={() => setShowAddHostelModal(true)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition shadow-md shadow-[#5B4DF5]/20"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-md shadow-[#f78c30]/20"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Hostel</span>
@@ -334,9 +350,9 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
 
           <div className="bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs">
             <p className="text-[10px] font-bold text-slate-400 uppercase">Occupancy Rate</p>
-            <h3 className="text-2xl font-black text-[#5B4DF5] mt-1">{occupancyPct}%</h3>
+            <h3 className="text-2xl font-black text-[#f78c30] mt-1">{occupancyPct}%</h3>
             <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
-              <div className="bg-[#5B4DF5] h-full rounded-full" style={{ width: `${occupancyPct}%` }} />
+              <div className="bg-[#f78c30] h-full rounded-full" style={{ width: `${occupancyPct}%` }} />
             </div>
           </div>
 
@@ -354,7 +370,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
               onClick={() => setActiveTab('HOSTELS')}
               className={`px-4 py-2 rounded-2xl text-xs font-bold transition ${
                 activeTab === 'HOSTELS'
-                  ? 'bg-[#5B4DF5] text-white shadow-md shadow-[#5B4DF5]/20'
+                  ? 'bg-[#f78c30] text-white shadow-md shadow-[#f78c30]/20'
                   : 'bg-[#f4f7fb] text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -364,7 +380,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
               onClick={() => setActiveTab('ROOMS')}
               className={`px-4 py-2 rounded-2xl text-xs font-bold transition ${
                 activeTab === 'ROOMS'
-                  ? 'bg-[#5B4DF5] text-white shadow-md shadow-[#5B4DF5]/20'
+                  ? 'bg-[#f78c30] text-white shadow-md shadow-[#f78c30]/20'
                   : 'bg-[#f4f7fb] text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -374,7 +390,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
               onClick={() => setActiveTab('P03')}
               className={`px-4 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 ${
                 activeTab === 'P03'
-                  ? 'bg-[#5B4DF5] text-white shadow-md shadow-[#5B4DF5]/20'
+                  ? 'bg-[#f78c30] text-white shadow-md shadow-[#f78c30]/20'
                   : 'bg-[#f4f7fb] text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -391,7 +407,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                 placeholder={activeTab === 'HOSTELS' ? 'Search hostel name or code...' : 'Search room number...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl pl-10 pr-4 py-2 text-xs focus:outline-none focus:border-[#5B4DF5]"
+                className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl pl-10 pr-4 py-2 text-xs focus:outline-none focus:border-[#f78c30]"
               />
             </div>
 
@@ -461,7 +477,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                         <td className="py-3.5 px-3 font-semibold text-slate-700">{h.total_rooms}</td>
                         <td className="py-3.5 px-3 font-semibold text-slate-700">{h.total_beds} Beds</td>
                         <td className="py-3.5 px-3">
-                          <span className="font-bold text-[#5B4DF5]">{h.occupied_beds}</span>
+                          <span className="font-bold text-[#f78c30]">{h.occupied_beds}</span>
                           <span className="text-[10px] text-slate-400 block">{pct}% filled</span>
                         </td>
                         <td className="py-3.5 px-3">
@@ -519,7 +535,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                 )}
                 <button
                   onClick={() => setShowAddRoomModal(true)}
-                  className="px-3.5 py-1.5 rounded-xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Room</span>
@@ -529,7 +545,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
 
             {filteredRooms.length === 0 ? (
               <div className="py-14 px-4 text-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 my-2">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-[#5B4DF5] flex items-center justify-center mx-auto mb-3 border border-indigo-100">
+                <div className="w-14 h-14 rounded-2xl bg-orange-50 text-[#f78c30] flex items-center justify-center mx-auto mb-3 border border-orange-100">
                   <Bed className="w-7 h-7" />
                 </div>
                 <h4 className="text-sm font-black text-slate-900">
@@ -542,7 +558,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                 </p>
                 <button
                   onClick={() => setShowAddRoomModal(true)}
-                  className="px-5 py-2.5 rounded-2xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition shadow-md shadow-[#5B4DF5]/20 inline-flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-md shadow-[#f78c30]/20 inline-flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add Room Now</span>
@@ -591,7 +607,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                               Maintenance Hold
                             </span>
                           ) : r.occupants >= r.capacity ? (
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-[#5B4DF5] border border-purple-200">
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-[#f78c30] border border-purple-200">
                               Fully Occupied
                             </span>
                           ) : (
@@ -631,7 +647,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
           <div className="bg-white rounded-3xl p-6 border border-slate-200/70 shadow-xs space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-[#5B4DF5] flex items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#f78c30] flex items-center justify-center">
                   <Database className="w-6 h-6" />
                 </div>
                 <div>
@@ -665,7 +681,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
 
               <div className="p-4 rounded-2xl bg-[#f8faff] border border-slate-100">
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Sync Frequency</p>
-                <p className="text-sm font-black text-[#5B4DF5] mt-1">Hourly & Post-Approval</p>
+                <p className="text-sm font-black text-[#f78c30] mt-1">Hourly & Post-Approval</p>
                 <p className="text-[10px] text-slate-400 mt-0.5">Automatic delta reconciliation</p>
               </div>
             </div>
@@ -674,7 +690,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
               <button
                 onClick={handleSyncP03}
                 disabled={syncingP03}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition shadow-md shadow-[#5B4DF5]/20"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-md shadow-[#f78c30]/20"
               >
                 <RefreshCw className={`w-4 h-4 ${syncingP03 ? 'animate-spin' : ''}`} />
                 <span>{syncingP03 ? 'Reconciling Data...' : 'Trigger Immediate P03 Synchronization'}</span>
@@ -703,7 +719,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                     placeholder="e.g. Boys Hostel 4"
                     value={hostelForm.name}
                     onChange={(e) => setHostelForm({ ...hostelForm, name: e.target.value })}
-                    className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                    className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                   />
                 </div>
 
@@ -716,7 +732,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                       placeholder="e.g. BH4"
                       value={hostelForm.code}
                       onChange={(e) => setHostelForm({ ...hostelForm, code: e.target.value })}
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                     />
                   </div>
 
@@ -725,7 +741,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                     <select
                       value={hostelForm.hostel_category}
                       onChange={(e) => setHostelForm({ ...hostelForm, hostel_category: e.target.value })}
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                     >
                       <option value="BOYS">Boys Hostel</option>
                       <option value="GIRLS">Girls Hostel</option>
@@ -743,7 +759,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-2xl text-xs font-bold text-white bg-[#5B4DF5] hover:bg-[#4d3ef0] shadow-md shadow-[#5B4DF5]/20"
+                    className="px-5 py-2 rounded-2xl text-xs font-bold text-white bg-[#f78c30] hover:bg-[#e27518] shadow-md shadow-[#f78c30]/20"
                   >
                     Save Hostel
                   </button>
@@ -770,7 +786,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                     required
                     value={roomForm.hostel_id}
                     onChange={(e) => setRoomForm({ ...roomForm, hostel_id: e.target.value })}
-                    className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                    className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                   >
                     <option value="">Select a hostel...</option>
                     {hostels.map((h) => (
@@ -790,7 +806,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                       placeholder="e.g. 101, A-202"
                       value={roomForm.room_number}
                       onChange={(e) => setRoomForm({ ...roomForm, room_number: e.target.value })}
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                     />
                   </div>
 
@@ -803,7 +819,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                       max={12}
                       value={roomForm.floor}
                       onChange={(e) => setRoomForm({ ...roomForm, floor: Number(e.target.value) })}
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                     />
                   </div>
                 </div>
@@ -818,7 +834,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                         const capMap = { SINGLE: 1, DOUBLE: 2, TRIPLE: 3, QUAD: 4 };
                         setRoomForm({ ...roomForm, room_type: type, capacity: capMap[type] || 2 });
                       }}
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                     >
                       <option value="SINGLE">Single Occupancy</option>
                       <option value="DOUBLE">Double Occupancy</option>
@@ -835,7 +851,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                       max={8}
                       value={roomForm.capacity}
                       onChange={(e) => setRoomForm({ ...roomForm, capacity: Number(e.target.value) })}
-                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                      className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                     />
                   </div>
                 </div>
@@ -850,7 +866,7 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-2xl text-xs font-bold text-white bg-[#5B4DF5] hover:bg-[#4d3ef0] shadow-md shadow-[#5B4DF5]/20"
+                    className="px-5 py-2 rounded-2xl text-xs font-bold text-white bg-[#f78c30] hover:bg-[#e27518] shadow-md shadow-[#f78c30]/20"
                   >
                     Create Room
                   </button>

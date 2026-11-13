@@ -6,6 +6,11 @@
   body {
     @apply antialiased font-sans bg-slate-50 text-slate-800;
   }
+
+  /* Form dropdown options */
+  select, select option {
+    color: #000000 !important;
+  }
 }
 
 /* Professional card and panel styles */
@@ -40,7 +45,15 @@
 }
 
 .badge-open {
-  @apply bg-blue-50 text-blue-700 border border-blue-200;
+  @apply bg-orange-50 text-[#e27518] border border-orange-200;
+}
+
+.badge-lpu {
+  @apply bg-orange-50 text-[#e27518] border border-orange-200 font-semibold;
+}
+
+.btn-lpu {
+  @apply bg-[#f78c30] hover:bg-[#e27518] text-white shadow-md shadow-[#f78c30]/25 transition font-semibold;
 }
 
 .badge-pending {
@@ -109,4 +122,43 @@
 .sidebar-scroll-light::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* ==========================================================================
+   Universal High-Contrast Text Selection Across Entire Application
+   Ensures text selected by the user is ALWAYS pure black (#000000)
+   on top of the soft LPU Orange highlight (#fed7aa).
+   Placed outside @layer to guarantee absolute author stylesheet precedence.
+   ========================================================================== */
+::selection,
+*::selection,
+::-moz-selection,
+*::-moz-selection,
+html *::selection,
+body *::selection,
+div::selection,
+p::selection,
+span::selection,
+h1::selection,
+h2::selection,
+h3::selection,
+h4::selection,
+h5::selection,
+h6::selection,
+a::selection,
+button::selection,
+label::selection,
+input::selection,
+textarea::selection,
+li::selection,
+th::selection,
+td::selection,
+strong::selection,
+b::selection,
+em::selection {
+  background-color: #fed7aa !important; /* Soft LPU Orange highlight */
+  color: #000000 !important;            /* Solid pure black text */
+  -webkit-text-fill-color: #000000 !important;
+  text-shadow: none !important;
+}
+
 

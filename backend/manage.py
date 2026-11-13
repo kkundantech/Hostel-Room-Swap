@@ -1,5 +1,20 @@
 #!/usr/bin/env python
-"""Django's command-line utility for administrative tasks."""
+"""
+Module: backend/manage.py
+
+Work / Purpose:
+    Django administrative CLI entrypoint setting DJANGO_SETTINGS_MODULE to config.settings.
+
+Connected Modules (Used By / Routes):
+    - CLI / DevOps scripts (developer & server command-line execution)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/config/settings.py
+    - django (external library / framework)
+
+Original Module Notes:
+    Django's command-line utility for administrative tasks.
+"""
 import os
 import sys
 

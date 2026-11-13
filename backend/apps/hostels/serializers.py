@@ -1,4 +1,21 @@
-"""Serializers for hostel, block, room, bed, and allocation data."""
+"""
+Module: backend/apps/hostels/serializers.py
+
+Work / Purpose:
+    Serializes Hostel, Block, Room, Bed, and Allocation models with nested occupancy metadata.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/exchange_requests/serializers.py
+    - backend/apps/hostels/views.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/serializers.py
+    - backend/apps/hostels/models.py
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Serializers for hostel, block, room, bed, and allocation data.
+"""
 from rest_framework import serializers
 from .models import Hostel, Block, Room, Bed, Allocation
 from apps.accounts.serializers import UserMinimalSerializer
@@ -15,7 +32,7 @@ class BedSerializer(serializers.ModelSerializer):
             'is_available_for_exchange', 'full_label', 'current_occupant',
         ]
 
-    def get_current_occupant(self, obj):
+    def get_current_occupant(self, obj) -> dict | None:
         active = obj.allocations.filter(is_active=True).select_related('student').first()
         if active:
             return UserMinimalSerializer(active.student).data
@@ -38,19 +55,19 @@ class RoomSerializer(serializers.ModelSerializer):
             'hostel_name', 'hostel_code', 'hostel_id', 'block_name', 'occupied_count', 'beds',
         ]
 
-    def get_hostel_name(self, obj):
+    def get_hostel_name(self, obj) -> str:
         return obj.block.hostel.name if obj.block and obj.block.hostel else ''
 
-    def get_hostel_code(self, obj):
+    def get_hostel_code(self, obj) -> str:
         return obj.block.hostel.code if obj.block and obj.block.hostel else ''
 
-    def get_hostel_id(self, obj):
+    def get_hostel_id(self, obj) -> int | None:
         return obj.block.hostel.id if obj.block and obj.block.hostel else None
 
-    def get_block_name(self, obj):
+    def get_block_name(self, obj) -> str:
         return obj.block.name if obj.block else ''
 
-    def get_occupied_count(self, obj):
+    def get_occupied_count(self, obj) -> int:
         return Allocation.objects.filter(
             bed__room=obj, is_active=True
         ).count()
@@ -65,10 +82,10 @@ class RoomMinimalSerializer(serializers.ModelSerializer):
         model = Room
         fields = ['id', 'room_number', 'floor', 'room_type', 'capacity', 'hostel_code', 'block_name']
 
-    def get_hostel_code(self, obj):
+    def get_hostel_code(self, obj) -> str:
         return obj.block.hostel.code
 
-    def get_block_name(self, obj):
+    def get_block_name(self, obj) -> str:
         return obj.block.name
 
 
@@ -83,7 +100,7 @@ class BlockSerializer(serializers.ModelSerializer):
             'gender_restriction', 'is_active', 'room_count', 'rooms',
         ]
 
-    def get_room_count(self, obj):
+    def get_room_count(self, obj) -> int:
         return obj.rooms.count()
 
 
@@ -101,17 +118,17 @@ class HostelSerializer(serializers.ModelSerializer):
             'total_beds', 'occupied_beds', 'vacant_beds', 'blocks',
         ]
 
-    def get_total_beds(self, obj):
+    def get_total_beds(self, obj) -> int:
         return Bed.objects.filter(
             room__block__hostel=obj, is_active=True
         ).count()
 
-    def get_occupied_beds(self, obj):
+    def get_occupied_beds(self, obj) -> int:
         return Allocation.objects.filter(
             bed__room__block__hostel=obj, is_active=True
         ).count()
 
-    def get_vacant_beds(self, obj):
+    def get_vacant_beds(self, obj) -> int:
         total = self.get_total_beds(obj)
         occupied = self.get_occupied_beds(obj)
         return total - occupied
@@ -130,22 +147,22 @@ class HostelMinimalSerializer(serializers.ModelSerializer):
             'is_active', 'total_beds', 'occupied_beds', 'vacant_beds', 'total_rooms',
         ]
 
-    def get_total_beds(self, obj):
+    def get_total_beds(self, obj) -> int:
         return Bed.objects.filter(
             room__block__hostel=obj, is_active=True
         ).count()
 
-    def get_occupied_beds(self, obj):
+    def get_occupied_beds(self, obj) -> int:
         return Allocation.objects.filter(
             bed__room__block__hostel=obj, is_active=True
         ).count()
 
-    def get_vacant_beds(self, obj):
+    def get_vacant_beds(self, obj) -> int:
         total = self.get_total_beds(obj)
         occupied = self.get_occupied_beds(obj)
         return max(0, total - occupied)
 
-    def get_total_rooms(self, obj):
+    def get_total_rooms(self, obj) -> int:
         return Room.objects.filter(
             block__hostel=obj, is_active=True
         ).count()
@@ -167,14 +184,14 @@ class AllocationSerializer(serializers.ModelSerializer):
             'source_proposal', 'created_at',
         ]
 
-    def get_bed_label(self, obj):
+    def get_bed_label(self, obj) -> str:
         return obj.bed.full_label
 
-    def get_hostel_name(self, obj):
+    def get_hostel_name(self, obj) -> str:
         return obj.bed.hostel.name
 
-    def get_block_name(self, obj):
+    def get_block_name(self, obj) -> str:
         return obj.bed.block.name
 
-    def get_room_number(self, obj):
+    def get_room_number(self, obj) -> str:
         return obj.bed.room.room_number

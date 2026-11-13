@@ -1,6 +1,24 @@
 """
-Public OTP-Based Account Activation Workflow Views.
-No public self-signup without prior Super Admin authorization.
+Module: backend/apps/accounts/views_activation.py
+
+Work / Purpose:
+    Implements public OTP-based account activation workflow views (request OTP, verify OTP, set initial password) for pre-authorized users.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/accounts/otp.py
+    - backend/apps/accounts/serializers.py
+    - backend/apps/audit/services.py
+    - backend/apps/hostels/models.py
+    - django (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Public OTP-Based Account Activation Workflow Views.
+    No public self-signup without prior Super Admin authorization.
 """
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -25,10 +43,12 @@ from .otp import (
 )
 from apps.audit.services import log_audit_event
 from apps.hostels.models import Hostel
+from drf_spectacular.utils import extend_schema, OpenApiTypes
 
 User = get_user_model()
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def request_activation_otp_view(request):
@@ -60,8 +80,10 @@ def request_activation_otp_view(request):
             identity.trusted_email = email
             identity.save(update_fields=['trusted_email', 'updated_at'])
         if identity.authorization_status in ('SUSPENDED', 'REVOKED'):
-            identity.authorization_status = AuthorizedIdentity.AuthorizationStatus.ACTIVE
-            identity.save(update_fields=['authorization_status', 'updated_at'])
+            if identity.authorization_status == AuthorizedIdentity.AuthorizationStatus.SUSPENDED:
+                return Response({'detail': 'This account has been suspended by administration.'}, status=status.HTTP_403_FORBIDDEN)
+            if identity.authorization_status == AuthorizedIdentity.AuthorizationStatus.REVOKED:
+                return Response({'detail': 'This account authorization has been revoked.'}, status=status.HTTP_403_FORBIDDEN)
         if identity.activation_status == AuthorizedIdentity.ActivationStatus.ACTIVE:
             identity.activation_status = AuthorizedIdentity.ActivationStatus.PENDING_ACTIVATION
             identity.save(update_fields=['activation_status', 'updated_at'])
@@ -94,23 +116,24 @@ def request_activation_otp_view(request):
             identity.activation_status = AuthorizedIdentity.ActivationStatus.PENDING_ACTIVATION
             identity.save()
         else:
-            # Auto-authorize on the fly for seamless activation
-            identity = AuthorizedIdentity.objects.create(
-                institution_id=institution_id,
-                trusted_email=email,
-                name=f"Student {institution_id}",
-                role=AuthorizedIdentity.Role.STUDENT,
-                authorization_status=AuthorizedIdentity.AuthorizationStatus.ACTIVE,
-                activation_status=AuthorizedIdentity.ActivationStatus.PENDING_ACTIVATION,
-            )
+            return Response({
+                'detail': 'If an authorized identity or active account matches these credentials, a one-time password has been dispatched.',
+                'identifier': institution_id,
+            }, status=status.HTTP_200_OK)
 
     # Issue challenge & deliver email asynchronously via real SMTP
-    challenge = create_identity_otp_challenge(
-        identity=identity,
-        purpose=OTPChallenge.Purpose.ACTIVATION,
-        request=request,
-        target_email=email,
-    )
+    try:
+        challenge = create_identity_otp_challenge(
+            identity=identity,
+            purpose=OTPChallenge.Purpose.ACTIVATION,
+            request=request,
+            target_email=email,
+        )
+    except Exception as e:
+        detail_msg = getattr(e, 'detail', str(e))
+        if isinstance(detail_msg, dict):
+            detail_msg = detail_msg.get('detail', str(detail_msg))
+        return Response({'detail': detail_msg}, status=status.HTTP_400_BAD_REQUEST)
 
     resp_data = {
         'detail': f"Verification code sent to {email}. Please check your Gmail inbox (and Spam folder).",
@@ -123,6 +146,7 @@ def request_activation_otp_view(request):
     return Response(resp_data, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def verify_activation_otp_view(request):
@@ -171,6 +195,7 @@ def verify_activation_otp_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def set_activation_password_view(request):

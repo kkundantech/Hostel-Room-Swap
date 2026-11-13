@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/components/auth/StudentRegisterModal.jsx
+ *
+ * Work / Purpose:
+ *   Multi-step student OTP registration modal verifying institutional identity before creating an account.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/pages/LandingPage.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/context/AuthContext.jsx
+ *   - frontend/src/services/api.js
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -204,7 +220,7 @@ export default function StudentRegisterModal({ isOpen, onClose, onSwitchToLogin 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
       <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-purple-100 relative">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 text-white px-6 py-5 relative">
+        <div className="bg-gradient-to-r from-purple-700 via-[#e27518] to-purple-800 text-white px-6 py-5 relative">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-purple-200 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"

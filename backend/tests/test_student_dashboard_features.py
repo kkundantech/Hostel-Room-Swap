@@ -1,11 +1,30 @@
 """
-Unit and integration tests for all Student Dashboard backend features:
-- Dynamic Notification count (0 when none, N when active, decrements on read)
-- Dynamic Swap Proposal pending count (0 when none/responded, N when action required)
-- Active Bed Allocation (/allocations/me/ and 404 when unallocated)
-- Student Exchange Request lifecycle (create, check eligibility, withdraw, permissions)
-- Room and Request Browsing (gender isolation and scoping)
-- Transfer History isolation
+Module: backend/tests/test_student_dashboard_features.py
+
+Work / Purpose:
+    Integration tests verifying student dashboard endpoints: notifications, pending proposal counts, allocations, requests, room browsing, and transfer history.
+
+Connected Modules (Used By / Routes):
+    - pytest / Django test runner (automated verification suite)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/hostels/models.py
+    - backend/apps/notifications/models.py
+    - backend/apps/proposals/models.py
+    - backend/apps/transfers/models.py
+    - django (external library / framework)
+    - pytest (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Unit and integration tests for all Student Dashboard backend features:
+    - Dynamic Notification count (0 when none, N when active, decrements on read)
+    - Dynamic Swap Proposal pending count (0 when none/responded, N when action required)
+    - Active Bed Allocation (/allocations/me/ and 404 when unallocated)
+    - Student Exchange Request lifecycle (create, check eligibility, withdraw, permissions)
+    - Room and Request Browsing (gender isolation and scoping)
+    - Transfer History isolation
 """
 import pytest
 from datetime import timedelta

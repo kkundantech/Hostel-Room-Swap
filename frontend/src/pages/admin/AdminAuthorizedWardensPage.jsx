@@ -1,3 +1,20 @@
+/**
+ * Module: frontend/src/pages/admin/AdminAuthorizedWardensPage.jsx
+ *
+ * Work / Purpose:
+ *   Hostel Admin authorized warden roster page for provisioning wardens and block assignments.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/common/EmptyState.jsx
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';
@@ -337,7 +354,7 @@ export const AdminAuthorizedWardensPage = () => {
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-[#5D38F0] hover:bg-[#4C28DF] text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs transition shrink-0 ml-auto"
+              className="bg-[#f78c30] hover:bg-[#4C28DF] text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs transition shrink-0 ml-auto"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>+ Add Warden</span>

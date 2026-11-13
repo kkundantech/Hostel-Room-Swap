@@ -1,3 +1,17 @@
+/**
+ * Module: frontend/src/components/common/ErrorBoundary.jsx
+ *
+ * Work / Purpose:
+ *   React ErrorBoundary catching uncaught UI rendering exceptions with recovery reload controls.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 

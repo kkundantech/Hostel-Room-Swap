@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/components/Navbar.jsx
+ *
+ * Work / Purpose:
+ *   Public landing page navigation bar with smooth anchor scrolling, LPU brand styling, and login/demo modal triggers.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/context/AuthContext.jsx
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';

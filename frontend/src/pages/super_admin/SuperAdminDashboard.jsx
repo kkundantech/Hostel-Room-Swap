@@ -1,3 +1,20 @@
+/**
+ * Module: frontend/src/pages/super_admin/SuperAdminDashboard.jsx
+ *
+ * Work / Purpose:
+ *   Super Admin executive dashboard displaying system health metrics, identity authorization counts, and recent audit activity.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
@@ -59,9 +76,9 @@ export const SuperAdminDashboard = () => {
         <div className="flex items-center gap-2">
           <Link
             to="/super-admin/users/add-student"
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#140b2e] hover:bg-[#251552] text-white shadow-xs transition flex items-center gap-1.5 active:scale-98"
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#18110b] hover:bg-[#251552] text-white shadow-xs transition flex items-center gap-1.5 active:scale-98"
           >
-            <UserPlus className="w-3.5 h-3.5 text-indigo-400" />
+            <UserPlus className="w-3.5 h-3.5 text-[#f9a154]" />
             <span>+ Authorize Student</span>
           </Link>
           <Link
@@ -75,7 +92,7 @@ export const SuperAdminDashboard = () => {
             to="/super-admin/users/add-admin"
             className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 shadow-2xs transition flex items-center gap-1.5 active:scale-98"
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
+            <ShieldCheck className="w-3.5 h-3.5 text-[#f78c30]" />
             <span>+ Authorize Admin</span>
           </Link>
         </div>
@@ -88,7 +105,7 @@ export const SuperAdminDashboard = () => {
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition">
             <div className="flex items-center justify-between text-slate-500 mb-2">
               <span className="text-xs font-bold uppercase tracking-wider">Total Authorized</span>
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 text-[#5D38F0] flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-orange-50 text-[#f78c30] flex items-center justify-center">
                 <Users className="w-5 h-5" />
               </div>
             </div>
@@ -167,7 +184,7 @@ export const SuperAdminDashboard = () => {
             </div>
             <Link
               to="/super-admin/users"
-              className="text-xs font-bold text-[#5D38F0] hover:text-[#4323c9] flex items-center gap-1 self-start md:self-auto"
+              className="text-xs font-bold text-[#f78c30] hover:text-[#4323c9] flex items-center gap-1 self-start md:self-auto"
             >
               <span>View All Authorized Accounts</span>
               <ArrowRight className="w-4 h-4" />
@@ -176,10 +193,10 @@ export const SuperAdminDashboard = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {/* Student Module Card */}
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-indigo-300 hover:shadow-xs transition space-y-4 flex flex-col justify-between">
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-orange-300 hover:shadow-xs transition space-y-4 flex flex-col justify-between">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 text-[#5B4DF5] flex items-center justify-center font-black text-xs">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 text-[#f78c30] flex items-center justify-center font-black text-xs">
                     ST
                   </div>
                   <span className="text-[11px] font-bold text-slate-600 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-200/80">
@@ -196,7 +213,7 @@ export const SuperAdminDashboard = () => {
               <div className="pt-2">
                 <Link
                   to="/super-admin/users/add-student"
-                  className="w-full py-2.5 px-3 text-center rounded-xl bg-[#140b2e] hover:bg-[#251552] text-white text-xs font-bold transition block shadow-xs"
+                  className="w-full py-2.5 px-3 text-center rounded-xl bg-[#18110b] hover:bg-[#251552] text-white text-xs font-bold transition block shadow-xs"
                 >
                   Authorize Students
                 </Link>
@@ -274,7 +291,7 @@ export const SuperAdminDashboard = () => {
             </div>
             <Link
               to="/super-admin/audit-logs"
-              className="text-xs font-bold text-[#5D38F0] hover:text-[#4323c9] flex items-center gap-1"
+              className="text-xs font-bold text-[#f78c30] hover:text-[#4323c9] flex items-center gap-1"
             >
               <span>View Full Audit Ledger</span>
               <ArrowRight className="w-4 h-4" />

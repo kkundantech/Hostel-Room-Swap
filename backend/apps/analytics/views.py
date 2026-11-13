@@ -1,4 +1,28 @@
-"""Analytics views: real data from DB, no hardcoded numbers."""
+"""
+Module: backend/apps/analytics/views.py
+
+Work / Purpose:
+    Provides real-time PostgreSQL analytics endpoints for dashboard KPIs, exchange volume trends, and CSV/JSON institutional reports.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/analytics/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/accounts/permissions.py
+    - backend/apps/approvals/models.py
+    - backend/apps/audit/models.py
+    - backend/apps/audit/services.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/hostels/models.py
+    - backend/apps/proposals/models.py
+    - backend/apps/transfers/models.py
+    - django (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Analytics views: real data from DB, no hardcoded numbers.
+"""
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -11,8 +35,10 @@ from apps.hostels.models import Hostel, Bed, Allocation
 from apps.exchange_requests.models import ExchangeRequest
 from apps.proposals.models import ExchangeProposal
 from apps.transfers.models import TransferRecord
+from drf_spectacular.utils import extend_schema, OpenApiTypes
 
 
+@extend_schema(responses={200: OpenApiTypes.OBJECT})
 @api_view(['GET'])
 @permission_classes([IsStaffRole])
 def dashboard_analytics(request):
@@ -126,6 +152,7 @@ def dashboard_analytics(request):
     })
 
 
+@extend_schema(responses={200: OpenApiTypes.OBJECT})
 @api_view(['GET'])
 @permission_classes([IsStaffRole])
 def exchange_volume_trend(request):
@@ -133,7 +160,10 @@ def exchange_volume_trend(request):
     Exchange volume over time (last N days).
     GET /api/v1/admin/analytics/trend/?days=30
     """
-    days = int(request.query_params.get('days', 30))
+    try:
+        days = int(request.query_params.get('days', 30))
+    except (ValueError, TypeError):
+        days = 30
     days = min(max(7, days), 365)
 
     since = timezone.now() - timedelta(days=days)
@@ -151,6 +181,7 @@ def exchange_volume_trend(request):
     return Response({'days': days, 'trend': trend})
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([IsStaffRole])
 def generate_admin_report(request):
@@ -351,6 +382,7 @@ def generate_admin_report(request):
     })
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST', 'GET'])
 @permission_classes([IsStaffRole])
 def export_report_csv_view(request):

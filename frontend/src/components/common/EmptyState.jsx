@@ -1,3 +1,30 @@
+/**
+ * Module: frontend/src/components/common/EmptyState.jsx
+ *
+ * Work / Purpose:
+ *   Reusable empty-state placeholder card with icon, heading, description, and optional call-to-action.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/pages/admin/AdminAuditPage.jsx
+ *   - frontend/src/pages/admin/AdminAuthorizedStudentsPage.jsx
+ *   - frontend/src/pages/admin/AdminAuthorizedWardensPage.jsx
+ *   - frontend/src/pages/admin/AdminPoliciesPage.jsx
+ *   - frontend/src/pages/admin/AdminProposalsPage.jsx
+ *   - frontend/src/pages/admin/AdminReportsPage.jsx
+ *   - frontend/src/pages/admin/AdminRequestsPage.jsx
+ *   - frontend/src/pages/chief_warden/ChiefWardenDashboard.jsx
+ *   - frontend/src/pages/student/StudentHistoryPage.jsx
+ *   - frontend/src/pages/student/StudentProposalsPage.jsx
+ *   - frontend/src/pages/student/StudentRequestsPage.jsx
+ *   - frontend/src/pages/transfers/TransfersPage.jsx
+ *   - frontend/src/pages/warden/WardenApprovalQueuePage.jsx
+ *   - frontend/src/pages/warden/WardenHistoryPage.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React from 'react';
 import { Inbox } from 'lucide-react';
 

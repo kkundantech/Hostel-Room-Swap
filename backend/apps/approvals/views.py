@@ -1,9 +1,30 @@
-"""Approval views."""
+"""
+Module: backend/apps/approvals/views.py
+
+Work / Purpose:
+    Provides ApprovalViewSet and ProposalApprovalViewSet endpoints for reviewing pending proposals and triggering atomic swap approval/rejection.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/approvals/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/permissions.py
+    - backend/apps/approvals/models.py
+    - backend/apps/approvals/services.py
+    - backend/apps/proposals/models.py
+    - backend/apps/proposals/serializers.py
+    - django_filters (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Approval views.
+"""
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import serializers as drf_serializers
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 
 from .models import Approval
 from .services import approve_proposal, reject_proposal
@@ -35,6 +56,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     filterset_fields = ['decision', 'proposal']
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False) or not self.request.user.is_authenticated:
+            return Approval.objects.none()
         user = self.request.user
         qs = Approval.objects.select_related('approver', 'proposal')
         if user.role == 'WARDEN':
@@ -50,6 +73,7 @@ class ProposalApprovalViewSet(viewsets.ViewSet):
     Viewset for approve/reject actions and queue inspection on proposals.
     Accessible by wardens, chief wardens, and admin.
     """
+    serializer_class = ApprovalActionSerializer
     permission_classes = [IsAdminOrWarden]
 
     @action(detail=False, methods=['get'], url_path='queue')
@@ -57,10 +81,7 @@ class ProposalApprovalViewSet(viewsets.ViewSet):
         """Get proposals awaiting warden approval that the current warden can approve."""
         user = request.user
         qs = ExchangeProposal.objects.filter(
-            status__in=[
-                ExchangeProposal.Status.PENDING_APPROVAL,
-                ExchangeProposal.Status.PENDING_ACCEPTANCE,
-            ]
+            status=ExchangeProposal.Status.PENDING_APPROVAL,
         ).prefetch_related(
             'participants__student',
             'participants__current_bed__room__block__hostel',
@@ -85,6 +106,11 @@ class ProposalApprovalViewSet(viewsets.ViewSet):
 
         return Response([])
 
+    @extend_schema(
+        parameters=[OpenApiParameter('id', OpenApiTypes.INT, OpenApiParameter.PATH)],
+        request=ApprovalActionSerializer,
+        responses={200: ExchangeProposalSerializer},
+    )
     @action(detail=True, methods=['post'], url_path='approve')
     def approve(self, request, pk=None):
         """Approve a proposal and execute the exchange atomically."""
@@ -97,7 +123,9 @@ class ProposalApprovalViewSet(viewsets.ViewSet):
                 warden=request.user,
                 remarks=serializer.validated_data.get('remarks', ''),
             )
-        except (ValueError, PermissionError) as e:
+        except PermissionError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_403_FORBIDDEN)
+        except ValueError as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(
@@ -107,6 +135,11 @@ class ProposalApprovalViewSet(viewsets.ViewSet):
 
         return Response(ExchangeProposalSerializer(proposal).data)
 
+    @extend_schema(
+        parameters=[OpenApiParameter('id', OpenApiTypes.INT, OpenApiParameter.PATH)],
+        request=ApprovalActionSerializer,
+        responses={200: ExchangeProposalSerializer},
+    )
     @action(detail=True, methods=['post'], url_path='reject')
     def reject(self, request, pk=None):
         """Reject a proposal with mandatory remarks."""
@@ -126,7 +159,9 @@ class ProposalApprovalViewSet(viewsets.ViewSet):
                 warden=request.user,
                 remarks=remarks,
             )
-        except (ValueError, PermissionError) as e:
+        except PermissionError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_403_FORBIDDEN)
+        except ValueError as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(ExchangeProposalSerializer(proposal).data)

@@ -1,4 +1,26 @@
-"""Serializers for exchange requests."""
+"""
+Module: backend/apps/exchange_requests/serializers.py
+
+Work / Purpose:
+    Validates and serializes ExchangeRequest creation, listing, and status updates against policy rules.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/exchange_requests/views.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/serializers.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/hostels/models.py
+    - backend/apps/hostels/serializers.py
+    - backend/apps/hostels/views.py
+    - backend/apps/policies/services.py
+    - backend/apps/proposals/models.py
+    - django (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Serializers for exchange requests.
+"""
 from rest_framework import serializers
 from django.utils import timezone
 from datetime import timedelta
@@ -105,28 +127,29 @@ class ExchangeRequestSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
-    def get_current_bed_label(self, obj):
+    def get_current_bed_label(self, obj) -> str:
         return obj.current_bed.full_label if obj.current_bed else "N/A"
 
-    def get_hostel_name(self, obj):
+    def get_hostel_name(self, obj) -> str | None:
         try:
             return obj.current_bed.room.block.hostel.name
         except Exception:
             return None
 
-    def get_preferred_hostel_name(self, obj):
+    def get_preferred_hostel_name(self, obj) -> str | None:
         return obj.preferred_hostel.name if obj.preferred_hostel else None
 
-    def get_days_remaining(self, obj):
+    def get_days_remaining(self, obj) -> int | None:
         if obj.expires_at:
             delta = obj.expires_at - timezone.now()
             return max(0, delta.days)
         return None
 
-    def get_active_proposal(self, obj):
+    def get_active_proposal(self, obj) -> dict | None:
         from apps.proposals.models import ProposalParticipant
         participant = ProposalParticipant.objects.filter(
-            student=obj.student
+            student=obj.student,
+            proposal__status__in=['PENDING_ACCEPTANCE', 'PENDING_APPROVAL'],
         ).select_related('proposal').order_by('-proposal__created_at').first()
 
         if not participant:

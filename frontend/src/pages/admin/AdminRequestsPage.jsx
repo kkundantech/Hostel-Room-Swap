@@ -1,3 +1,21 @@
+/**
+ * Module: frontend/src/pages/admin/AdminRequestsPage.jsx
+ *
+ * Work / Purpose:
+ *   Hostel Admin console for searching, filtering, inspecting, and managing campus-wide student exchange requests.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/common/EmptyState.jsx
+ *   - frontend/src/components/common/StatusBadge.jsx
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';
@@ -249,8 +267,8 @@ export const AdminRequestsPage = () => {
           <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-sm flex flex-col justify-between">
             <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Awaiting Student</span>
             <div className="flex items-baseline justify-between mt-2">
-              <span className="text-2xl font-black text-indigo-700">{awaitingStudentAction}</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-bold">Voting</span>
+              <span className="text-2xl font-black text-[#e27518]">{awaitingStudentAction}</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-50 text-[#e27518] font-bold">Voting</span>
             </div>
             <span className="text-[10px] text-slate-400 mt-1">Participant acceptance</span>
           </div>

@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/pages/warden/WardenReportsPage.jsx
+ *
+ * Work / Purpose:
+ *   Warden reporting page for viewing hostel metrics and exporting swap reports.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';
@@ -66,7 +82,7 @@ export const WardenReportsPage = () => {
         {/* Header */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/70 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-[#5B4DF5] uppercase tracking-wider mb-1">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#f78c30] uppercase tracking-wider mb-1">
               <BarChart3 className="w-4 h-4" />
               <span>Administrative Analytics</span>
             </div>
@@ -88,7 +104,7 @@ export const WardenReportsPage = () => {
             </button>
             <button
               onClick={handleExportCSV}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition shadow-md shadow-[#5B4DF5]/20"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-md shadow-[#f78c30]/20"
             >
               <Download className="w-4 h-4" />
               <span>Export CSV</span>
@@ -112,7 +128,7 @@ export const WardenReportsPage = () => {
 
           <div className="bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs">
             <p className="text-[10px] font-bold text-slate-400 uppercase">Multi-Party Share</p>
-            <h3 className="text-2xl font-black text-[#5B4DF5] mt-1">
+            <h3 className="text-2xl font-black text-[#f78c30] mt-1">
               {transfers.length > 0
                 ? `${Math.round((transfers.filter((t) => t.type !== 'Direct').length / transfers.length) * 100)}%`
                 : '0%'}
@@ -161,7 +177,7 @@ export const WardenReportsPage = () => {
                         <p className="text-[10px] text-slate-400">Reg: {t.regNo}</p>
                       </td>
                       <td className="py-3.5 px-3 font-semibold text-slate-700">{t.from}</td>
-                      <td className="py-3.5 px-3 font-bold text-[#5B4DF5]">{t.to}</td>
+                      <td className="py-3.5 px-3 font-bold text-[#f78c30]">{t.to}</td>
                       <td className="py-3.5 px-3">
                         <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
                           {t.type}

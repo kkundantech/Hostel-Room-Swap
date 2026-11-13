@@ -1,3 +1,20 @@
+/**
+ * Module: frontend/src/pages/admin/AdminAuthorizedStudentsPage.jsx
+ *
+ * Work / Purpose:
+ *   Hostel Admin authorized student roster page for pre-authorizing students via single entry or bulk upload.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/common/EmptyState.jsx
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';
@@ -238,7 +255,7 @@ export const AdminAuthorizedStudentsPage = () => {
           <div className="app-card p-4">
             <div className="flex items-center justify-between text-slate-500 text-xs">
               <span>Total Authorized</span>
-              <span className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
+              <span className="p-1.5 rounded-lg bg-orange-50 text-[#f78c30]">
                 <Users className="w-4 h-4" />
               </span>
             </div>
@@ -289,7 +306,7 @@ export const AdminAuthorizedStudentsPage = () => {
               placeholder="Search by 8-digit reg no, email, or full name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#f78c30]/25 focus:border-[#f78c30]"
             />
           </div>
 
@@ -299,7 +316,7 @@ export const AdminAuthorizedStudentsPage = () => {
               <select
                 value={eligibilityFilter}
                 onChange={(e) => setEligibilityFilter(e.target.value)}
-                className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#f78c30]/25"
               >
                 <option value="ALL">All Eligibilities</option>
                 <option value="BOYS">Boys' Hostel</option>
@@ -310,7 +327,7 @@ export const AdminAuthorizedStudentsPage = () => {
             <select
               value={regFilter}
               onChange={(e) => setRegFilter(e.target.value)}
-              className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#f78c30]/25"
             >
               <option value="ALL">All Account States</option>
               <option value="REGISTERED">Registered</option>
@@ -320,7 +337,7 @@ export const AdminAuthorizedStudentsPage = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#f78c30]/25"
             >
               <option value="ALL">All Authorizations</option>
               <option value="ACTIVE">Active</option>
@@ -334,13 +351,13 @@ export const AdminAuthorizedStudentsPage = () => {
               className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition ml-auto"
               title="Refresh roster status"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-indigo-600 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-[#f78c30] ${refreshing ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
             </button>
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-[#5D38F0] hover:bg-[#4C28DF] text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs transition shrink-0"
+              className="bg-[#f78c30] hover:bg-[#4C28DF] text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs transition shrink-0"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>+ Add Student</span>
@@ -438,7 +455,7 @@ export const AdminAuthorizedStudentsPage = () => {
                               setShowEditEligibilityModal(true);
                             }}
                             title="Edit Approved Eligibility"
-                            className="p-1 rounded-md text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition"
+                            className="p-1 rounded-md text-slate-500 hover:text-[#f78c30] hover:bg-slate-100 transition"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
@@ -485,7 +502,7 @@ export const AdminAuthorizedStudentsPage = () => {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#f78c30] flex items-center justify-center">
                   <UserPlus className="w-4 h-4" />
                 </div>
                 <div>
@@ -649,7 +666,7 @@ export const AdminAuthorizedStudentsPage = () => {
           <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#f78c30] flex items-center justify-center">
                   <Upload className="w-4 h-4" />
                 </div>
                 <div>
@@ -696,7 +713,7 @@ export const AdminAuthorizedStudentsPage = () => {
                   type="file"
                   accept=".csv,text/csv"
                   onChange={handleFileUpload}
-                  className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+                  className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-[#e27518] hover:file:bg-orange-100 cursor-pointer"
                 />
               </div>
 
@@ -743,7 +760,7 @@ export const AdminAuthorizedStudentsPage = () => {
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#f78c30] flex items-center justify-center">
                   <ShieldAlert className="w-4 h-4" />
                 </div>
                 <div>

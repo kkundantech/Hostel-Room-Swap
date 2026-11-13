@@ -1,4 +1,20 @@
-"""Transfer record serializers and PDF generation."""
+"""
+Module: backend/apps/transfers/serializers.py
+
+Work / Purpose:
+    Serializes TransferRecord history rows for students, wardens, and administrators.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/transfers/views.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/serializers.py
+    - backend/apps/transfers/models.py
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Transfer record serializers and PDF generation.
+"""
 from rest_framework import serializers
 from .models import TransferRecord
 from apps.accounts.serializers import UserMinimalSerializer
@@ -23,17 +39,23 @@ class TransferRecordSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
-    def get_old_bed_label(self, obj):
+    def get_old_bed_label(self, obj) -> str:
         return obj.old_bed.full_label if obj.old_bed else ''
 
-    def get_new_bed_label(self, obj):
+    def get_new_bed_label(self, obj) -> str:
         return obj.new_bed.full_label if obj.new_bed else ''
 
-    def get_proposal_reference(self, obj):
+    def get_proposal_reference(self, obj) -> str:
         return obj.proposal.reference_code if obj.proposal else ''
 
-    def get_old_hostel(self, obj):
-        return obj.old_bed.hostel.name if obj.old_bed else ''
+    def get_old_hostel(self, obj) -> str:
+        try:
+            return obj.old_bed.hostel.name if obj.old_bed else ''
+        except Exception:
+            return ''
 
-    def get_new_hostel(self, obj):
-        return obj.new_bed.hostel.name if obj.new_bed else ''
+    def get_new_hostel(self, obj) -> str:
+        try:
+            return obj.new_bed.hostel.name if obj.new_bed else ''
+        except Exception:
+            return ''

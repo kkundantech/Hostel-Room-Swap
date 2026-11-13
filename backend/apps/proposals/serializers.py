@@ -1,4 +1,22 @@
-"""Proposal serializers."""
+"""
+Module: backend/apps/proposals/serializers.py
+
+Work / Purpose:
+    Serializes ExchangeProposal cycles, nested ProposalParticipant legs, and student accept/decline payloads.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/approvals/views.py
+    - backend/apps/proposals/views.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/serializers.py
+    - backend/apps/proposals/models.py
+    - django (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Proposal serializers.
+"""
 from rest_framework import serializers
 from django.utils import timezone
 
@@ -20,13 +38,13 @@ class ProposalParticipantSerializer(serializers.ModelSerializer):
             'responded_at', 'response_note', 'response_status',
         ]
 
-    def get_current_bed_label(self, obj):
+    def get_current_bed_label(self, obj) -> str:
         return obj.current_bed.full_label
 
-    def get_proposed_bed_label(self, obj):
+    def get_proposed_bed_label(self, obj) -> str:
         return obj.proposed_bed.full_label
 
-    def get_response_status(self, obj):
+    def get_response_status(self, obj) -> str:
         if obj.accepted:
             return 'ACCEPTED'
         if obj.declined:
@@ -51,10 +69,10 @@ class ExchangeProposalSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
-    def get_is_expired(self, obj):
+    def get_is_expired(self, obj) -> bool:
         return timezone.now() > obj.expires_at
 
-    def get_acceptance_progress(self, obj):
+    def get_acceptance_progress(self, obj) -> dict[str, int]:
         total = obj.participants.count()
         accepted = obj.participants.filter(accepted=True).count()
         declined = obj.participants.filter(declined=True).count()

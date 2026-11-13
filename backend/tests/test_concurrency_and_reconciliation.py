@@ -1,10 +1,28 @@
 """
-Concurrency and Reconciliation Tests for Track P (Django + PostgreSQL).
+Module: backend/tests/test_concurrency_and_reconciliation.py
 
-Verifies the critical requirements from Sections 8, 15, and 22:
-1. Concurrency test with TransactionTestCase and real threads.
-2. Proves concurrent approval of overlapping proposals cannot corrupt occupancy.
-3. Proves occupancy in P03 reconciles exactly after 100 simulated transfers.
+Work / Purpose:
+    PostgreSQL concurrency and occupancy reconciliation tests guarding against double swaps and orphaned bed allocations.
+
+Connected Modules (Used By / Routes):
+    - pytest / Django test runner (automated verification suite)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/approvals/services.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/hostels/models.py
+    - backend/apps/proposals/models.py
+    - backend/apps/transfers/models.py
+    - django (external library / framework)
+
+Original Module Notes:
+    Concurrency and Reconciliation Tests for Track P (Django + PostgreSQL).
+
+    Verifies the critical requirements from Sections 8, 15, and 22:
+    1. Concurrency test with TransactionTestCase and real threads.
+    2. Proves concurrent approval of overlapping proposals cannot corrupt occupancy.
+    3. Proves occupancy in P03 reconciles exactly after 100 simulated transfers.
 """
 import threading
 from django.test import TransactionTestCase

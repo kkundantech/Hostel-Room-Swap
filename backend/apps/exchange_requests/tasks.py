@@ -1,9 +1,27 @@
 """
-Celery background tasks for automatic expiry and notifications.
+Module: backend/apps/exchange_requests/tasks.py
 
-All tasks are idempotent — safe to run multiple times.
-Critical endpoints also check timestamps synchronously.
-Correctness does not depend on the scheduler running at the exact second.
+Work / Purpose:
+    Defines Celery periodic background tasks for expiring stale exchange requests/proposals and sending expiry reminder notifications.
+
+Connected Modules (Used By / Routes):
+    - backend/config/celery.py (Celery autodiscover_tasks & Beat schedule)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/audit/services.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/notifications/services.py
+    - backend/apps/proposals/models.py
+    - backend/apps/proposals/services.py
+    - celery (external library / framework)
+    - django (external library / framework)
+
+Original Module Notes:
+    Celery background tasks for automatic expiry and notifications.
+
+    All tasks are idempotent — safe to run multiple times.
+    Critical endpoints also check timestamps synchronously.
+    Correctness does not depend on the scheduler running at the exact second.
 """
 import logging
 from celery import shared_task
@@ -27,10 +45,9 @@ def expire_stale_requests(self):
         status=ExchangeRequest.Status.OPEN,
         expires_at__lt=now,
     )
-    count = expired_qs.count()
+    count = expired_qs.update(status=ExchangeRequest.Status.EXPIRED)
 
     if count:
-        expired_qs.update(status=ExchangeRequest.Status.EXPIRED)
         logger.info(f"Expired {count} stale exchange requests")
         log_audit_event(
             action='REQUEST_EXPIRED',

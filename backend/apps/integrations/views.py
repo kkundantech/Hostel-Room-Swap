@@ -1,4 +1,25 @@
-"""Integration endpoints for P03 Occupancy and Institutional Systems."""
+"""
+Module: backend/apps/integrations/views.py
+
+Work / Purpose:
+    Provides admin endpoints for P03 occupancy synchronization, integration status checks, test email dispatch, and integration logs.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/integrations/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/accounts/permissions.py
+    - backend/apps/audit/models.py
+    - backend/apps/audit/services.py
+    - backend/apps/hostels/models.py
+    - backend/apps/integrations/adapters.py
+    - django (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Integration endpoints for P03 Occupancy and Institutional Systems.
+"""
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,7 +28,9 @@ from apps.accounts.permissions import IsHostelAdmin
 from apps.integrations.adapters import get_occupancy_adapter, MockP03OccupancyAdapter
 from apps.hostels.models import Hostel, Room, Bed, Allocation
 from apps.audit.services import log_audit_event
+from drf_spectacular.utils import extend_schema, OpenApiTypes
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([IsHostelAdmin])
 def p03_sync_view(request):
@@ -47,6 +70,7 @@ def p03_sync_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(responses={200: OpenApiTypes.OBJECT})
 @api_view(['GET'])
 @permission_classes([IsHostelAdmin])
 def integrations_status_view(request):
@@ -102,6 +126,7 @@ def integrations_status_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([IsHostelAdmin])
 def test_email_dispatch_view(request):
@@ -127,6 +152,7 @@ def test_email_dispatch_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(request=OpenApiTypes.OBJECT, responses={200: OpenApiTypes.OBJECT})
 @api_view(['POST'])
 @permission_classes([IsHostelAdmin])
 def trigger_data_sync_view(request):
@@ -154,6 +180,7 @@ def trigger_data_sync_view(request):
     }, status=status.HTTP_200_OK)
 
 
+@extend_schema(responses={200: OpenApiTypes.OBJECT})
 @api_view(['GET'])
 @permission_classes([IsHostelAdmin])
 def integrations_logs_view(request):

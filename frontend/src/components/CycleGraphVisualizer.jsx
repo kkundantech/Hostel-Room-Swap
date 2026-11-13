@@ -1,3 +1,17 @@
+/**
+ * Module: frontend/src/components/CycleGraphVisualizer.jsx
+ *
+ * Work / Purpose:
+ *   Visual SVG/node cycle diagram component rendering multi-party room swap participants and directional bed transitions.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/pages/InteractiveDemo.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React from 'react';
 import { ArrowRight, UserCheck, ShieldCheck, CheckCircle2, Clock } from 'lucide-react';
 

@@ -1,4 +1,22 @@
-"""Notification creation service."""
+"""
+Module: backend/apps/notifications/services.py
+
+Work / Purpose:
+    Provides notification helper functions for proposal creation, student responses, warden approval alerts, and completed swaps.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/approvals/services.py
+    - backend/apps/exchange_requests/tasks.py
+    - backend/apps/proposals/services.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/notifications/models.py
+    - django (external library / framework)
+
+Original Module Notes:
+    Notification creation service.
+"""
 import logging
 from django.utils import timezone
 from django.db import transaction

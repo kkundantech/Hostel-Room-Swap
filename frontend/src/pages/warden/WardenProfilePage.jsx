@@ -1,3 +1,20 @@
+/**
+ * Module: frontend/src/pages/warden/WardenProfilePage.jsx
+ *
+ * Work / Purpose:
+ *   Warden profile and password settings page displaying assigned hostel blocks.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/context/AuthContext.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
@@ -23,6 +40,7 @@ export const WardenProfilePage = () => {
     user?.first_name ? `${user.first_name} ${user.last_name}` : 'Warden'
   );
   const [email, setEmail] = useState(user?.email || 'warden.bh1@hostel.edu');
+  const [phone, setPhone] = useState(user?.phone || '');
   const assignedHostelName = user?.assigned_hostels?.[0]?.name || user?.assigned_hostels?.[0]?.code || 'Hostel';
   const [officeLocation, setOfficeLocation] = useState(`Ground Floor, ${assignedHostelName} Warden Office, LPU`);
 
@@ -116,10 +134,10 @@ export const WardenProfilePage = () => {
             <img
               src="/images/student_user.jpg"
               alt="Warden"
-              className="w-16 h-16 rounded-full object-cover border-2 border-indigo-100 shadow-xs shrink-0"
+              className="w-16 h-16 rounded-full object-cover border-2 border-orange-100 shadow-xs shrink-0"
             />
             <div>
-              <div className="flex items-center gap-2 text-xs font-bold text-[#5B4DF5] uppercase tracking-wider mb-0.5">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#f78c30] uppercase tracking-wider mb-0.5">
                 <ShieldCheck className="w-4 h-4" />
                 <span>Hostel Authority</span>
               </div>
@@ -136,7 +154,7 @@ export const WardenProfilePage = () => {
         {/* Personal Details Form */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/70 shadow-xs">
           <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <User className="w-4 h-4 text-[#5B4DF5]" />
+            <User className="w-4 h-4 text-[#f78c30]" />
             <span>Profile Information</span>
           </h3>
 
@@ -148,7 +166,7 @@ export const WardenProfilePage = () => {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                  className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                 />
               </div>
 
@@ -168,7 +186,7 @@ export const WardenProfilePage = () => {
                   type="text"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                  className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                 />
               </div>
 
@@ -178,7 +196,7 @@ export const WardenProfilePage = () => {
                   type="text"
                   value={officeLocation}
                   onChange={(e) => setOfficeLocation(e.target.value)}
-                  className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                  className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                 />
               </div>
             </div>
@@ -187,7 +205,7 @@ export const WardenProfilePage = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition shadow-md shadow-[#5B4DF5]/20"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-md shadow-[#f78c30]/20"
               >
                 <Save className="w-4 h-4" />
                 <span>Save Profile</span>
@@ -199,7 +217,7 @@ export const WardenProfilePage = () => {
         {/* Security / Password */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/70 shadow-xs">
           <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <Lock className="w-4 h-4 text-[#5B4DF5]" />
+            <Lock className="w-4 h-4 text-[#f78c30]" />
             <span>Security & Password</span>
           </h3>
 
@@ -212,7 +230,7 @@ export const WardenProfilePage = () => {
                   placeholder="••••••••"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                  className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                 />
               </div>
 
@@ -223,7 +241,7 @@ export const WardenProfilePage = () => {
                   placeholder="••••••••"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                  className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                 />
               </div>
 
@@ -234,7 +252,7 @@ export const WardenProfilePage = () => {
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#5B4DF5]"
+                  className="w-full bg-[#f4f7fb] border border-slate-200/80 rounded-2xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#f78c30]"
                 />
               </div>
             </div>
@@ -255,7 +273,7 @@ export const WardenProfilePage = () => {
         {/* Notification Preferences */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/70 shadow-xs">
           <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <Bell className="w-4 h-4 text-[#5B4DF5]" />
+            <Bell className="w-4 h-4 text-[#f78c30]" />
             <span>Notification Preferences</span>
           </h3>
 
@@ -269,7 +287,7 @@ export const WardenProfilePage = () => {
                 type="checkbox"
                 checked={notifyEmail}
                 onChange={(e) => setNotifyEmail(e.target.checked)}
-                className="w-4 h-4 accent-[#5B4DF5] rounded"
+                className="w-4 h-4 accent-[#f78c30] rounded"
               />
             </div>
 
@@ -282,7 +300,7 @@ export const WardenProfilePage = () => {
                 type="checkbox"
                 checked={notifyCycleFormed}
                 onChange={(e) => setNotifyCycleFormed(e.target.checked)}
-                className="w-4 h-4 accent-[#5B4DF5] rounded"
+                className="w-4 h-4 accent-[#f78c30] rounded"
               />
             </div>
 
@@ -295,7 +313,7 @@ export const WardenProfilePage = () => {
                 type="checkbox"
                 checked={notifyDailyDigest}
                 onChange={(e) => setNotifyDailyDigest(e.target.checked)}
-                className="w-4 h-4 accent-[#5B4DF5] rounded"
+                className="w-4 h-4 accent-[#f78c30] rounded"
               />
             </div>
           </div>

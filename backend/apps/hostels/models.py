@@ -1,13 +1,42 @@
 """
-Hostel, Block, Room, Bed, and Allocation models.
+Module: backend/apps/hostels/models.py
 
-Design decisions:
-- Allocation is the single source of truth for "who occupies which bed".
-- A Bed's current occupant is determined by the active Allocation (is_active=True).
-- Database constraints enforce that a bed has at most one active occupant,
-  and a student has at most one active allocation.
-- Compatible with the P03 hostel occupancy system through adapter interfaces
-  defined in apps.integrations.
+Work / Purpose:
+    Defines Hostel, Block, Room, Bed, and Allocation models forming the campus residential occupancy schema.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/test_admin_modules.py
+    - backend/apps/accounts/views.py
+    - backend/apps/accounts/views_activation.py
+    - backend/apps/analytics/views.py
+    - backend/apps/approvals/services.py
+    - backend/apps/exchange_requests/serializers.py
+    - backend/apps/hostels/admin.py
+    - backend/apps/hostels/management/commands/seed_demo_data.py
+    - backend/apps/hostels/serializers.py
+    - backend/apps/hostels/views.py
+    - backend/apps/integrations/views.py
+    - backend/apps/matching/management/commands/activate_full_pipeline.py
+    - backend/apps/policies/services.py
+    - backend/tests/conftest.py
+    - backend/tests/test_atomic_approval.py
+    - backend/tests/test_auth_and_eligibility.py
+    - backend/tests/test_concurrency_and_reconciliation.py
+    - backend/tests/test_student_dashboard_features.py
+
+Helpful / Supporting Modules (Dependencies):
+    - django (external library / framework)
+
+Original Module Notes:
+    Hostel, Block, Room, Bed, and Allocation models.
+
+    Design decisions:
+    - Allocation is the single source of truth for "who occupies which bed".
+    - A Bed's current occupant is determined by the active Allocation (is_active=True).
+    - Database constraints enforce that a bed has at most one active occupant,
+      and a student has at most one active allocation.
+    - Compatible with the P03 hostel occupancy system through adapter interfaces
+      defined in apps.integrations.
 """
 from django.db import models
 from django.conf import settings
@@ -197,7 +226,7 @@ class Bed(models.Model):
         return self.room.block.hostel
 
     @property
-    def full_label(self):
+    def full_label(self) -> str:
         """Human-readable full location: Hostel-Block-Room-Bed"""
         return f"{self.hostel.code}/{self.block.name}/{self.room.room_number}/Bed-{self.bed_number}"
 

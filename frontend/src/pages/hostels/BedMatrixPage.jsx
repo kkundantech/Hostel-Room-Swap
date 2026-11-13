@@ -1,3 +1,18 @@
+/**
+ * Module: frontend/src/pages/hostels/BedMatrixPage.jsx
+ *
+ * Work / Purpose:
+ *   Visual hostel block/room/bed occupancy matrix showing live student allocations and bed availability.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - Frontend application bundle entry
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { Building, Bed as BedIcon, CheckCircle2, User, Layers, RefreshCw } from 'lucide-react';

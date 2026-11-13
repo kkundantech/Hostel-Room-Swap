@@ -1,9 +1,27 @@
 """
-Policy rules model.
+Module: backend/apps/policies/models.py
 
-Configurable policy settings that can be changed without code deployment.
-Each policy has a unique key, value, description, and optional scope
-(hostel-specific or global).
+Work / Purpose:
+    Defines the PolicyRule model storing configurable institutional swap rules (cycle length, semester lock, fee/disciplinary gates, expiry days).
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/test_admin_modules.py
+    - backend/apps/hostels/management/commands/seed_demo_data.py
+    - backend/apps/policies/admin.py
+    - backend/apps/policies/serializers.py
+    - backend/apps/policies/services.py
+    - backend/apps/policies/views.py
+    - backend/tests/test_policies.py
+
+Helpful / Supporting Modules (Dependencies):
+    - django (external library / framework)
+
+Original Module Notes:
+    Policy rules model.
+
+    Configurable policy settings that can be changed without code deployment.
+    Each policy has a unique key, value, description, and optional scope
+    (hostel-specific or global).
 """
 from django.db import models
 
@@ -76,6 +94,11 @@ class PolicyRule(models.Model):
             models.UniqueConstraint(
                 fields=['key', 'hostel'],
                 name='unique_policy_per_hostel',
+            ),
+            models.UniqueConstraint(
+                fields=['key'],
+                condition=models.Q(hostel__isnull=True),
+                name='unique_global_policy_key',
             ),
         ]
 

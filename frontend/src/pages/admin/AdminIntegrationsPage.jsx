@@ -1,3 +1,20 @@
+/**
+ * Module: frontend/src/pages/admin/AdminIntegrationsPage.jsx
+ *
+ * Work / Purpose:
+ *   Hostel Admin integrations console monitoring P03 occupancy sync, ERP connectivity, and SMTP email diagnostics.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
@@ -315,7 +332,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
           title: 'Institutional Email Service & Notification Gateway',
           desc: 'SMTP relay, SendGrid integration, OTP authentication codes, and automated swap approval dispatch.',
           badge: 'Mail Transport Layer',
-          icon: <Mail className="w-5 h-5 text-indigo-600" />,
+          icon: <Mail className="w-5 h-5 text-[#f78c30]" />,
         };
       case 'sync':
         return {
@@ -329,7 +346,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
           title: 'System Integrations & External Feeds',
           desc: 'Active adapters connecting RoomSwap with university student information systems and authoritative room registries.',
           badge: 'Campus Data Pipeline',
-          icon: <Server className="w-5 h-5 text-[#5B4DF5]" />,
+          icon: <Server className="w-5 h-5 text-[#f78c30]" />,
         };
     }
   };
@@ -372,7 +389,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
         <div className="bg-white rounded-3xl p-6 border border-slate-200/70 shadow-xs space-y-5">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <div className="flex items-center gap-2 text-xs font-bold text-[#5B4DF5] uppercase tracking-wider mb-1">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#f78c30] uppercase tracking-wider mb-1">
                 {headerInfo.icon}
                 <span>{headerInfo.badge}</span>
               </div>
@@ -391,7 +408,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                   id="btn-sync-p03"
                   onClick={handleTriggerP03Sync}
                   disabled={syncingP03}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition shadow-md shadow-[#5B4DF5]/20 disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-md shadow-[#f78c30]/20 disabled:opacity-50"
                 >
                   <RefreshCw className={`w-4 h-4 ${syncingP03 ? 'animate-spin' : ''}`} />
                   <span>{syncingP03 ? 'Reconciling P03...' : 'Sync P03 Now'}</span>
@@ -401,7 +418,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
               {activeTab === 'email' && (
                 <a
                   href="#test-email-form"
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-md shadow-indigo-600/20"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-md shadow-[#f78c30]/25"
                 >
                   <Mail className="w-4 h-4" />
                   <span>Send Diagnostic Mail</span>
@@ -425,7 +442,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                   <button
                     onClick={handleTriggerP03Sync}
                     disabled={syncingP03}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition shadow-md shadow-[#5B4DF5]/20 disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-md shadow-[#f78c30]/20 disabled:opacity-50"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${syncingP03 ? 'animate-spin' : ''}`} />
                     <span>Sync P03</span>
@@ -463,7 +480,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
               onClick={() => handleTabChange('p03')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
                 activeTab === 'p03'
-                  ? 'bg-[#5B4DF5] text-white shadow-xs shadow-[#5B4DF5]/20'
+                  ? 'bg-[#f78c30] text-white shadow-xs shadow-[#f78c30]/20'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
@@ -476,7 +493,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
               onClick={() => handleTabChange('email')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
                 activeTab === 'email'
-                  ? 'bg-indigo-600 text-white shadow-xs shadow-indigo-600/20'
+                  ? 'bg-[#f78c30] text-white shadow-xs shadow-[#f78c30]/25'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
@@ -517,15 +534,15 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                 }}
                 className={`bg-white rounded-3xl p-5 border shadow-xs flex flex-col justify-between hover:shadow-md transition cursor-pointer group ${
                   isTarget
-                    ? 'border-[#5B4DF5] ring-2 ring-[#5B4DF5]/10'
+                    ? 'border-[#f78c30] ring-2 ring-[#f78c30]/10'
                     : 'border-slate-200/70'
                 }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 rounded-2xl bg-[#f4f3ff] text-[#5B4DF5] flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-2xl bg-[#fff8f1] text-[#f78c30] flex items-center justify-center">
                       {item.id === 'p03' && <Database className="w-5 h-5 text-blue-600" />}
-                      {item.id === 'email' && <Mail className="w-5 h-5 text-indigo-600" />}
+                      {item.id === 'email' && <Mail className="w-5 h-5 text-[#f78c30]" />}
                       {item.id === 'student_db' && <Users className="w-5 h-5 text-emerald-600" />}
                       {item.id === 'warden_roster' && <ShieldCheck className="w-5 h-5 text-amber-600" />}
                     </div>
@@ -535,7 +552,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-[#5B4DF5] transition">
+                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-[#f78c30] transition">
                     {item.name}
                   </h3>
                   <p className="text-[11px] text-slate-400 mt-0.5">
@@ -614,7 +631,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                   <div className="pt-2">
                     <div className="text-xs font-bold text-slate-800 mb-2 flex items-center justify-between">
                       <span>Synchronized Hostel Blocks</span>
-                      <span className="text-[11px] text-[#5B4DF5] font-semibold">2 Active Facilities</span>
+                      <span className="text-[11px] text-[#f78c30] font-semibold">2 Active Facilities</span>
                     </div>
 
                     <div className="border border-slate-100 rounded-2xl overflow-hidden text-xs">
@@ -653,8 +670,8 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 text-indigo-900 flex items-start gap-3 mt-4">
-                    <Zap className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+                  <div className="p-4 rounded-2xl bg-orange-50/70 border border-orange-100 text-orange-950 flex items-start gap-3 mt-4">
+                    <Zap className="w-5 h-5 text-[#f78c30] shrink-0 mt-0.5" />
                     <div className="text-xs">
                       <span className="font-bold block">Transactional Safety Guarantee:</span>
                       <span>
@@ -677,7 +694,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                     <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-slate-500 font-medium">Connector Mode</span>
-                        <span className="font-mono font-bold text-[#5B4DF5] bg-[#f4f3ff] px-2 py-0.5 rounded">
+                        <span className="font-mono font-bold text-[#f78c30] bg-[#fff8f1] px-2 py-0.5 rounded">
                           {p03Result?.is_mock_mode ? 'Mock Mode' : 'Live Mock / Production'}
                         </span>
                       </div>
@@ -714,7 +731,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                     id="p03-manual-sync-btn"
                     onClick={handleTriggerP03Sync}
                     disabled={syncingP03}
-                    className="w-full py-3 rounded-2xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-md shadow-[#5B4DF5]/20 disabled:opacity-50"
+                    className="w-full py-3 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-md shadow-[#f78c30]/20 disabled:opacity-50"
                   >
                     <RefreshCw className={`w-4 h-4 ${syncingP03 ? 'animate-spin' : ''}`} />
                     <span>{syncingP03 ? 'Synchronizing P03 Housing System...' : 'Trigger Full P03 Reconciliation'}</span>
@@ -738,7 +755,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
               <div className="lg:col-span-6 bg-white rounded-3xl p-6 border border-slate-200/70 shadow-xs space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-2xl bg-orange-50 text-[#f78c30] flex items-center justify-center">
                       <Mail className="w-5 h-5" />
                     </div>
                     <div>
@@ -750,7 +767,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                       </p>
                     </div>
                   </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-[#e27518] border border-orange-200">
                     SMTP Relay
                   </span>
                 </div>
@@ -834,7 +851,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                 <div>
                   <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
                     <h3 className="text-sm font-bold text-slate-900">Diagnostic Mail Dispatcher</h3>
-                    <span className="text-[11px] font-bold text-indigo-600 flex items-center gap-1">
+                    <span className="text-[11px] font-bold text-[#f78c30] flex items-center gap-1">
                       <Send className="w-3.5 h-3.5" />
                       Live Probe
                     </span>
@@ -851,7 +868,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                         value={testEmailRecipient}
                         onChange={(e) => setTestEmailRecipient(e.target.value)}
                         placeholder="e.g. admin@hostel.edu"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 font-semibold focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 font-semibold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f78c30]/25 focus:border-[#f78c30] transition"
                       />
                     </div>
 
@@ -862,7 +879,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                       <select
                         value={testEmailTemplate}
                         onChange={(e) => setTestEmailTemplate(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 font-semibold focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 font-semibold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#f78c30]/25 focus:border-[#f78c30] transition"
                       >
                         <option value="OTP_VERIFICATION">OTP Verification Code (Authentication)</option>
                         <option value="PROPOSAL_MATCHED">Swap Proposal Notification (Multi-Party)</option>
@@ -871,12 +888,12 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                       </select>
                     </div>
 
-                    <div className="p-3.5 rounded-2xl bg-indigo-50/50 border border-indigo-100 text-indigo-900 text-xs space-y-1">
-                      <div className="flex items-center gap-2 font-bold text-indigo-800">
-                        <Activity className="w-4 h-4 text-indigo-600" />
+                    <div className="p-3.5 rounded-2xl bg-orange-50/70 border border-orange-100 text-orange-950 text-xs space-y-1">
+                      <div className="flex items-center gap-2 font-bold text-orange-900">
+                        <Activity className="w-4 h-4 text-[#f78c30]" />
                         <span>SMTP Relay Diagnostic Probe</span>
                       </div>
-                      <p className="text-[11px] text-indigo-700 leading-relaxed">
+                      <p className="text-[11px] text-[#e27518] leading-relaxed">
                         Tests socket connectivity, TLS handshake, relay credentials, and queue throughput with 1-click execution.
                       </p>
                     </div>
@@ -885,7 +902,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                       id="btn-send-diagnostic-mail"
                       type="submit"
                       disabled={sendingTestEmail}
-                      className="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 disabled:opacity-50"
+                      className="w-full py-3 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-md shadow-[#f78c30]/25 disabled:opacity-50"
                     >
                       <Send className={`w-4 h-4 ${sendingTestEmail ? 'animate-bounce' : ''}`} />
                       <span>{sendingTestEmail ? 'Testing Mail Gateway Handshake...' : 'Send Diagnostic Test Email'}</span>
@@ -1096,7 +1113,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
         <div className="bg-white rounded-3xl p-6 border border-slate-200/70 shadow-xs space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div className="flex items-center gap-2.5">
-              <Activity className="w-5 h-5 text-[#5B4DF5]" />
+              <Activity className="w-5 h-5 text-[#f78c30]" />
               <h3 className="text-sm font-bold text-slate-900">
                 Live Integration Audit &amp; Event Stream
               </h3>
@@ -1129,7 +1146,7 @@ export const AdminIntegrationsPage = ({ initialTab = 'ALL' }) => {
                       {log.status}
                     </span>
                   </div>
-                  <p className="text-[11px] text-[#5B4DF5] font-semibold">{log.action}</p>
+                  <p className="text-[11px] text-[#f78c30] font-semibold">{log.action}</p>
                   <p className="text-[11px] text-slate-500">{log.details}</p>
                 </div>
                 <div className="text-[11px] text-slate-400 font-mono shrink-0 sm:text-right">

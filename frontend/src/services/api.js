@@ -1,9 +1,70 @@
+/**
+ * Module: frontend/src/services/api.js
+ *
+ * Work / Purpose:
+ *   Configured Axios HTTP client with JWT request/refresh interceptors and typed endpoint helpers for all backend API v1 resources.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/components/auth/ForgotPasswordModal.jsx
+ *   - frontend/src/components/auth/StudentRegisterModal.jsx
+ *   - frontend/src/components/auth/WardenRegisterModal.jsx
+ *   - frontend/src/components/common/NotificationsPopover.jsx
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/context/AuthContext.jsx
+ *   - frontend/src/pages/InteractiveDemo.jsx
+ *   - frontend/src/pages/LandingPage.jsx
+ *   - frontend/src/pages/admin/AdminAuditPage.jsx
+ *   - frontend/src/pages/admin/AdminAuthorizedStudentsPage.jsx
+ *   - frontend/src/pages/admin/AdminAuthorizedWardensPage.jsx
+ *   - frontend/src/pages/admin/AdminDashboard.jsx
+ *   - frontend/src/pages/admin/AdminHostelsRoomsPage.jsx
+ *   - frontend/src/pages/admin/AdminIntegrationsPage.jsx
+ *   - frontend/src/pages/admin/AdminMatchingPage.jsx
+ *   - frontend/src/pages/admin/AdminPoliciesPage.jsx
+ *   - frontend/src/pages/admin/AdminProposalsPage.jsx
+ *   - frontend/src/pages/admin/AdminReportsPage.jsx
+ *   - frontend/src/pages/admin/AdminRequestsPage.jsx
+ *   - frontend/src/pages/analytics/AnalyticsPage.jsx
+ *   - frontend/src/pages/auth/ActivateAccountPage.jsx
+ *   - frontend/src/pages/auth/SetPasswordPage.jsx
+ *   - frontend/src/pages/auth/VerifyOtpPage.jsx
+ *   - frontend/src/pages/chief_warden/ChiefWardenDashboard.jsx
+ *   - frontend/src/pages/dean/DeanDashboard.jsx
+ *   - frontend/src/pages/hostels/BedMatrixPage.jsx
+ *   - frontend/src/pages/student/StudentDashboard.jsx
+ *   - frontend/src/pages/student/StudentHistoryPage.jsx
+ *   - frontend/src/pages/student/StudentProposalsPage.jsx
+ *   - frontend/src/pages/student/StudentRequestsPage.jsx
+ *   - frontend/src/pages/super_admin/SuperAdminAddAdminPage.jsx
+ *   - frontend/src/pages/super_admin/SuperAdminAddStudentPage.jsx
+ *   - frontend/src/pages/super_admin/SuperAdminAddWardenPage.jsx
+ *   - frontend/src/pages/super_admin/SuperAdminAuditPage.jsx
+ *   - frontend/src/pages/super_admin/SuperAdminDashboard.jsx
+ *   - frontend/src/pages/super_admin/SuperAdminUsersPage.jsx
+ *   - frontend/src/pages/transfers/TransfersPage.jsx
+ *   - frontend/src/pages/warden/WardenApprovalQueuePage.jsx
+ *   - frontend/src/pages/warden/WardenDashboard.jsx
+ *   - frontend/src/pages/warden/WardenHistoryPage.jsx
+ *   - frontend/src/pages/warden/WardenNotificationsPage.jsx
+ *   - frontend/src/pages/warden/WardenOccupancyPage.jsx
+ *   - frontend/src/pages/warden/WardenPoliciesPage.jsx
+ *   - frontend/src/pages/warden/WardenProfilePage.jsx
+ *   - frontend/src/pages/warden/WardenProposalsPage.jsx
+ *   - frontend/src/pages/warden/WardenReportsPage.jsx
+ *   - frontend/src/pages/warden/WardenRoomsPage.jsx
+ *   - frontend/src/pages/warden/WardenStudentsPage.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - axios (npm package)
+ */
+
 import axios from 'axios';
 
-const API_BASE = '/api/v1';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 const apiClient = axios.create({
   baseURL: API_BASE,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },

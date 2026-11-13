@@ -1,4 +1,24 @@
-"""Transfer views with PDF letter generation."""
+"""
+Module: backend/apps/transfers/views.py
+
+Work / Purpose:
+    Provides TransferRecordViewSet endpoints including ReportLab PDF official room-transfer letter generation.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/transfers/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/permissions.py
+    - backend/apps/transfers/models.py
+    - backend/apps/transfers/serializers.py
+    - django (external library / framework)
+    - django_filters (external library / framework)
+    - reportlab (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Transfer views with PDF letter generation.
+"""
 import io
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -26,6 +46,8 @@ class TransferRecordViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ['-completed_at']
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False) or not self.request.user.is_authenticated:
+            return TransferRecord.objects.none()
         user = self.request.user
         qs = TransferRecord.objects.select_related(
             'student', 'old_bed__room__block__hostel',

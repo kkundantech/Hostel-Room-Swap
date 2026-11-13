@@ -1,3 +1,21 @@
+"""
+Module: backend/apps/accounts/test_otp_authorization.py
+
+Work / Purpose:
+    Automated test suite verifying centralized OTP authorization, pre-authorized identity verification, and activation security rules.
+
+Connected Modules (Used By / Routes):
+    - pytest / Django test runner (automated verification suite)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/authentication.py
+    - backend/apps/accounts/models.py
+    - backend/apps/accounts/otp.py
+    - backend/apps/audit/models.py
+    - django (external library / framework)
+    - rest_framework (external library / framework)
+"""
+
 import re
 from datetime import timedelta
 from django.utils import timezone

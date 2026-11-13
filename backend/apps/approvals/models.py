@@ -1,4 +1,22 @@
-"""Approval record model."""
+"""
+Module: backend/apps/approvals/models.py
+
+Work / Purpose:
+    Defines the Approval model recording warden approve/reject decisions and notes on exchange proposals.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/accounts/test_admin_modules.py
+    - backend/apps/analytics/views.py
+    - backend/apps/approvals/admin.py
+    - backend/apps/approvals/services.py
+    - backend/apps/approvals/views.py
+
+Helpful / Supporting Modules (Dependencies):
+    - django (external library / framework)
+
+Original Module Notes:
+    Approval record model.
+"""
 from django.db import models
 from django.conf import settings
 
@@ -40,4 +58,6 @@ class Approval(models.Model):
         ordering = ['-decided_at']
 
     def __str__(self):
-        return f"{self.decision} by {self.approver} for {self.proposal.reference_code}"
+        approver_str = self.approver.email if self.approver else 'System'
+        ref = self.proposal.reference_code if self.proposal else 'N/A'
+        return f"{self.decision} by {approver_str} for {ref}"

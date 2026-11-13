@@ -1,11 +1,25 @@
 """
-Tests for the policy validation engine.
-Verifies:
-- Active allocation requirement
-- Fee clearance check
-- Disciplinary hold check
-- Duplicate active request rejection
-- Cooling-off period check
+Module: backend/tests/test_policies.py
+
+Work / Purpose:
+    Unit tests verifying PolicyRule evaluation for active allocations, cooling-off periods, and cross-hostel eligibility.
+
+Connected Modules (Used By / Routes):
+    - pytest / Django test runner (automated verification suite)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/policies/models.py
+    - backend/apps/policies/services.py
+    - pytest (external library / framework)
+
+Original Module Notes:
+    Tests for the policy validation engine.
+    Verifies:
+    - Active allocation requirement
+    - Fee clearance check
+    - Disciplinary hold check
+    - Duplicate active request rejection
+    - Cooling-off period check
 """
 import pytest
 from apps.policies.services import validate_student_eligibility

@@ -1,3 +1,23 @@
+/**
+ * Module: frontend/src/components/common/StatusBadge.jsx
+ *
+ * Work / Purpose:
+ *   Reusable semantic status badge mapping backend request/proposal/transfer states to styled pill colors.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/pages/admin/AdminProposalsPage.jsx
+ *   - frontend/src/pages/admin/AdminRequestsPage.jsx
+ *   - frontend/src/pages/chief_warden/ChiefWardenDashboard.jsx
+ *   - frontend/src/pages/student/StudentDashboard.jsx
+ *   - frontend/src/pages/student/StudentProposalsPage.jsx
+ *   - frontend/src/pages/student/StudentRequestsPage.jsx
+ *   - frontend/src/pages/transfers/TransfersPage.jsx
+ *   - frontend/src/pages/warden/WardenApprovalQueuePage.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - react (npm package)
+ */
+
 import React from 'react';
 
 const STATUS_CONFIG = {

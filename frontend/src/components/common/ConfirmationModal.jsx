@@ -1,3 +1,20 @@
+/**
+ * Module: frontend/src/components/common/ConfirmationModal.jsx
+ *
+ * Work / Purpose:
+ *   Reusable confirmation dialog component for destructive or state-changing user actions.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/pages/student/StudentDashboard.jsx
+ *   - frontend/src/pages/student/StudentProposalsPage.jsx
+ *   - frontend/src/pages/student/StudentRequestsPage.jsx
+ *   - frontend/src/pages/warden/WardenApprovalQueuePage.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ */
+
 import React from 'react';
 import { AlertCircle, X } from 'lucide-react';
 

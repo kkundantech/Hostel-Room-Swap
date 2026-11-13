@@ -1,4 +1,25 @@
-"""URL routes for authentication and authorized roster management."""
+"""
+Module: backend/apps/accounts/urls.py
+
+Work / Purpose:
+    Configures URL endpoints for login, logout, profile (/me), password management, OTP signup/activation, authorized rosters, and Super Admin actions.
+
+Connected Modules (Used By / Routes):
+    - backend/config/urls.py
+    - backend/config/urls.py (included under /api/v1/)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/__init__.py
+    - backend/apps/accounts/views.py
+    - backend/apps/accounts/views_activation.py
+    - backend/apps/accounts/views_super_admin.py
+    - django (external library / framework)
+    - rest_framework (external library / framework)
+    - rest_framework_simplejwt (external library / framework)
+
+Original Module Notes:
+    URL routes for authentication and authorized roster management.
+"""
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView

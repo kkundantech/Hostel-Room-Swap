@@ -1,14 +1,37 @@
 """
-Comprehensive verification of Section 12 & Final Acceptance Test:
-- Four-person valid rotation cycle
-- All 4 students accept
-- Warden approves proposal
-- Atomic execution of bed reallocations
-- Transfer records & audit entries generated
-- Verification 1: If one student declines, no allocation changes occur
-- Verification 2: Atomic rollback if an unexpected error occurs during execution
-- Verification 3: Concurrency prevention & idempotency
-- Verification 4: Final allocation reconciles with transfer records
+Module: backend/tests/test_atomic_approval.py
+
+Work / Purpose:
+    End-to-end atomic approval test verifying multi-party cycle bed rotation rollback safety and transfer record creation.
+
+Connected Modules (Used By / Routes):
+    - pytest / Django test runner (automated verification suite)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/approvals/services.py
+    - backend/apps/audit/models.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/hostels/models.py
+    - backend/apps/matching/engine.py
+    - backend/apps/proposals/models.py
+    - backend/apps/proposals/services.py
+    - backend/apps/transfers/models.py
+    - django (external library / framework)
+    - pytest (external library / framework)
+    - unittest (external library / framework)
+
+Original Module Notes:
+    Comprehensive verification of Section 12 & Final Acceptance Test:
+    - Four-person valid rotation cycle
+    - All 4 students accept
+    - Warden approves proposal
+    - Atomic execution of bed reallocations
+    - Transfer records & audit entries generated
+    - Verification 1: If one student declines, no allocation changes occur
+    - Verification 2: Atomic rollback if an unexpected error occurs during execution
+    - Verification 3: Concurrency prevention & idempotency
+    - Verification 4: Final allocation reconciles with transfer records
 """
 import pytest
 from unittest.mock import patch

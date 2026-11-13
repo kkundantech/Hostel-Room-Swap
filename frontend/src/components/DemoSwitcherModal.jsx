@@ -1,13 +1,29 @@
+/**
+ * Module: frontend/src/components/DemoSwitcherModal.jsx
+ *
+ * Work / Purpose:
+ *   Interactive demo-role quick-switch modal displaying preconfigured student, warden, admin, and executive accounts.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - Frontend application bundle entry
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/context/AuthContext.jsx
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { X, UserCheck, Shield, GraduationCap, Building2, Crown, Sparkles } from 'lucide-react';
 
 export const DemoSwitcherModal = ({ isOpen, onClose }) => {
-  const { demoAccounts, login, user } = useAuth();
+  const { demoAccounts, isDemoMode, login, user } = useAuth();
   const navigate = useNavigate();
 
-  if (!isOpen) return null;
+  if (!isOpen || !isDemoMode || demoAccounts.length === 0) return null;
 
   const handleSelect = async (account) => {
     try {
@@ -38,7 +54,7 @@ export const DemoSwitcherModal = ({ isOpen, onClose }) => {
       case 'HOSTEL_ADMIN':
         return <Building2 className="w-5 h-5 text-emerald-500" />;
       default:
-        return <Sparkles className="w-5 h-5 text-indigo-500" />;
+        return <Sparkles className="w-5 h-5 text-[#f78c30]" />;
     }
   };
 

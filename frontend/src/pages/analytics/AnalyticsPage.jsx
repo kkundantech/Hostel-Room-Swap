@@ -1,3 +1,19 @@
+/**
+ * Module: frontend/src/pages/analytics/AnalyticsPage.jsx
+ *
+ * Work / Purpose:
+ *   Interactive analytics view using Recharts visualizations to display campus occupancy and exchange conversion metrics.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - Frontend application bundle entry
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - recharts (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { 

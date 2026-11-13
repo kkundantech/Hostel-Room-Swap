@@ -1,5 +1,31 @@
 """
-URL configuration for Hostel Room Exchange Platform.
+Module: backend/config/urls.py
+
+Work / Purpose:
+    Root Django URL router exposing /api/health/, Swagger/ReDoc OpenAPI docs, Django admin, and all /api/v1/ app routes.
+
+Connected Modules (Used By / Routes):
+    - Django HTTP request dispatcher (ROOT_URLCONF in backend/config/settings.py)
+    - backend/config/settings.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/urls.py
+    - backend/apps/analytics/urls.py
+    - backend/apps/approvals/urls.py
+    - backend/apps/audit/urls.py
+    - backend/apps/exchange_requests/urls.py
+    - backend/apps/hostels/urls.py
+    - backend/apps/integrations/urls.py
+    - backend/apps/matching/urls.py
+    - backend/apps/notifications/urls.py
+    - backend/apps/policies/urls.py
+    - backend/apps/proposals/urls.py
+    - backend/apps/transfers/urls.py
+    - django (external library / framework)
+    - drf_spectacular (external library / framework)
+
+Original Module Notes:
+    URL configuration for Hostel Room Exchange Platform.
 """
 from django.contrib import admin
 from django.urls import path, include
@@ -16,20 +42,24 @@ from django.http import JsonResponse
 
 
 def health_check(request):
-    """Simple health check endpoint."""
+    """Production health check endpoint verifying PostgreSQL connectivity."""
     from django.db import connection
     try:
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
         db_status = "ok"
     except Exception as e:
-        db_status = f"error: {str(e)}"
+        db_status = f"error: {str(e)}" if settings.DEBUG else "unavailable"
 
-    return JsonResponse({
-        "status": "ok" if db_status == "ok" else "degraded",
-        "database": db_status,
-        "version": "1.0.0",
-    })
+    is_healthy = db_status == "ok"
+    return JsonResponse(
+        {
+            "status": "ok" if is_healthy else "degraded",
+            "database": db_status,
+            "version": "1.0.0",
+        },
+        status=200 if is_healthy else 503,
+    )
 
 
 urlpatterns = [

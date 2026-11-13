@@ -1,3 +1,17 @@
+"""
+Module: backend/apps/hostels/admin.py
+
+Work / Purpose:
+    Django admin site model registrations (HostelAdmin, BlockAdmin, RoomAdmin, BedAdmin, AllocationAdmin) for apps.hostels.
+
+Connected Modules (Used By / Routes):
+    - django.contrib.admin autodiscover
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/hostels/models.py
+    - django (external library / framework)
+"""
+
 from django.contrib import admin
 from .models import Hostel, Block, Room, Bed, Allocation
 

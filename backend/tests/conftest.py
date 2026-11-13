@@ -1,5 +1,24 @@
 """
-Shared test fixtures and factories.
+Module: backend/tests/conftest.py
+
+Work / Purpose:
+    Defines shared pytest fixtures and factories (users, students, hostels, rooms, beds, allocations, requests, API clients).
+
+Connected Modules (Used By / Routes):
+    - backend/conftest.py
+    - pytest / Django test runner (automated verification suite)
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/models.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/hostels/models.py
+    - django (external library / framework)
+    - pytest (external library / framework)
+    - rest_framework (external library / framework)
+    - rest_framework_simplejwt (external library / framework)
+
+Original Module Notes:
+    Shared test fixtures and factories.
 """
 import pytest
 from django.utils import timezone

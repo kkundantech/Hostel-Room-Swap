@@ -1,4 +1,22 @@
-"""Views for audit trail."""
+"""
+Module: backend/apps/audit/views.py
+
+Work / Purpose:
+    Exposes read-only AuditEntryViewSet endpoints with filtering and search for admins and super admins.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/audit/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/permissions.py
+    - backend/apps/audit/models.py
+    - backend/apps/audit/serializers.py
+    - django_filters (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Views for audit trail.
+"""
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend

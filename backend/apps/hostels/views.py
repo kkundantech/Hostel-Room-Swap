@@ -1,4 +1,26 @@
-"""Views for hostel, block, room, bed, and allocation endpoints."""
+"""
+Module: backend/apps/hostels/views.py
+
+Work / Purpose:
+    Provides HostelViewSet, BlockViewSet, RoomViewSet, BedViewSet, and OccupancyViewSet with gender/warden-scope isolation.
+
+Connected Modules (Used By / Routes):
+    - backend/apps/exchange_requests/serializers.py
+    - backend/apps/exchange_requests/views.py
+    - backend/apps/hostels/urls.py
+
+Helpful / Supporting Modules (Dependencies):
+    - backend/apps/accounts/permissions.py
+    - backend/apps/exchange_requests/models.py
+    - backend/apps/hostels/models.py
+    - backend/apps/hostels/serializers.py
+    - backend/apps/proposals/models.py
+    - django_filters (external library / framework)
+    - rest_framework (external library / framework)
+
+Original Module Notes:
+    Views for hostel, block, room, bed, and allocation endpoints.
+"""
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response

@@ -1,8 +1,28 @@
+/**
+ * Module: frontend/src/pages/warden/WardenDashboard.jsx
+ *
+ * Work / Purpose:
+ *   Primary Warden portal dashboard summarizing assigned hostel occupancy, pending approvals, proposals, and quick actions.
+ *
+ * Connected Modules (Used By / Consumers):
+ *   - frontend/src/App.jsx
+ *
+ * Helpful / Supporting Modules (Dependencies):
+ *   - frontend/src/components/layout/AppLayout.jsx
+ *   - frontend/src/components/warden/WardenDashboardModals.jsx
+ *   - frontend/src/context/AuthContext.jsx
+ *   - frontend/src/services/api.js
+ *   - lucide-react (npm package)
+ *   - react (npm package)
+ *   - react-router-dom (npm package)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';
+import WardenDashboardModals from '../../components/warden/WardenDashboardModals';
 import {
   ShieldCheck,
   CheckCircle2,
@@ -324,7 +344,7 @@ export const WardenDashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Card 1: Pending Approvals */}
           <div className="bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs flex items-center gap-4 hover:shadow-md transition">
-            <div className="w-12 h-12 rounded-2xl bg-[#f4f3ff] text-[#5B4DF5] flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-[#fff8f1] text-[#f78c30] flex items-center justify-center shrink-0">
               <FileText className="w-6 h-6" />
             </div>
             <div>
@@ -386,7 +406,7 @@ export const WardenDashboard = () => {
               <h3 className="text-2xl font-black text-slate-900 leading-tight">{occupiedBeds} / {totalBeds}</h3>
               <div className="flex items-center gap-2 mt-1">
                 <div className="flex-1 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-[#5B4DF5] h-full rounded-full" style={{ width: `${occupancyPercentage}%` }} />
+                  <div className="bg-[#f78c30] h-full rounded-full" style={{ width: `${occupancyPercentage}%` }} />
                 </div>
                 <span className="text-[10px] font-bold text-slate-600">{occupancyPercentage}%</span>
               </div>
@@ -408,7 +428,7 @@ export const WardenDashboard = () => {
                 </h3>
                 <Link
                   to="/warden/approvals"
-                  className="text-xs font-bold text-[#5B4DF5] hover:text-[#4d3ef0] flex items-center gap-1 transition"
+                  className="text-xs font-bold text-[#f78c30] hover:text-[#e27518] flex items-center gap-1 transition"
                 >
                   <span>View All</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -429,7 +449,7 @@ export const WardenDashboard = () => {
                     onClick={() => setQueueTab(tab.id)}
                     className={`px-4 py-2 rounded-2xl text-xs font-bold shrink-0 transition-all ${
                       queueTab === tab.id
-                        ? 'bg-[#5B4DF5] text-white shadow-md shadow-[#5B4DF5]/20'
+                        ? 'bg-[#f78c30] text-white shadow-md shadow-[#f78c30]/20'
                         : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/60'
                     }`}
                   >
@@ -442,7 +462,7 @@ export const WardenDashboard = () => {
               <div className="overflow-x-auto">
                 {filteredQueue.length === 0 ? (
                   <div className="py-12 px-4 text-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-[#5B4DF5] flex items-center justify-center mx-auto mb-2.5 border border-indigo-100">
+                    <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#f78c30] flex items-center justify-center mx-auto mb-2.5 border border-orange-100">
                       <ShieldCheck className="w-6 h-6" />
                     </div>
                     <h4 className="text-sm font-bold text-slate-800">No Pending Approval Requests</h4>
@@ -457,7 +477,7 @@ export const WardenDashboard = () => {
                         <th className="py-3 px-2 w-8">
                           <button onClick={handleSelectAll} className="text-slate-400 hover:text-slate-600">
                             {selectedRequests.length === filteredQueue.length && filteredQueue.length > 0 ? (
-                              <CheckSquare className="w-4 h-4 text-[#5B4DF5]" />
+                              <CheckSquare className="w-4 h-4 text-[#f78c30]" />
                             ) : (
                               <Square className="w-4 h-4" />
                             )}
@@ -485,7 +505,7 @@ export const WardenDashboard = () => {
                                 className="text-slate-400 hover:text-slate-600"
                               >
                                 {isSelected ? (
-                                  <CheckSquare className="w-4 h-4 text-[#5B4DF5]" />
+                                  <CheckSquare className="w-4 h-4 text-[#f78c30]" />
                                 ) : (
                                   <Square className="w-4 h-4" />
                                 )}
@@ -572,7 +592,7 @@ export const WardenDashboard = () => {
                                   <>
                                     <button
                                       onClick={() => setSelectedRequestForApprove(item)}
-                                      className="px-3.5 py-1.5 rounded-xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-[11px] font-bold transition shadow-xs"
+                                      className="px-3.5 py-1.5 rounded-xl bg-[#f78c30] hover:bg-[#e27518] text-white text-[11px] font-bold transition shadow-xs"
                                     >
                                       Approve
                                     </button>
@@ -626,7 +646,7 @@ export const WardenDashboard = () => {
                 </h3>
                 <Link
                   to="/warden/proposals"
-                  className="text-xs font-bold text-[#5B4DF5] hover:text-[#4d3ef0] flex items-center gap-1 transition"
+                  className="text-xs font-bold text-[#f78c30] hover:text-[#e27518] flex items-center gap-1 transition"
                 >
                   <span>View All</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -635,7 +655,7 @@ export const WardenDashboard = () => {
 
               {proposalCards.length === 0 ? (
                 <div className="py-8 px-4 text-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/40">
-                  <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#5B4DF5] flex items-center justify-center mx-auto mb-2">
+                  <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#f78c30] flex items-center justify-center mx-auto mb-2">
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <p className="text-xs font-bold text-slate-700">No Active Swap Proposals</p>
@@ -648,7 +668,7 @@ export const WardenDashboard = () => {
                   {proposalCards.map((card) => (
                     <div
                       key={card.id}
-                      className="p-4 rounded-2xl border border-slate-200/80 bg-white hover:border-[#5B4DF5]/40 hover:shadow-xs transition flex flex-col justify-between"
+                      className="p-4 rounded-2xl border border-slate-200/80 bg-white hover:border-[#f78c30]/40 hover:shadow-xs transition flex flex-col justify-between"
                     >
                       <div>
                         {/* Card Header */}
@@ -715,7 +735,7 @@ export const WardenDashboard = () => {
                         </button>
                         <button
                           onClick={() => setSelectedProposalForView(card)}
-                          className="w-full py-2 rounded-xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition text-center shadow-xs"
+                          className="w-full py-2 rounded-xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition text-center shadow-xs"
                         >
                           Review
                         </button>
@@ -739,7 +759,7 @@ export const WardenDashboard = () => {
                 </h3>
                 <Link
                   to="/warden/occupancy"
-                  className="text-xs font-bold text-[#5B4DF5] hover:text-[#4d3ef0] flex items-center gap-1 transition"
+                  className="text-xs font-bold text-[#f78c30] hover:text-[#e27518] flex items-center gap-1 transition"
                 >
                   <span>View All</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -763,7 +783,7 @@ export const WardenDashboard = () => {
                       cx="50"
                       cy="50"
                       r="40"
-                      stroke="#5B4DF5"
+                      stroke="#f78c30"
                       strokeWidth="10"
                       strokeDasharray="251.2"
                       strokeDashoffset={strokeDashoffset}
@@ -782,7 +802,7 @@ export const WardenDashboard = () => {
                 <div className="space-y-2 text-xs">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#5B4DF5]" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#f78c30]" />
                       <span className="text-slate-600 font-medium text-[11px]">Occupied</span>
                     </div>
                     <span className="font-black text-slate-900">{occupiedBeds}</span>
@@ -810,7 +830,7 @@ export const WardenDashboard = () => {
                   <p className="text-[11px] font-bold text-slate-800 uppercase tracking-wide">
                     Live Room Count
                   </p>
-                  <Link to="/warden/rooms" className="text-[10px] font-bold text-[#5B4DF5] hover:underline flex items-center gap-0.5">
+                  <Link to="/warden/rooms" className="text-[10px] font-bold text-[#f78c30] hover:underline flex items-center gap-0.5">
                     <span>Manage Rooms</span>
                     <ArrowRight className="w-2.5 h-2.5" />
                   </Link>
@@ -835,7 +855,7 @@ export const WardenDashboard = () => {
                 </h3>
                 <Link
                   to="/warden/history"
-                  className="text-xs font-bold text-[#5B4DF5] hover:text-[#4d3ef0] flex items-center gap-1 transition"
+                  className="text-xs font-bold text-[#f78c30] hover:text-[#e27518] flex items-center gap-1 transition"
                 >
                   <span>View All</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -894,200 +914,22 @@ export const WardenDashboard = () => {
 
       </div>
 
-      {/* MODAL 1: Confirm Approval Modal */}
-      {selectedRequestForApprove && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                <span>Authorize Room Transfer</span>
-              </h3>
-              <button
-                onClick={() => setSelectedRequestForApprove(null)}
-                className="p-1 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="py-4 space-y-3.5 text-xs text-slate-600">
-              <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                <img
-                  src={selectedRequestForApprove.avatar}
-                  alt={selectedRequestForApprove.studentName}
-                  className="w-10 h-10 rounded-full object-cover border border-slate-200"
-                />
-                <div>
-                  <p className="font-bold text-slate-900 text-sm">{selectedRequestForApprove.studentName}</p>
-                  <p className="text-[11px] text-slate-400">Registration No: {selectedRequestForApprove.regNo}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-indigo-50/40 border border-indigo-100 text-[11px]">
-                <div>
-                  <span className="text-slate-400 block font-semibold">Current Room:</span>
-                  <p className="font-bold text-slate-800 mt-0.5">{selectedRequestForApprove.currentRoom}</p>
-                </div>
-                <div>
-                  <span className="text-slate-400 block font-semibold">Approved Room:</span>
-                  <p className="font-bold text-[#5B4DF5] mt-0.5">{selectedRequestForApprove.requestedRoom}</p>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-[11px] space-y-1">
-                <p className="font-bold flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Verified Atomic Rotation Security:</span>
-                </p>
-                <p className="text-emerald-700 leading-relaxed">
-                  Both bed de-allocations and new bed assignments will execute atomically with institutional transfer letter generation.
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
-              <button
-                onClick={() => setSelectedRequestForApprove(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleApproveConfirm}
-                className="px-5 py-2.5 rounded-xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition shadow-md shadow-[#5B4DF5]/20 flex items-center gap-1.5"
-              >
-                <Check className="w-4 h-4" />
-                <span>Confirm &amp; Execute Approval</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 2: Reject Reason Modal */}
-      {selectedRequestForReject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <XCircle className="w-5 h-5 text-rose-600" />
-                <span>Reject Room Request</span>
-              </h3>
-              <button
-                onClick={() => setSelectedRequestForReject(null)}
-                className="p-1 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="py-4 space-y-3.5 text-xs">
-              <p className="text-slate-600">
-                Rejecting transfer request for <span className="font-bold text-slate-900">{selectedRequestForReject.studentName}</span> ({selectedRequestForReject.currentRoom} ⮂ {selectedRequestForReject.requestedRoom}).
-              </p>
-
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                  Reason for Rejection:
-                </label>
-                <textarea
-                  value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
-                  placeholder="Specify institutional policy reason (e.g. Block restriction, Room maintenance, Disciplinary pending)..."
-                  rows={3}
-                  className="w-full p-3 rounded-2xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
-                />
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
-              <button
-                onClick={() => setSelectedRequestForReject(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRejectConfirm}
-                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-md shadow-rose-500/20"
-              >
-                Confirm Rejection
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL 3: Proposal Details / Review Modal */}
-      {selectedProposalForView && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className={`w-3 h-3 rounded-full ${selectedProposalForView.dotColor}`} />
-                <h3 className="text-base font-bold text-slate-900">{selectedProposalForView.type}</h3>
-              </div>
-              <button
-                onClick={() => setSelectedProposalForView(null)}
-                className="p-1 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="py-4 space-y-4 text-xs">
-              <div className="p-3.5 rounded-2xl bg-indigo-50/50 border border-indigo-100 text-xs">
-                <span className="font-bold text-slate-900 block mb-1">Cycle Rotation Chain:</span>
-                <p className="font-mono text-[#5B4DF5] font-bold">{selectedProposalForView.chain}</p>
-                <p className="text-[11px] text-slate-500 mt-1">Rooms: {selectedProposalForView.rooms}</p>
-              </div>
-
-              {/* Room Previews */}
-              <div>
-                <span className="text-[11px] font-bold text-slate-700 block mb-2">Connected Room Previews:</span>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {selectedProposalForView.roomImages.slice(0, 3).map((img, i) => (
-                    <div key={i} className="rounded-xl overflow-hidden border border-slate-200">
-                      <img src={img} alt="Room" className="w-full h-16 object-cover" />
-                      <p className="text-[9px] text-center font-bold text-slate-600 py-1 bg-slate-50">Room {i + 1}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 text-[11px]">
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <span className="text-slate-400 block font-semibold">Participants:</span>
-                  <p className="font-bold text-slate-800 mt-0.5">{selectedProposalForView.studentCount} Students Accepted</p>
-                </div>
-                <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <span className="text-slate-400 block font-semibold">Created Date:</span>
-                  <p className="font-bold text-slate-800 mt-0.5">{selectedProposalForView.date}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
-              <button
-                onClick={() => setSelectedProposalForView(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => {
-                  alert('Proposal approved and executed atomically!');
-                  setSelectedProposalForView(null);
-                }}
-                className="px-5 py-2.5 rounded-xl bg-[#5B4DF5] hover:bg-[#4d3ef0] text-white text-xs font-bold transition shadow-xs"
-              >
-                Authorize Cycle
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <WardenDashboardModals
+        selectedRequestForApprove={selectedRequestForApprove}
+        setSelectedRequestForApprove={setSelectedRequestForApprove}
+        handleApproveConfirm={handleApproveConfirm}
+        selectedRequestForReject={selectedRequestForReject}
+        setSelectedRequestForReject={setSelectedRequestForReject}
+        rejectReason={rejectReason}
+        setRejectReason={setRejectReason}
+        handleRejectConfirm={handleRejectConfirm}
+        selectedProposalForView={selectedProposalForView}
+        setSelectedProposalForView={setSelectedProposalForView}
+        onAuthorizeProposal={() => {
+          alert('Proposal approved and executed atomically!');
+          setSelectedProposalForView(null);
+        }}
+      />
 
     </AppLayout>
   );
