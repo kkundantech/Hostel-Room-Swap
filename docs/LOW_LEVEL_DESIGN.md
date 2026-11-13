@@ -409,7 +409,7 @@ def find_cycles(G: nx.DiGraph, max_length: int = 5) -> List[MatchedCycle]:
   ```json
   {
     "email": "student1@hostel.edu",
-    "password": "Password@123"
+    "password": "<STRONG_USER_PASSWORD>"
   }
   ```
 - **Response `200 OK`:**

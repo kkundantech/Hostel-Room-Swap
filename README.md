@@ -219,6 +219,17 @@ When running in development with demo mode enabled (`VITE_ENABLE_DEMO=true`), pr
 | **Hostel Admin** | `HOSTEL_ADMIN` | `admin@hostel.edu` | Configures policies, monitors audit logs |
 | **Dean** | `DEAN` | `dean@hostel.edu` | Views capacity analytics and transfer reports |
 
+
+> [!NOTE]
+> **Safe Authentication & Local Testing Instructions**:
+> 1. **No Static Public Passwords**: Default or static passwords are not published in public repository files.
+> 2. **Ephemeral Local Credentials**: Running `python backend/manage.py seed_demo_data` in development creates local test personas and outputs their ephemeral login credentials directly to your local terminal only.
+> 3. **Creating Administrator Accounts**: To create a custom administrative user with an isolated strong password:
+>    ```bash
+>    python backend/manage.py createsuperuser
+>    ```
+> 4. **Production Restriction**: The `seed_demo_data` command and `VITE_ENABLE_DEMO=true` flag must never be deployed or executed on staging or production clusters.
+
 ---
 
 ## Community & Contributing
