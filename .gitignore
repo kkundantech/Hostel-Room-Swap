@@ -53,6 +53,14 @@ desktop.ini
 
 # Docker
 *.log
+postgres_data/
+
+# PostgreSQL runtime database cluster (Never track in version control)
+pgdata/
+pgdata/*
+*.dump
+*.sql
+
 
 # Coverage
 htmlcov/

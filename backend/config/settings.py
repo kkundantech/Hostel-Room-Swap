@@ -53,6 +53,17 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-in-p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
 
+# Production safety: prevent accidental deployment with default insecure key
+if not DEBUG and ('insecure' in SECRET_KEY.lower() or 'change-to' in SECRET_KEY.lower()):
+    import sys
+    if 'pytest' not in sys.modules and 'test' not in sys.argv:
+        raise ValueError(
+            "CRITICAL SECURITY CONFIGURATION ERROR: "
+            "DJANGO_SECRET_KEY must be configured with a cryptographically secure random value when DJANGO_DEBUG=False. "
+            "Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(50))\""
+        )
+
+
 ALLOWED_HOSTS = list(set(os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver').split(',') + ['testserver', 'localhost', '127.0.0.1']))
 
 # Application definition
