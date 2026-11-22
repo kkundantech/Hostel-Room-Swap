@@ -187,12 +187,6 @@ export const Navbar = () => {
                   >
                     Overview
                   </Link>
-                  <Link
-                    to="/demo"
-                    className="px-3 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
-                  >
-                    Interactive Flow
-                  </Link>
                 </>
               )}
             </div>

@@ -115,13 +115,6 @@ export const LoginPage = () => {
     }
   };
 
-  const handleQuickFill = (id, pass) => {
-    setIdentifier(id);
-    setPassword(pass);
-    setValidationError('');
-    setServerError('');
-  };
-
   return (
     <div className="relative min-h-screen w-full flex flex-col justify-between overflow-x-hidden font-sans select-none">
       {/* Background Campus Photograph Layer */}
@@ -301,51 +294,6 @@ export const LoginPage = () => {
               <p className="text-xs text-slate-500 mt-1">
                 Enter your credentials to access your account
               </p>
-            </div>
-
-            {/* Quick Demo Fill Pills */}
-            <div className="mb-4 p-3 rounded-2xl bg-orange-50/70 border border-orange-100/90 text-left">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-[#f78c30]" />
-                  <span>Demo Logins (1-Click Fill)</span>
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium">Click to fill</span>
-              </div>
-              <div className="grid grid-cols-2 gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleQuickFill('12345678', 'Student@123')}
-                  className="py-1.5 px-2.5 rounded-lg bg-white border border-orange-200/60 hover:border-[#f78c30] text-[11px] font-semibold text-slate-800 hover:text-[#f78c30] transition shadow-2xs text-left flex items-center justify-between group cursor-pointer"
-                >
-                  <span>🎓 Student</span>
-                  <span className="text-[9px] text-slate-400 group-hover:text-[#f78c30]">Arjun</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickFill('warden.bh1@hostel.edu', 'Warden@123')}
-                  className="py-1.5 px-2.5 rounded-lg bg-white border border-orange-200/60 hover:border-[#f78c30] text-[11px] font-semibold text-slate-800 hover:text-[#f78c30] transition shadow-2xs text-left flex items-center justify-between group cursor-pointer"
-                >
-                  <span>🛡️ Warden</span>
-                  <span className="text-[9px] text-slate-400 group-hover:text-[#f78c30]">BH1</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickFill('admin@hostel.edu', 'Admin@123')}
-                  className="py-1.5 px-2.5 rounded-lg bg-white border border-orange-200/60 hover:border-[#f78c30] text-[11px] font-semibold text-slate-800 hover:text-[#f78c30] transition shadow-2xs text-left flex items-center justify-between group cursor-pointer"
-                >
-                  <span>🏢 Admin</span>
-                  <span className="text-[9px] text-slate-400 group-hover:text-[#f78c30]">System</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickFill('Kundanchaturbedi@gmail.com', 'Kundan@123')}
-                  className="py-1.5 px-2.5 rounded-lg bg-white border border-orange-200/60 hover:border-[#f78c30] text-[11px] font-semibold text-slate-800 hover:text-[#f78c30] transition shadow-2xs text-left flex items-center justify-between group cursor-pointer"
-                >
-                  <span>👑 Super Admin</span>
-                  <span className="text-[9px] text-slate-400 group-hover:text-[#f78c30]">Kundan</span>
-                </button>
-              </div>
             </div>
 
             {/* Validation & Error Messages */}
