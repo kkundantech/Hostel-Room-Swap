@@ -256,11 +256,22 @@ SIMPLE_JWT = {
 }
 
 # CORS
-CORS_ALLOWED_ORIGINS = os.getenv(
-    'CORS_ALLOWED_ORIGINS',
-    'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173',
-).split(',')
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https:\/\/.*\.vercel\.app$",
+    r"^https:\/\/.*\.onrender\.com$",
+    r"^http:\/\/localhost:\d+$",
+    r"^http:\/\/127\.0\.0\.1:\d+$",
+]
+_extra_cors = os.getenv('CORS_ALLOWED_ORIGINS', '')
+CORS_ALLOWED_ORIGINS = [
+    'https://hostel-room-swap.vercel.app',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+] + [o.strip() for o in _extra_cors.split(',') if o.strip()]
 
 # CSRF Trusted Origins for production HTTPS domains & reverse proxies
 _raw_csrf = os.getenv('CSRF_TRUSTED_ORIGINS', '')
@@ -270,6 +281,10 @@ else:
     CSRF_TRUSTED_ORIGINS = list({
         origin for origin in (
             CORS_ALLOWED_ORIGINS + [
+                'https://*.vercel.app',
+                'https://*.onrender.com',
+                'https://hostel-room-swap.vercel.app',
+                'https://hostel-room-swap.onrender.com',
                 'http://localhost:3000',
                 'http://127.0.0.1:3000',
                 'http://localhost:5173',
