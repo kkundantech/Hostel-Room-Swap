@@ -21,7 +21,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { getRoleNavItems } from '../components/layout/navConfig';
-import { StudentCreateRequestModal } from '../components/student/StudentCreateRequestModal';
+import { StudentCreateRequestModal, checkFloorAvailability } from '../components/student/StudentCreateRequestModal';
 
 describe('StatusBadge', () => {
   it('renders semantic labels for known workflow states', () => {
@@ -103,5 +103,71 @@ describe('StudentCreateRequestModal', () => {
     );
     expect(screen.getByText('Create Room Exchange Request')).toBeInTheDocument();
     expect(screen.getByText(/Boys Hostel 1 \(BH1\)/)).toBeInTheDocument();
+  });
+
+  it('displays floor availability warning when requested floor is unavailable in BH1 or BH2', () => {
+    // 1. Logic function check
+    const warningBH1 = checkFloorAvailability('BH1', '4th Floor', [
+      { id: 1, name: 'Boys Hostel 1', code: 'BH1', max_floor: 3, available_floors: [1] }
+    ]);
+    expect(warningBH1).not.toBeNull();
+    expect(warningBH1.message).toContain('Currently it is not available on Boys Hostel 1, maybe in future you can try.');
+
+    const warningAny = checkFloorAvailability('BH1', 'Any Floor', []);
+    expect(warningAny).toBeNull();
+
+    // 2. Component render check
+    render(
+      <StudentCreateRequestModal
+        isOpen={true}
+        onClose={vi.fn()}
+        onSubmit={vi.fn()}
+        hostels={[{ id: 1, name: 'Boys Hostel 1', code: 'BH1', max_floor: 3, available_floors: [1] }]}
+        selectedHostel="1"
+        setSelectedHostel={vi.fn()}
+        preferredSeater="2 Seater"
+        setPreferredSeater={vi.fn()}
+        preferredFloor="4th Floor"
+        setPreferredFloor={vi.fn()}
+        reason="Testing floor warning"
+        setReason={vi.fn()}
+        submitting={false}
+      />
+    );
+
+    expect(screen.getByText(/Floor Availability Advisory/i)).toBeInTheDocument();
+    expect(screen.getByText(/Currently it is not available on Boys Hostel 1, maybe in future you can try\./i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Room Not Available — Cannot Go Ahead/i })).toBeDisabled();
+  });
+
+  it('enables submit button and shows ready to go ahead when room/floor is available', () => {
+    const availableCheck = checkFloorAvailability('1', 'Ground Floor', [
+      { id: 1, name: 'Boys Hostel 1', code: 'BH1', max_floor: 3, available_floors: [1] }
+    ]);
+    expect(availableCheck).toBeNull();
+
+    render(
+      <StudentCreateRequestModal
+        isOpen={true}
+        onClose={vi.fn()}
+        onSubmit={vi.fn()}
+        hostels={[{ id: 1, name: 'Boys Hostel 1', code: 'BH1', max_floor: 3, available_floors: [1] }]}
+        selectedHostel="1"
+        setSelectedHostel={vi.fn()}
+        preferredSeater="2 Seater"
+        setPreferredSeater={vi.fn()}
+        preferredFloor="Ground Floor"
+        setPreferredFloor={vi.fn()}
+        reason="Semester exchange request"
+        setReason={vi.fn()}
+        submitting={false}
+      />
+    );
+
+    expect(screen.getByText('Room Available')).toBeInTheDocument();
+    expect(screen.getByText('Ready to Go Ahead')).toBeInTheDocument();
+    const goAheadBtn = screen.getByRole('button', { name: /Go Ahead & Submit Request/i });
+    expect(goAheadBtn).toBeInTheDocument();
+    expect(goAheadBtn).not.toBeDisabled();
   });
 });

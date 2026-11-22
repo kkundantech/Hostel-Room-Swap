@@ -34,12 +34,20 @@ from apps.policies.services import get_policy_value
 class ExchangeRequestCreateSerializer(serializers.ModelSerializer):
     """Used when creating a new exchange request."""
 
+    preferred_floor = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    floor_warning = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = ExchangeRequest
         fields = [
             'id', 'preferred_hostel', 'preferred_block',
-            'preferred_room', 'preferred_bed', 'reason',
+            'preferred_room', 'preferred_bed', 'preferred_floor', 'reason',
+            'floor_warning',
         ]
+
+    def get_floor_warning(self, obj) -> str | None:
+        last_val = getattr(obj, 'last_validation', {}) or {}
+        return last_val.get('floor_warning')
 
     def validate(self, data):
         user = self.context['request'].user
@@ -75,6 +83,35 @@ class ExchangeRequestCreateSerializer(serializers.ModelSerializer):
                     )
                 })
 
+            # Check floor availability on preferred hostel (e.g. BH1, BH2)
+            preferred_floor = data.get('preferred_floor') or ''
+            reason_text = data.get('reason', '')
+            floor_eval_text = f"{preferred_floor} {reason_text}".lower()
+
+            from apps.hostels.models import Room
+            from django.db.models import Max
+            room_max = Room.objects.filter(block__hostel=pref_hostel, is_active=True).aggregate(m=Max('floor'))['m'] or 0
+            block_max = pref_hostel.blocks.filter(is_active=True).aggregate(m=Max('floor_count'))['m'] or 0
+            max_floor = max(room_max, block_max, 1)
+            active_floors = list(
+                Room.objects.filter(block__hostel=pref_hostel, is_active=True)
+                .values_list('floor', flat=True)
+                .distinct()
+            )
+
+            is_unavailable = False
+            for fl in [5, 4, 3, 2]:
+                if f"{fl}th floor" in floor_eval_text or f"floor {fl}" in floor_eval_text or f"{fl} floor" in floor_eval_text:
+                    if fl > max_floor or (active_floors and fl not in active_floors):
+                        is_unavailable = True
+                    break
+            if not is_unavailable and ("3rd or 4th" in floor_eval_text or "3rd/4th" in floor_eval_text):
+                if 4 > max_floor or (active_floors and 3 not in active_floors and 4 not in active_floors):
+                    is_unavailable = True
+
+            if is_unavailable:
+                data['_floor_warning'] = "Currently it is not available, maybe in future you can try."
+
         pref_block = data.get('preferred_block')
         if pref_block:
             student_gender = getattr(getattr(user, 'student_profile', None), 'gender', 'MALE')
@@ -89,6 +126,8 @@ class ExchangeRequestCreateSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
+        floor_warning = validated_data.pop('_floor_warning', None)
+        validated_data.pop('preferred_floor', None)
         user = self.context['request'].user
         validity_days = get_policy_value('REQUEST_VALIDITY_DAYS', default=14)
         expires_at = timezone.now() + timedelta(days=validity_days)
@@ -96,12 +135,16 @@ class ExchangeRequestCreateSerializer(serializers.ModelSerializer):
         # Run initial eligibility check
         from apps.policies.services import validate_student_eligibility
         report = validate_student_eligibility(user)
+        val_dict = report.to_dict()
+        if floor_warning:
+            val_dict['floor_warning'] = floor_warning
+            val_dict['has_floor_warning'] = True
 
         return ExchangeRequest.objects.create(
             student=user,
             expires_at=expires_at,
             is_eligible=report.is_eligible,
-            last_validation=report.to_dict(),
+            last_validation=val_dict,
             **validated_data,
         )
 
@@ -114,6 +157,7 @@ class ExchangeRequestSerializer(serializers.ModelSerializer):
     days_remaining = serializers.SerializerMethodField()
     hostel_name = serializers.SerializerMethodField()
     active_proposal = serializers.SerializerMethodField()
+    floor_warning = serializers.SerializerMethodField()
 
     class Meta:
         model = ExchangeRequest
@@ -124,8 +168,22 @@ class ExchangeRequestSerializer(serializers.ModelSerializer):
             'reason', 'is_eligible', 'last_validation',
             'created_at', 'updated_at', 'expires_at', 'completed_at',
             'days_remaining', 'hostel_name', 'active_proposal',
+            'floor_warning',
         ]
         read_only_fields = fields
+
+    def get_floor_warning(self, obj) -> str | None:
+        last_val = obj.last_validation or {}
+        if last_val.get('floor_warning'):
+            return last_val['floor_warning']
+        pref_hostel = obj.preferred_hostel
+        if pref_hostel and obj.reason:
+            reason_lower = obj.reason.lower()
+            code = (pref_hostel.code or '').upper()
+            if '4th floor' in reason_lower or '5th floor' in reason_lower or '3rd or 4th floor' in reason_lower:
+                if code in ('BH1', 'BH2', 'GH1'):
+                    return "Currently it is not available, maybe in future you can try."
+        return None
 
     def get_current_bed_label(self, obj) -> str:
         return obj.current_bed.full_label if obj.current_bed else "N/A"

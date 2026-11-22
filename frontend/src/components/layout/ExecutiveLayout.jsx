@@ -16,7 +16,7 @@
  */
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, LogOut } from 'lucide-react';
 import { NotificationsPopover } from '../common/NotificationsPopover';
 import { getRoleBadge } from './navConfig';
@@ -34,6 +34,28 @@ export const ExecutiveLayout = ({
   handleNavClick,
   handleLogout,
 }) => {
+  const location = useLocation();
+  const sidebarScrollRef = React.useRef(null);
+
+  // Preserve and restore exact scroll position across route changes
+  React.useLayoutEffect(() => {
+    const saved = sessionStorage.getItem('executive_sidebar_scroll');
+    if (saved !== null && sidebarScrollRef.current) {
+      sidebarScrollRef.current.scrollTop = Number(saved);
+    }
+  }, [location.pathname]);
+
+  const handleSidebarScroll = (e) => {
+    sessionStorage.setItem('executive_sidebar_scroll', String(e.currentTarget.scrollTop));
+  };
+
+  const handleLinkClick = () => {
+    if (sidebarScrollRef.current) {
+      sessionStorage.setItem('executive_sidebar_scroll', String(sidebarScrollRef.current.scrollTop));
+    }
+    handleNavClick?.();
+  };
+
   return (
     <div className="h-screen flex bg-slate-50 text-slate-800 overflow-hidden">
       {/* Mobile Sidebar Overlay */}
@@ -48,11 +70,15 @@ export const ExecutiveLayout = ({
       <aside
         className={`fixed inset-y-0 left-0 z-50 bg-slate-900 text-slate-300 flex flex-col justify-between transition-all duration-300 ease-in-out md:static md:h-screen md:shrink-0 ${
           sidebarOpen
-            ? 'w-64 translate-x-0 opacity-100 shadow-xl md:shadow-none'
-            : 'w-0 -translate-x-full md:translate-x-0 opacity-0 overflow-hidden border-r-0 pointer-events-none'
+            ? 'w-64 min-w-[16rem] max-w-[16rem] translate-x-0 opacity-100 shadow-xl md:shadow-none'
+            : 'w-0 min-w-0 max-w-0 -translate-x-full md:translate-x-0 opacity-0 overflow-hidden border-r-0 pointer-events-none'
         }`}
       >
-        <div className="w-64 min-w-[16rem] flex flex-col h-full justify-between overflow-y-auto overscroll-contain sidebar-scroll">
+        <div
+          ref={sidebarScrollRef}
+          onScroll={handleSidebarScroll}
+          className="w-64 min-w-[16rem] flex flex-col h-full justify-between overflow-y-auto overscroll-contain sidebar-scroll"
+        >
           <div>
             {/* Brand Header */}
             <div className="h-16 px-5 flex items-center justify-between border-b border-slate-800">
@@ -60,6 +86,7 @@ export const ExecutiveLayout = ({
                 <img
                   src="/images/lpu_university.jpg"
                   alt="Lovely Professional University"
+                  loading="lazy"
                   className="w-9 h-9 rounded-xl object-cover border border-slate-700 shadow-sm shrink-0"
                 />
                 <div>
@@ -72,12 +99,11 @@ export const ExecutiveLayout = ({
               <button
                 type="button"
                 onClick={() => setSidebarOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
-                title="Hide menu options"
-                aria-label="Hide menu"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer md:hidden"
+                title="Close menu"
+                aria-label="Close menu"
               >
-                <Menu className="w-5 h-5 hidden sm:block text-slate-400 hover:text-white" />
-                <X className="w-5 h-5 sm:hidden block" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -116,7 +142,7 @@ export const ExecutiveLayout = ({
                   <Link
                     key={item.path}
                     to={item.path}
-                    onClick={handleNavClick}
+                    onClick={handleLinkClick}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition ${
                       active
                         ? 'bg-[#f78c30] text-white shadow-md shadow-[#f78c30]/25'

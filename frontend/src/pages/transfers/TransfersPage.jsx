@@ -18,6 +18,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -28,6 +29,7 @@ import {
   Search,
   Filter,
   CheckCircle2,
+  Clock,
   FileText
 } from 'lucide-react';
 
@@ -36,21 +38,46 @@ export const TransfersPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const fetchTransfers = async () => {
+  const fetchTransfers = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       const res = await api.getTransfers();
       setTransfers(res.results || res || []);
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTransfers();
+    fetchTransfers(false);
   }, []);
+
+  useRealtimeSync(() => {
+    fetchTransfers(true);
+  }, { pollIntervalMs: 6000 });
+
+  const formatDateTime = (rawDate) => {
+    if (!rawDate) return { date: 'N/A', time: '' };
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return { date: 'N/A', time: '' };
+
+    const dateStr = d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+
+    const timeStr = d.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+
+    return { date: dateStr, time: timeStr };
+  };
 
   const filteredTransfers = transfers.filter((t) => {
     const q = searchQuery.toLowerCase();
@@ -88,7 +115,7 @@ export const TransfersPage = () => {
               placeholder="Search by student, bed label, or transfer ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30]"
             />
           </div>
           <span className="text-xs text-slate-400 font-medium">
@@ -115,57 +142,70 @@ export const TransfersPage = () => {
                     <th>Proposal</th>
                     <th>Student Participant</th>
                     <th>Bed Rotation (From &rarr; To)</th>
-                    <th>Execution Date</th>
+                    <th>Execution Date &amp; Time</th>
                     <th>Status</th>
                     <th className="text-right">Transfer Letter</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransfers.map((t) => (
-                    <tr key={t.id}>
-                      <td className="font-mono text-slate-900 font-bold">
-                        #{String(t.id).slice(0, 8)}
-                      </td>
-                      <td className="font-mono text-blue-700 text-xs">
-                        {t.proposal ? `#${String(t.proposal).slice(0, 8)}` : 'Manual'}
-                      </td>
-                      <td className="text-slate-800">
-                        <div className="font-semibold text-xs">{t.student_name || 'Student'}</div>
-                        <div className="text-[11px] text-slate-400 font-mono">{t.student_email || t.student?.email}</div>
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-1.5 font-mono text-[11px]">
-                          <span className="text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
-                            {t.from_bed_label}
+                  {filteredTransfers.map((t) => {
+                    const rawDate = t.created_at || t.timestamp;
+                    const { date, time } = formatDateTime(rawDate);
+
+                    return (
+                      <tr key={t.id}>
+                        <td className="font-mono text-slate-900 font-bold">
+                          #{String(t.id).slice(0, 8)}
+                        </td>
+                        <td className="font-mono text-blue-700 text-xs">
+                          {t.proposal ? `#${String(t.proposal).slice(0, 8)}` : 'Manual'}
+                        </td>
+                        <td className="text-slate-800">
+                          <div className="font-semibold text-xs">{t.student_name || 'Student'}</div>
+                          <div className="text-[11px] text-slate-400 font-mono">{t.student_email || t.student?.email}</div>
+                        </td>
+                        <td>
+                          <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                            <span className="text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                              {t.from_bed_label}
+                            </span>
+                            <ArrowRight className="w-3.5 h-3.5 text-blue-600" />
+                            <span className="text-blue-700 bg-blue-50 font-bold px-2 py-0.5 rounded border border-blue-200">
+                              {t.to_bed_label}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="text-xs">
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-slate-800">{date}</span>
+                            {time && (
+                              <span className="text-[11px] font-mono text-[#f78c30] font-medium flex items-center gap-1 mt-0.5">
+                                <Clock className="w-3 h-3 text-[#f78c30]" />
+                                {time}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <span className="badge badge-success flex items-center gap-1 w-fit">
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>COMPLETED</span>
                           </span>
-                          <ArrowRight className="w-3.5 h-3.5 text-blue-600" />
-                          <span className="text-blue-700 bg-blue-50 font-bold px-2 py-0.5 rounded border border-blue-200">
-                            {t.to_bed_label}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="text-slate-500 text-xs">
-                        {new Date(t.created_at).toLocaleString()}
-                      </td>
-                      <td>
-                        <span className="badge badge-success flex items-center gap-1 w-fit">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>COMPLETED</span>
-                        </span>
-                      </td>
-                      <td className="text-right">
-                        <a
-                          href={api.downloadTransferLetter(t.id)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
-                        >
-                          <FileText className="w-3.5 h-3.5 text-slate-500" />
-                          <span>PDF Letter</span>
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="text-right">
+                          <a
+                            href={api.downloadTransferLetter(t.id)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-slate-500" />
+                            <span>PDF Letter</span>
+                          </a>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

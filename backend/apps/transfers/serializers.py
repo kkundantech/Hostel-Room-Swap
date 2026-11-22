@@ -22,6 +22,8 @@ from apps.accounts.serializers import UserMinimalSerializer
 
 class TransferRecordSerializer(serializers.ModelSerializer):
     student = UserMinimalSerializer(read_only=True)
+    student_name = serializers.SerializerMethodField()
+    student_email = serializers.SerializerMethodField()
     old_bed_label = serializers.SerializerMethodField()
     new_bed_label = serializers.SerializerMethodField()
     approved_by = UserMinimalSerializer(read_only=True)
@@ -33,11 +35,20 @@ class TransferRecordSerializer(serializers.ModelSerializer):
         model = TransferRecord
         fields = [
             'id', 'transfer_id', 'proposal', 'proposal_reference',
-            'student', 'old_bed', 'old_bed_label', 'old_hostel',
+            'student', 'student_name', 'student_email',
+            'old_bed', 'old_bed_label', 'old_hostel',
             'new_bed', 'new_bed_label', 'new_hostel',
             'approved_by', 'status', 'completed_at', 'created_at',
         ]
         read_only_fields = fields
+
+    def get_student_name(self, obj) -> str:
+        if not obj.student:
+            return 'Resident Student'
+        return obj.student.get_full_name() or getattr(obj.student, 'registration_number', '') or obj.student.email
+
+    def get_student_email(self, obj) -> str:
+        return obj.student.email if obj.student else ''
 
     def get_old_bed_label(self, obj) -> str:
         return obj.old_bed.full_label if obj.old_bed else ''

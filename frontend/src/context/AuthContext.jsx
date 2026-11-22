@@ -51,6 +51,20 @@ export const AuthProvider = ({ children }) => {
   });
   const [loading, setLoading] = useState(true);
 
+  // Persistent sidebar state: false by default on initial dashboard landing,
+  // stays open across route/function changes once toggled by the user.
+  const [sidebarOpen, setSidebarOpenState] = useState(() => {
+    return sessionStorage.getItem('roomswap_sidebar_open') === 'true';
+  });
+
+  const setSidebarOpen = (valOrFn) => {
+    setSidebarOpenState((prev) => {
+      const nextVal = typeof valOrFn === 'function' ? valOrFn(prev) : valOrFn;
+      sessionStorage.setItem('roomswap_sidebar_open', String(nextVal));
+      return nextVal;
+    });
+  };
+
   useEffect(() => {
     const handleLogout = () => {
       setUser(null);
@@ -87,6 +101,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('access_token', token);
     localStorage.setItem('refresh_token', refresh);
     localStorage.setItem('user', JSON.stringify(userData));
+    sessionStorage.removeItem('roomswap_sidebar_open');
+    setSidebarOpenState(false);
     setUser(userData);
     return userData;
   };
@@ -95,6 +111,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('roomswap_sidebar_open');
+    setSidebarOpenState(false);
     setUser(null);
   };
 
@@ -113,6 +131,8 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         logout,
+        sidebarOpen,
+        setSidebarOpen,
         isSuperAdmin,
         isStudent,
         isWarden,

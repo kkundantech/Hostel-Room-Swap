@@ -109,6 +109,9 @@ class HostelSerializer(serializers.ModelSerializer):
     total_beds = serializers.SerializerMethodField()
     occupied_beds = serializers.SerializerMethodField()
     vacant_beds = serializers.SerializerMethodField()
+    max_floor = serializers.SerializerMethodField()
+    floor_count = serializers.SerializerMethodField()
+    available_floors = serializers.SerializerMethodField()
 
     class Meta:
         model = Hostel
@@ -116,7 +119,28 @@ class HostelSerializer(serializers.ModelSerializer):
             'id', 'name', 'code', 'hostel_category', 'eligibility_policy',
             'address', 'total_blocks', 'warden_contact', 'is_active',
             'total_beds', 'occupied_beds', 'vacant_beds', 'blocks',
+            'max_floor', 'floor_count', 'available_floors',
         ]
+
+    def get_max_floor(self, obj) -> int:
+        from django.db.models import Max
+        room_max = Room.objects.filter(block__hostel=obj, is_active=True).aggregate(m=Max('floor'))['m']
+        block_max = obj.blocks.filter(is_active=True).aggregate(m=Max('floor_count'))['m']
+        return max(room_max or 0, block_max or 0, 1)
+
+    def get_floor_count(self, obj) -> int:
+        return self.get_max_floor(obj)
+
+    def get_available_floors(self, obj) -> list:
+        floors = list(
+            Room.objects.filter(block__hostel=obj, is_active=True)
+            .values_list('floor', flat=True)
+            .distinct()
+            .order_by('floor')
+        )
+        if not floors:
+            return list(range(1, self.get_max_floor(obj) + 1))
+        return floors
 
     def get_total_beds(self, obj) -> int:
         return Bed.objects.filter(
@@ -139,13 +163,37 @@ class HostelMinimalSerializer(serializers.ModelSerializer):
     occupied_beds = serializers.SerializerMethodField()
     vacant_beds = serializers.SerializerMethodField()
     total_rooms = serializers.SerializerMethodField()
+    max_floor = serializers.SerializerMethodField()
+    floor_count = serializers.SerializerMethodField()
+    available_floors = serializers.SerializerMethodField()
 
     class Meta:
         model = Hostel
         fields = [
             'id', 'name', 'code', 'hostel_category', 'eligibility_policy',
             'is_active', 'total_beds', 'occupied_beds', 'vacant_beds', 'total_rooms',
+            'max_floor', 'floor_count', 'available_floors',
         ]
+
+    def get_max_floor(self, obj) -> int:
+        from django.db.models import Max
+        room_max = Room.objects.filter(block__hostel=obj, is_active=True).aggregate(m=Max('floor'))['m']
+        block_max = obj.blocks.filter(is_active=True).aggregate(m=Max('floor_count'))['m']
+        return max(room_max or 0, block_max or 0, 1)
+
+    def get_floor_count(self, obj) -> int:
+        return self.get_max_floor(obj)
+
+    def get_available_floors(self, obj) -> list:
+        floors = list(
+            Room.objects.filter(block__hostel=obj, is_active=True)
+            .values_list('floor', flat=True)
+            .distinct()
+            .order_by('floor')
+        )
+        if not floors:
+            return list(range(1, self.get_max_floor(obj) + 1))
+        return floors
 
     def get_total_beds(self, obj) -> int:
         return Bed.objects.filter(

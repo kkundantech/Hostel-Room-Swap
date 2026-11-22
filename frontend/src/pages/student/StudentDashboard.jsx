@@ -26,6 +26,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
+import { formatDateSafe } from '../../utils/dateUtils';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { ConfirmationModal } from '../../components/common/ConfirmationModal';
@@ -60,7 +62,8 @@ import {
   Share2,
   Bell,
   Mail,
-  User
+  User,
+  AlertTriangle
 } from 'lucide-react';
 
 export const StudentDashboard = ({ initialTab }) => {
@@ -112,9 +115,9 @@ export const StudentDashboard = ({ initialTab }) => {
     user?.registration_number ||
     'Not Assigned';
 
-  const loadData = async () => {
+  const loadData = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       const [allocRes, eligRes, reqRes, propRes, transRes, hostelRes, roomsRes, notifRes] = await Promise.allSettled([
         api.getMyAllocation(),
         api.validateEligibility(),
@@ -145,13 +148,17 @@ export const StudentDashboard = ({ initialTab }) => {
     } catch (err) {
       console.error('Error loading student dashboard data from backend:', err);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
+    loadData(false);
   }, []);
+
+  useRealtimeSync(() => {
+    loadData(true);
+  }, { pollIntervalMs: 6000 });
 
   useEffect(() => {
     if (initialTab === 'rooms') setShowBrowseModal(true);
@@ -167,17 +174,23 @@ export const StudentDashboard = ({ initialTab }) => {
     setFormSuccess('');
 
     try {
-      await api.createExchangeRequest({
+      const res = await api.createExchangeRequest({
         preferred_hostel: selectedHostel || null,
+        preferred_floor: preferredFloor,
         reason: `${reason.trim()} [Preference: ${preferredSeater}, ${preferredFloor}]`,
       });
-      setFormSuccess('Exchange request submitted successfully to backend!');
+      const floorWarn = res?.floor_warning || res?.data?.floor_warning || res?.last_validation?.floor_warning;
+      if (floorWarn) {
+        setFormSuccess(`Exchange request submitted. Note: ${floorWarn}`);
+      } else {
+        setFormSuccess('Exchange request submitted successfully to backend!');
+      }
       window.dispatchEvent(new Event('refresh-counts'));
       setTimeout(() => {
         setShowCreateModal(false);
         setReason('');
         setFormSuccess('');
-      }, 1200);
+      }, 1500);
       loadData();
     } catch (err) {
       const msg =
@@ -235,6 +248,33 @@ export const StudentDashboard = ({ initialTab }) => {
     } catch (err) {
       console.error('Error marking all notifications read:', err);
     }
+  };
+
+  const handleGoAheadWithRoom = (roomItem) => {
+    setShowBrowseModal(false);
+    if (roomItem) {
+      const targetHostel = hostels.find(
+        (h) => h.name === roomItem.block || (roomItem.distance && roomItem.distance.includes(h.name)) || (roomItem.block && roomItem.block.includes(h.code))
+      );
+      if (targetHostel) {
+        setSelectedHostel(targetHostel.id);
+      }
+      if (roomItem.seater) {
+        setPreferredSeater(roomItem.seater);
+      }
+      if (roomItem.floor) {
+        const fl = parseInt(roomItem.floor, 10);
+        if (fl === 1) setPreferredFloor('Ground Floor');
+        else if (fl === 2) setPreferredFloor('2nd Floor');
+        else if (fl === 3) setPreferredFloor('3rd Floor');
+        else if (fl === 4) setPreferredFloor('4th Floor');
+        else setPreferredFloor('Ground Floor');
+      } else {
+        setPreferredFloor('Ground Floor');
+      }
+      setReason(`Exchange request for available Room ${roomItem.room} (${roomItem.block || 'Hostel'}).`);
+    }
+    setShowCreateModal(true);
   };
 
   // Real backend calculations
@@ -303,8 +343,8 @@ export const StudentDashboard = ({ initialTab }) => {
         {/* 2. TOP METRIC CARDS (4-Column Grid) - Backend-Driven Counts */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: My Requests */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs flex items-center gap-4 hover:shadow-md transition">
-            <div className="w-13 h-13 rounded-2xl bg-[#fff8f1] text-[#f78c30] flex items-center justify-center shrink-0">
+          <div className="card-interactive bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs flex items-center gap-4">
+            <div className="w-13 h-13 rounded-2xl bg-[#fff8f1] text-[#f78c30] flex items-center justify-center shrink-0 shadow-xs">
               <Bed className="w-6 h-6" />
             </div>
             <div>
@@ -319,8 +359,8 @@ export const StudentDashboard = ({ initialTab }) => {
           </div>
 
           {/* Card 2: Swap Proposals */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs flex items-center gap-4 hover:shadow-md transition">
-            <div className="w-13 h-13 rounded-2xl bg-[#ecfdf5] text-emerald-600 flex items-center justify-center shrink-0">
+          <div className="card-interactive bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs flex items-center gap-4">
+            <div className="w-13 h-13 rounded-2xl bg-[#ecfdf5] text-emerald-600 flex items-center justify-center shrink-0 shadow-xs">
               <ArrowLeftRight className="w-6 h-6" />
             </div>
             <div>
@@ -335,8 +375,8 @@ export const StudentDashboard = ({ initialTab }) => {
           </div>
 
           {/* Card 3: Transfer History */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs flex items-center gap-4 hover:shadow-md transition">
-            <div className="w-13 h-13 rounded-2xl bg-[#fffbeb] text-amber-500 flex items-center justify-center shrink-0">
+          <div className="card-interactive bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs flex items-center gap-4">
+            <div className="w-13 h-13 rounded-2xl bg-[#fffbeb] text-amber-500 flex items-center justify-center shrink-0 shadow-xs">
               <RotateCw className="w-6 h-6" />
             </div>
             <div>
@@ -344,15 +384,15 @@ export const StudentDashboard = ({ initialTab }) => {
               <h3 className="text-2xl font-black text-slate-900 leading-tight">
                 {transfers.length}
               </h3>
-              <Link to="/student/history" className="text-[10px] text-slate-400 hover:text-slate-600 font-medium">
+              <Link to="/student/history" className="text-[10px] text-slate-400 hover:text-[#f78c30] font-medium transition">
                 {transfers.length > 0 ? 'View all transfers' : '0 past transfers'}
               </Link>
             </div>
           </div>
 
           {/* Card 4: My Current Room */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs flex items-center gap-4 hover:shadow-md transition">
-            <div className="w-13 h-13 rounded-2xl bg-[#eff6ff] text-blue-600 flex items-center justify-center shrink-0">
+          <div className="card-interactive bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs flex items-center gap-4">
+            <div className="w-13 h-13 rounded-2xl bg-[#eff6ff] text-blue-600 flex items-center justify-center shrink-0 shadow-xs">
               <Building className="w-6 h-6" />
             </div>
             <div>
@@ -376,9 +416,13 @@ export const StudentDashboard = ({ initialTab }) => {
           <div className="lg:col-span-7 space-y-6">
 
             {/* Find a Room Exchange Banner with 3D Character */}
-            <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xs p-6 sm:p-7 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="card-interactive bg-gradient-to-br from-white via-white to-orange-50/20 rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-7 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
               {/* Left Action Area */}
               <div className="space-y-4 max-w-sm z-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-[10px] font-bold tracking-wide">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Cycle Matching Engine Active</span>
+                </div>
                 <div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight">
                     Find a Room Exchange
@@ -391,7 +435,7 @@ export const StudentDashboard = ({ initialTab }) => {
                 <div className="space-y-2.5 pt-1">
                   <button
                     onClick={() => setShowCreateModal(true)}
-                    className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold shadow-md shadow-[#f78c30]/25 flex items-center justify-center gap-2 transition-all transform active:scale-95"
+                    className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-[#f78c30] to-[#f99b4a] hover:from-[#e27518] hover:to-[#f78c30] text-white text-xs font-bold shadow-md shadow-[#f78c30]/25 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Create Exchange Request</span>
@@ -400,7 +444,7 @@ export const StudentDashboard = ({ initialTab }) => {
 
                   <button
                     onClick={() => setShowBrowseModal(true)}
-                    className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-white hover:bg-purple-50/50 text-[#f78c30] border border-[#f78c30]/80 text-xs font-bold flex items-center justify-center gap-2 transition"
+                    className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-white hover:bg-orange-50/60 text-[#f78c30] border border-[#f78c30]/60 text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer"
                   >
                     <Search className="w-3.5 h-3.5" />
                     <span>Browse Available Rooms</span>
@@ -414,6 +458,7 @@ export const StudentDashboard = ({ initialTab }) => {
                   <img
                     src="/images/student_laptop_3d.jpg"
                     alt="LPU Student"
+                    loading="lazy"
                     className="w-48 h-48 sm:w-56 sm:h-52 object-contain mix-blend-multiply z-10"
                   />
                   {/* Decorative Playful Doodle Script */}
@@ -472,6 +517,7 @@ export const StudentDashboard = ({ initialTab }) => {
                           <img
                             src="/images/hostel_room_view.jpg"
                             alt="Room Preview"
+                            loading="lazy"
                             className="w-16 h-14 rounded-xl object-cover border border-slate-200 shrink-0"
                           />
                           <div className="min-w-0">
@@ -495,7 +541,7 @@ export const StudentDashboard = ({ initialTab }) => {
                         <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
                           <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
                             <Clock className="w-3 h-3" />
-                            <span>{new Date(prop.created_at).toLocaleDateString()}</span>
+                            <span>{formatDateSafe(prop.created_at, 'Recently')}</span>
                           </span>
 
                           <button
@@ -614,6 +660,7 @@ export const StudentDashboard = ({ initialTab }) => {
                   <img
                     src="/images/hostel_room_view.jpg"
                     alt="My Room"
+                    loading="lazy"
                     className="w-28 h-24 sm:w-32 sm:h-28 rounded-2xl object-cover border border-slate-200 shrink-0 shadow-xs"
                   />
 
@@ -685,6 +732,7 @@ export const StudentDashboard = ({ initialTab }) => {
                       <img
                         src="/images/hostel_room_view.jpg"
                         alt="Request"
+                        loading="lazy"
                         className="w-12 h-12 rounded-xl object-cover shrink-0 border border-slate-200"
                       />
                       <div className="flex-1 min-w-0">
@@ -703,9 +751,15 @@ export const StudentDashboard = ({ initialTab }) => {
                         <p className="text-[10px] text-slate-500 mt-0.5 truncate">
                           {req.reason || 'Standard room exchange request'}
                         </p>
+                        {(req.floor_warning || req.last_validation?.floor_warning) && (
+                          <div className="mt-1 flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200/90 text-[10px] font-semibold">
+                            <AlertTriangle className="w-3 h-3 text-amber-600 shrink-0" />
+                            <span className="truncate">{req.floor_warning || req.last_validation?.floor_warning}</span>
+                          </div>
+                        )}
                         <p className="text-[9px] text-slate-400 flex items-center gap-1 mt-1 font-medium">
                           <Calendar className="w-3 h-3" />
-                          <span>Posted on {new Date(req.created_at).toLocaleDateString()}</span>
+                          <span>Posted on {formatDateSafe(req.created_at, 'Recently')}</span>
                         </p>
                       </div>
                       <button
@@ -874,10 +928,7 @@ export const StudentDashboard = ({ initialTab }) => {
         roomFilterBlock={roomFilterBlock}
         setRoomFilterBlock={setRoomFilterBlock}
         filteredRooms={filteredRooms}
-        onRequestSwap={() => {
-          setShowBrowseModal(false);
-          setShowCreateModal(true);
-        }}
+        onRequestSwap={handleGoAheadWithRoom}
       />
 
       <StudentProposalModals

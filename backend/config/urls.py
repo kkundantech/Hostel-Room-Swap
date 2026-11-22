@@ -66,7 +66,8 @@ urlpatterns = [
     # Django admin
     path('admin/', admin.site.urls),
 
-    # Health check
+    # Health checks
+    path('healthz', health_check, name='healthz'),
     path('api/health/', health_check, name='health-check'),
 
     # OpenAPI / Swagger

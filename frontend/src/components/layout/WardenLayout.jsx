@@ -14,7 +14,7 @@
  */
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Bed,
   Menu,
@@ -39,6 +39,48 @@ export const WardenLayout = ({
   handleNavClick,
   handleLogout,
 }) => {
+  const location = useLocation();
+  const sidebarScrollRef = React.useRef(null);
+
+  // Preserve and restore exact scroll position across route changes
+  React.useLayoutEffect(() => {
+    const restoreScroll = () => {
+      const saved = sessionStorage.getItem('warden_sidebar_scroll');
+      if (saved !== null && sidebarScrollRef.current) {
+        sidebarScrollRef.current.scrollTop = Number(saved);
+      } else if (sidebarScrollRef.current) {
+        const activeLink = sidebarScrollRef.current.querySelector('.bg-\\[\\#f78c30\\]');
+        if (activeLink) {
+          activeLink.scrollIntoView({ block: 'nearest' });
+        }
+      }
+    };
+
+    restoreScroll();
+    const rAf = typeof window !== 'undefined' && window.requestAnimationFrame ? window.requestAnimationFrame(restoreScroll) : null;
+    const timeout = setTimeout(restoreScroll, 50);
+
+    return () => {
+      if (rAf && typeof window !== 'undefined' && window.cancelAnimationFrame) {
+        window.cancelAnimationFrame(rAf);
+      }
+      clearTimeout(timeout);
+    };
+  }, [location.pathname]);
+
+  const handleSidebarScroll = (e) => {
+    if (e?.currentTarget) {
+      sessionStorage.setItem('warden_sidebar_scroll', String(e.currentTarget.scrollTop));
+    }
+  };
+
+  const handleLinkClick = () => {
+    if (sidebarScrollRef.current) {
+      sessionStorage.setItem('warden_sidebar_scroll', String(sidebarScrollRef.current.scrollTop));
+    }
+    handleNavClick?.();
+  };
+
   const wardenName = user?.first_name
     ? `${user.first_name} ${user.last_name || ''}`.trim()
     : 'Warden';
@@ -59,13 +101,16 @@ export const WardenLayout = ({
 
       {/* Warden Left Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200/80 flex flex-col justify-between transition-all duration-300 ease-in-out md:static md:h-screen md:shrink-0 ${
-          sidebarOpen
-            ? 'w-64 translate-x-0 opacity-100 shadow-xl md:shadow-none'
-            : 'w-0 -translate-x-full md:translate-x-0 opacity-0 overflow-hidden border-r-0 pointer-events-none'
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200/80 flex flex-col justify-between transition-all duration-300 ease-in-out md:static md:h-screen md:shrink-0 ${sidebarOpen
+          ? 'w-64 min-w-[16rem] max-w-[16rem] translate-x-0 opacity-100 shadow-xl md:shadow-none'
+          : 'w-0 min-w-0 max-w-0 -translate-x-full md:translate-x-0 opacity-0 overflow-hidden border-r-0 pointer-events-none'
+          }`}
       >
-        <div className="w-64 min-w-[16rem] flex flex-col h-full justify-between overflow-y-auto overscroll-contain sidebar-scroll-light">
+        <div
+          ref={sidebarScrollRef}
+          onScroll={handleSidebarScroll}
+          className="w-64 min-w-[16rem] flex flex-col h-full justify-between overflow-y-auto overscroll-contain sidebar-scroll-light"
+        >
           <div>
             {/* Brand Header */}
             <div className="h-20 px-6 flex items-center justify-between border-b border-slate-100">
@@ -85,12 +130,11 @@ export const WardenLayout = ({
               <button
                 type="button"
                 onClick={() => setSidebarOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
-                title="Hide menu options"
-                aria-label="Hide menu"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer md:hidden"
+                title="Close menu"
+                aria-label="Close menu"
               >
-                <Menu className="w-5 h-5 hidden sm:block text-slate-500 hover:text-[#f78c30]" />
-                <X className="w-5 h-5 sm:hidden block" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -99,6 +143,7 @@ export const WardenLayout = ({
               <img
                 src="/images/student_user.jpg"
                 alt="Warden"
+                loading="lazy"
                 className="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0"
               />
               <div>
@@ -120,12 +165,11 @@ export const WardenLayout = ({
                   <Link
                     key={item.label}
                     to={item.path}
-                    onClick={handleNavClick}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all duration-150 ${
-                      active
-                        ? 'bg-[#f78c30] text-white shadow-md shadow-[#f78c30]/25'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                    }`}
+                    onClick={handleLinkClick}
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all duration-150 ${active
+                      ? 'bg-[#f78c30] text-white shadow-md shadow-[#f78c30]/25'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-slate-500'}`} />
@@ -133,9 +177,8 @@ export const WardenLayout = ({
                     </div>
                     {item.badge ? (
                       <span
-                        className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                          active ? 'bg-white text-[#f78c30]' : 'bg-rose-500 text-white'
-                        }`}
+                        className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${active ? 'bg-white text-[#f78c30]' : 'bg-rose-500 text-white'
+                          }`}
                       >
                         {item.badge}
                       </span>
@@ -152,6 +195,7 @@ export const WardenLayout = ({
               <img
                 src="/images/lpu_warden_sidebar.jpg"
                 alt="Lovely Professional University"
+                loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
             </div>
@@ -219,6 +263,7 @@ export const WardenLayout = ({
                 <img
                   src="/images/student_user.jpg"
                   alt="Warden"
+                  loading="lazy"
                   className="w-10 h-10 rounded-full object-cover border-2 border-orange-100 shadow-xs shrink-0"
                 />
                 <div className="hidden sm:block">

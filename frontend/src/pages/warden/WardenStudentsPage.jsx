@@ -16,6 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
 import { AppLayout } from '../../components/layout/AppLayout';
 import {
   UserCheck,
@@ -39,9 +40,9 @@ export const WardenStudentsPage = () => {
   const [filterEligibility, setFilterEligibility] = useState('ALL');
   const [selectedStudentModal, setSelectedStudentModal] = useState(null);
 
-  const fetchStudents = async () => {
+  const fetchStudents = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       const res = await api.getAuthorizedStudents().catch(() => null);
       if (res && (res.results || Array.isArray(res))) {
         const list = res.results || res;
@@ -67,13 +68,17 @@ export const WardenStudentsPage = () => {
       console.error(err);
       setStudents([]);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchStudents();
+    fetchStudents(false);
   }, []);
+
+  useRealtimeSync(() => {
+    fetchStudents(true);
+  }, { pollIntervalMs: 6000 });
 
   const filteredStudents = students.filter((s) => {
     const q = searchQuery.toLowerCase();
@@ -86,8 +91,8 @@ export const WardenStudentsPage = () => {
       filterEligibility === 'ALL'
         ? true
         : filterEligibility === 'REGISTERED'
-        ? s.isRegistered
-        : s.eligibility === filterEligibility;
+          ? s.isRegistered
+          : s.eligibility === filterEligibility;
 
     return matchesSearch && matchesEligibility;
   });
@@ -180,6 +185,7 @@ export const WardenStudentsPage = () => {
                           <img
                             src={s.avatar}
                             alt={s.name}
+                            loading="lazy"
                             className="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0"
                           />
                           <div>
@@ -200,11 +206,10 @@ export const WardenStudentsPage = () => {
                       <td className="py-3.5 px-3">
                         <div className="flex flex-col gap-1 items-start">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              s.eligibility === 'Eligible'
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : 'bg-amber-50 text-amber-700 border border-amber-200'
-                            }`}
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${s.eligibility === 'Eligible'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                              }`}
                           >
                             {s.eligibility}
                           </span>
@@ -244,6 +249,7 @@ export const WardenStudentsPage = () => {
                   <img
                     src={selectedStudentModal.avatar}
                     alt={selectedStudentModal.name}
+                    loading="lazy"
                     className="w-12 h-12 rounded-full object-cover border-2 border-orange-100"
                   />
                   <div>

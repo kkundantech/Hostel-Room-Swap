@@ -314,7 +314,7 @@ export const AdminQuickAuthModals = ({
                                 });
                               }
                             }}
-                            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            className="rounded border-slate-300 text-[#f78c30] focus:ring-[#f78c30]"
                           />
                           <span className="font-semibold text-slate-800">{h.name}</span>
                         </label>

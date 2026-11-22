@@ -27,6 +27,7 @@ from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
 from django.utils import timezone
+from django.db.models import Q
 from .models import ExchangeProposal, ProposalParticipant
 from .serializers import ExchangeProposalSerializer, ProposalRespondSerializer
 from .services import process_participant_response
@@ -61,7 +62,8 @@ class ExchangeProposalViewSet(viewsets.ReadOnlyModelViewSet):
                 is_active=True
             ).values_list('hostel_id', flat=True)
             return qs.filter(
-                participants__current_bed__room__block__hostel_id__in=assigned_hostel_ids
+                Q(participants__current_bed__room__block__hostel_id__in=assigned_hostel_ids) |
+                Q(participants__proposed_bed__room__block__hostel_id__in=assigned_hostel_ids)
             ).distinct()
         return qs.all()
 

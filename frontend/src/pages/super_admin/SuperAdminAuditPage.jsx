@@ -18,6 +18,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
 import { AppLayout } from '../../components/layout/AppLayout';
 import {
   FileText,
@@ -39,12 +40,16 @@ export const SuperAdminAuditPage = () => {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    fetchLogs();
+    fetchLogs(false);
   }, [actionFilter]);
 
-  const fetchLogs = async () => {
+  useRealtimeSync(() => {
+    fetchLogs(true);
+  }, { pollIntervalMs: 6000 });
+
+  const fetchLogs = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       const params = {};
       if (actionFilter) params.action = actionFilter;
       if (search) params.search = search;
@@ -58,7 +63,7 @@ export const SuperAdminAuditPage = () => {
     } catch (err) {
       console.error('Failed to load audit logs:', err);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 
@@ -135,7 +140,10 @@ export const SuperAdminAuditPage = () => {
             aria-label="Filter by action"
             className="py-2 px-3 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700 focus:outline-none focus:bg-white"
           >
-            <option value="">All Security Actions</option>
+            <option value="">All Security & Audit Actions</option>
+            <option value="EXCHANGE_EXECUTED">Room Swap Executed (Warden Approved)</option>
+            <option value="PROPOSAL_REJECTED">Proposal Declined / Rejected</option>
+            <option value="EXCHANGE_REQUEST_CREATED">Exchange Request Created</option>
             <option value="IDENTITY_AUTHORIZED">Identity Authorized</option>
             <option value="OTP_REQUESTED">OTP Requested</option>
             <option value="OTP_VERIFIED">OTP Verified</option>
@@ -180,7 +188,9 @@ export const SuperAdminAuditPage = () => {
                 logs.map((entry) => (
                   <tr key={entry.id} className="hover:bg-orange-50/70 transition">
                     <td className="py-3.5 px-4 font-mono text-[11px] text-slate-500 whitespace-nowrap">
-                      {new Date(entry.created_at).toLocaleString()}
+                      {entry.created_at && !isNaN(new Date(entry.created_at).getTime())
+                        ? new Date(entry.created_at).toLocaleString()
+                        : 'Recent'}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       {getActionBadge(entry.action)}

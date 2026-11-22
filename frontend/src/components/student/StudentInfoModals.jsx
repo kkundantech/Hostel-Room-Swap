@@ -14,6 +14,7 @@
 
 import React from 'react';
 import { X, Bed, Volume2, Bell } from 'lucide-react';
+import { formatDateSafe } from '../../utils/dateUtils';
 
 export const StudentInfoModals = ({
   showHostelModal,
@@ -58,6 +59,7 @@ export const StudentInfoModals = ({
                 <img
                   src="/images/hostel_room_view.jpg"
                   alt="Room View"
+                  loading="lazy"
                   className="w-full h-44 rounded-2xl object-cover border border-slate-200 shadow-xs"
                 />
 
@@ -211,7 +213,7 @@ export const StudentInfoModals = ({
                         {n.title}
                       </span>
                       <span className="text-[10px] text-slate-400">
-                        {new Date(n.created_at).toLocaleDateString()}
+                        {formatDateSafe(n.created_at, 'Recently')}
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
@@ -267,6 +269,7 @@ export const StudentInfoModals = ({
                 <img
                   src="/images/student_user.jpg"
                   alt="Student"
+                  loading="lazy"
                   className="w-12 h-12 rounded-full object-cover border-2 border-orange-100 shrink-0"
                 />
                 <div>

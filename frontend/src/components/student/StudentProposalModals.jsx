@@ -14,6 +14,7 @@
 
 import React from 'react';
 import { X, Check } from 'lucide-react';
+import { formatDateTimeSafe } from '../../utils/dateUtils';
 
 export const StudentProposalModals = ({
   selectedProposalForView,
@@ -62,7 +63,7 @@ export const StudentProposalModals = ({
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-100">
                   <span className="text-slate-500">Created On</span>
-                  <span className="font-semibold text-slate-800">{new Date(selectedProposalForView.created_at).toLocaleString()}</span>
+                  <span className="font-semibold text-slate-800">{formatDateTimeSafe(selectedProposalForView.created_at, 'Recently')}</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-100">
                   <span className="text-slate-500">Approval Requirement</span>

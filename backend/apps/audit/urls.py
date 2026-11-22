@@ -23,6 +23,7 @@ from . import views
 
 router = DefaultRouter()
 router.register(r'admin/audit-logs', views.AuditEntryViewSet, basename='audit-log')
+router.register(r'audit-logs', views.AuditEntryViewSet, basename='audit-log-root')
 
 urlpatterns = [
     path('', include(router.urls)),

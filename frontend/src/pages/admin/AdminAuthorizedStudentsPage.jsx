@@ -17,6 +17,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -90,11 +91,11 @@ export const AdminAuthorizedStudentsPage = () => {
 
   useEffect(() => {
     fetchStudents(false);
-    const interval = setInterval(() => {
-      fetchStudents(true);
-    }, 4000);
-    return () => clearInterval(interval);
   }, []);
+
+  useRealtimeSync(() => {
+    fetchStudents(true);
+  }, { pollIntervalMs: 5000 });
 
   const handleCreateStudent = async (e) => {
     e.preventDefault();
@@ -357,7 +358,7 @@ export const AdminAuthorizedStudentsPage = () => {
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-[#f78c30] hover:bg-[#4C28DF] text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs transition shrink-0"
+              className="bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm shadow-[#f78c30]/25 transition shrink-0 active:scale-95"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>+ Add Student</span>
@@ -498,37 +499,37 @@ export const AdminAuthorizedStudentsPage = () => {
 
       {/* Manual Add Student Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#f78c30] flex items-center justify-center">
-                  <UserPlus className="w-4 h-4" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-100/80 text-[#f78c30] flex items-center justify-center shadow-2xs">
+                  <UserPlus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Authorize New Student</h3>
-                  <p className="text-[11px] text-slate-500">Add student to institutional pre-approved roster</p>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">Authorize New Student</h3>
+                  <p className="text-xs text-slate-500">Add student to institutional pre-approved roster</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {formError && (
-              <div className="mt-3 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+              <div className="mt-3.5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{formError}</span>
               </div>
             )}
 
-            <form onSubmit={handleCreateStudent} className="mt-4 space-y-3.5">
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleCreateStudent} className="mt-5 space-y-4">
+              <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     Registration No (8 digits) *
                   </label>
                   <input
@@ -538,11 +539,11 @@ export const AdminAuthorizedStudentsPage = () => {
                     placeholder="12345678"
                     value={formData.registration_number}
                     onChange={(e) => setFormData({ ...formData, registration_number: e.target.value.replace(/\D/g, '') })}
-                    className="input-field font-mono"
+                    className="input-field font-mono tracking-wider"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     University Email *
                   </label>
                   <input
@@ -557,7 +558,7 @@ export const AdminAuthorizedStudentsPage = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Full Name
                 </label>
                 <input
@@ -569,9 +570,9 @@ export const AdminAuthorizedStudentsPage = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     Gender *
                   </label>
                   <select
@@ -584,7 +585,7 @@ export const AdminAuthorizedStudentsPage = () => {
                         approved_eligibility: g === 'FEMALE' ? 'GIRLS' : 'BOYS',
                       });
                     }}
-                    className="input-field"
+                    className="input-field font-medium cursor-pointer"
                   >
                     <option value="MALE">Male</option>
                     <option value="FEMALE">Female</option>
@@ -592,13 +593,13 @@ export const AdminAuthorizedStudentsPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     Approved Eligibility *
                   </label>
                   <select
                     value={formData.approved_eligibility}
                     onChange={(e) => setFormData({ ...formData, approved_eligibility: e.target.value })}
-                    className="input-field"
+                    className="input-field font-medium cursor-pointer"
                   >
                     <option value="BOYS">Boys' Hostel</option>
                     <option value="GIRLS">Girls' Hostel</option>
@@ -608,51 +609,52 @@ export const AdminAuthorizedStudentsPage = () => {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Hostel</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Hostel</label>
                   <input
                     type="text"
                     placeholder="BH1"
                     value={formData.initial_hostel_code}
-                    onChange={(e) => setFormData({ ...formData, initial_hostel_code: e.target.value })}
-                    className="input-field uppercase"
+                    onChange={(e) => setFormData({ ...formData, initial_hostel_code: e.target.value.toUpperCase() })}
+                    className="input-field font-mono uppercase tracking-wider"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Room</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Room</label>
                   <input
                     type="text"
                     placeholder="101"
                     value={formData.initial_room}
                     onChange={(e) => setFormData({ ...formData, initial_room: e.target.value })}
-                    className="input-field"
+                    className="input-field font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Bed</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">Bed</label>
                   <input
                     type="text"
                     placeholder="A"
                     value={formData.initial_bed}
-                    onChange={(e) => setFormData({ ...formData, initial_bed: e.target.value })}
-                    className="input-field uppercase"
+                    onChange={(e) => setFormData({ ...formData, initial_bed: e.target.value.toUpperCase() })}
+                    className="input-field font-mono uppercase"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+              <div className="pt-4 mt-6 flex items-center justify-end gap-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="btn-secondary text-xs"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="btn-primary text-xs flex items-center gap-1.5"
+                  className="btn-primary"
                 >
-                  {submitting ? 'Saving...' : 'Authorize Student'}
+                  <UserPlus className="w-4 h-4" />
+                  <span>{submitting ? 'Saving...' : 'Authorize Student'}</span>
                 </button>
               </div>
             </form>

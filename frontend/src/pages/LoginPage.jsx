@@ -274,10 +274,13 @@ export const LoginPage = () => {
         </div>
 
         {/* Right Column: Floating White Login Card */}
-        <div className="w-full max-w-[430px] shrink-0 my-4">
-          <div className="bg-white rounded-3xl p-8 sm:p-9 shadow-xl shadow-slate-200/50 border border-slate-200/80 relative">
+        <div className="w-full max-w-[430px] shrink-0 my-4 relative">
+          {/* Subtle glowing halo behind card */}
+          <div className="absolute -inset-1.5 bg-gradient-to-r from-[#f78c30]/20 to-amber-400/20 rounded-[34px] blur-xl opacity-75 pointer-events-none" />
+          
+          <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 sm:p-9 shadow-2xl shadow-slate-300/40 border border-white/90 relative">
             {/* Top Avatar Circle Badge */}
-            <div className="w-12 h-12 rounded-2xl bg-orange-50 border border-orange-100/80 mx-auto flex items-center justify-center text-[#f78c30] shadow-2xs mb-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-orange-50 border border-orange-100/90 mx-auto flex items-center justify-center text-[#f78c30] shadow-xs mb-3.5">
               <KeyRound className="w-5 h-5" />
             </div>
 
@@ -390,7 +393,7 @@ export const LoginPage = () => {
                 type="submit"
                 id="sign-in-button"
                 disabled={loading}
-                className="w-full !mt-5 py-3 px-4 rounded-xl text-xs font-semibold bg-[#f78c30] hover:bg-[#e27518] text-white shadow-md shadow-[#f78c30]/20 hover:shadow-[#f78c30]/30 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full !mt-5 py-3 px-4 rounded-xl text-xs font-bold bg-gradient-to-r from-[#f78c30] to-[#f99b4a] hover:from-[#e27518] hover:to-[#f78c30] text-white shadow-md shadow-[#f78c30]/25 hover:shadow-lg hover:shadow-[#f78c30]/30 hover:-translate-y-0.5 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

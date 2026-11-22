@@ -164,197 +164,197 @@ function App() {
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/demo" element={<InteractiveDemo />} />
+                  {/* Public Routes */}
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/demo" element={<InteractiveDemo />} />
 
-              {/* Centralized OTP Authorization & Activation Public Routes */}
-              <Route path="/activate-account" element={<ActivateAccountPage />} />
-              <Route path="/verify-otp" element={<VerifyOtpPage />} />
-              <Route path="/set-password" element={<SetPasswordPage />} />
+                  {/* Centralized OTP Authorization & Activation Public Routes */}
+                  <Route path="/activate-account" element={<ActivateAccountPage />} />
+                  <Route path="/verify-otp" element={<VerifyOtpPage />} />
+                  <Route path="/set-password" element={<SetPasswordPage />} />
 
-              {/* Student Routes */}
-              <Route
-                path="/student"
-                element={
-                  <ProtectedRoute allowedRoles={['STUDENT']}>
-                    <StudentDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/student/requests"
-                element={
-                  <ProtectedRoute allowedRoles={['STUDENT']}>
-                    <StudentRequestsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/student/proposals"
-                element={
-                  <ProtectedRoute allowedRoles={['STUDENT']}>
-                    <StudentProposalsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/student/history"
-                element={
-                  <ProtectedRoute allowedRoles={['STUDENT']}>
-                    <StudentHistoryPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/student/rooms"
-                element={
-                  <ProtectedRoute allowedRoles={['STUDENT']}>
-                    <StudentDashboard initialTab="rooms" />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/student/notifications"
-                element={
-                  <ProtectedRoute allowedRoles={['STUDENT']}>
-                    <StudentDashboard initialTab="notifications" />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/student/hostel-info"
-                element={
-                  <ProtectedRoute allowedRoles={['STUDENT']}>
-                    <StudentDashboard initialTab="hostel-info" />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/student/profile"
-                element={
-                  <ProtectedRoute allowedRoles={['STUDENT']}>
-                    <StudentDashboard initialTab="profile" />
-                  </ProtectedRoute>
-                }
-              />
+                  {/* Student Routes */}
+                  <Route
+                    path="/student"
+                    element={
+                      <ProtectedRoute allowedRoles={['STUDENT']}>
+                        <StudentDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/student/requests"
+                    element={
+                      <ProtectedRoute allowedRoles={['STUDENT']}>
+                        <StudentRequestsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/student/proposals"
+                    element={
+                      <ProtectedRoute allowedRoles={['STUDENT']}>
+                        <StudentProposalsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/student/history"
+                    element={
+                      <ProtectedRoute allowedRoles={['STUDENT']}>
+                        <StudentHistoryPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/student/rooms"
+                    element={
+                      <ProtectedRoute allowedRoles={['STUDENT']}>
+                        <StudentDashboard initialTab="rooms" />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/student/notifications"
+                    element={
+                      <ProtectedRoute allowedRoles={['STUDENT']}>
+                        <StudentDashboard initialTab="notifications" />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/student/hostel-info"
+                    element={
+                      <ProtectedRoute allowedRoles={['STUDENT']}>
+                        <StudentDashboard initialTab="hostel-info" />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/student/profile"
+                    element={
+                      <ProtectedRoute allowedRoles={['STUDENT']}>
+                        <StudentDashboard initialTab="profile" />
+                      </ProtectedRoute>
+                    }
+                  />
 
-              {/* Warden Routes */}
-              <Route
-                path="/warden"
-                element={
-                  <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/warden/approvals"
-                element={
-                  <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenApprovalQueuePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/warden/occupancy"
-                element={
-                  <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenOccupancyPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/warden/history"
-                element={
-                  <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenHistoryPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/warden/proposals"
-                element={
-                  <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenProposalsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/warden/rooms"
-                element={
-                  <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenRoomsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/warden/policies"
-                element={
-                  <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenPoliciesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/warden/notifications"
-                element={
-                  <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenNotificationsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/warden/reports"
-                element={
-                  <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenReportsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/warden/students"
-                element={
-                  <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenStudentsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/warden/profile"
-                element={
-                  <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenProfilePage />
-                  </ProtectedRoute>
-                }
-              />
+                  {/* Warden Routes */}
+                  <Route
+                    path="/warden"
+                    element={
+                      <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/warden/approvals"
+                    element={
+                      <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenApprovalQueuePage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/warden/occupancy"
+                    element={
+                      <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenOccupancyPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/warden/history"
+                    element={
+                      <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenHistoryPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/warden/proposals"
+                    element={
+                      <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenProposalsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/warden/rooms"
+                    element={
+                      <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenRoomsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/warden/policies"
+                    element={
+                      <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenPoliciesPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/warden/notifications"
+                    element={
+                      <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenNotificationsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/warden/reports"
+                    element={
+                      <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenReportsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/warden/students"
+                    element={
+                      <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenStudentsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/warden/profile"
+                    element={
+                      <ProtectedRoute allowedRoles={['WARDEN', 'CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenProfilePage />
+                      </ProtectedRoute>
+                    }
+                  />
 
-              {/* Chief Warden Routes */}
-              <Route
-                path="/chief-warden"
-                element={
-                  <ProtectedRoute allowedRoles={['CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <ChiefWardenDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/chief-warden/queue"
-                element={
-                  <ProtectedRoute allowedRoles={['CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenApprovalQueuePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/chief-warden/occupancy"
-                element={
-                  <ProtectedRoute allowedRoles={['CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
-                    <WardenOccupancyPage />
-                  </ProtectedRoute>
-                }
-              />
+                  {/* Chief Warden Routes */}
+                  <Route
+                    path="/chief-warden"
+                    element={
+                      <ProtectedRoute allowedRoles={['CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <ChiefWardenDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/chief-warden/queue"
+                    element={
+                      <ProtectedRoute allowedRoles={['CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenApprovalQueuePage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/chief-warden/occupancy"
+                    element={
+                      <ProtectedRoute allowedRoles={['CHIEF_WARDEN', 'HOSTEL_ADMIN']}>
+                        <WardenOccupancyPage />
+                      </ProtectedRoute>
+                    }
+                  />
 
               {/* Hostel Administrator Routes */}
               <Route
@@ -446,6 +446,14 @@ function App() {
                 }
               />
               <Route
+                path="/admin/notifications"
+                element={
+                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN', 'CHIEF_WARDEN']}>
+                    <WardenNotificationsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/admin/analytics"
                 element={
                   <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
@@ -502,106 +510,106 @@ function App() {
                 }
               />
 
-              {/* Dean of Student Welfare Routes */}
-              <Route
-                path="/dean"
-                element={
-                  <ProtectedRoute allowedRoles={['DEAN', 'HOSTEL_ADMIN']}>
-                    <DeanDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dean/hostels"
-                element={
-                  <ProtectedRoute allowedRoles={['DEAN', 'HOSTEL_ADMIN']}>
-                    <WardenOccupancyPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dean/reports"
-                element={
-                  <ProtectedRoute allowedRoles={['DEAN', 'HOSTEL_ADMIN']}>
-                    <TransfersPage />
-                  </ProtectedRoute>
-                }
-              />
+                  {/* Dean of Student Welfare Routes */}
+                  <Route
+                    path="/dean"
+                    element={
+                      <ProtectedRoute allowedRoles={['DEAN', 'HOSTEL_ADMIN']}>
+                        <DeanDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dean/hostels"
+                    element={
+                      <ProtectedRoute allowedRoles={['DEAN', 'HOSTEL_ADMIN']}>
+                        <WardenOccupancyPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dean/reports"
+                    element={
+                      <ProtectedRoute allowedRoles={['DEAN', 'HOSTEL_ADMIN']}>
+                        <TransfersPage />
+                      </ProtectedRoute>
+                    }
+                  />
 
-              {/* Shared Transfers Ledger */}
-              <Route
-                path="/transfers"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN', 'CHIEF_WARDEN', 'WARDEN', 'DEAN']}>
-                    <TransfersPage />
-                  </ProtectedRoute>
-                }
-              />
+                  {/* Shared Transfers Ledger */}
+                  <Route
+                    path="/transfers"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN', 'CHIEF_WARDEN', 'WARDEN', 'DEAN']}>
+                        <TransfersPage />
+                      </ProtectedRoute>
+                    }
+                  />
 
-              {/* Super Admin Routes */}
-              <Route
-                path="/super-admin"
-                element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
-                    <SuperAdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/super-admin/dashboard"
-                element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
-                    <SuperAdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/super-admin/users"
-                element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
-                    <SuperAdminUsersPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/super-admin/users/add-student"
-                element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
-                    <SuperAdminAddStudentPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/super-admin/users/add-warden"
-                element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
-                    <SuperAdminAddWardenPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/super-admin/users/add-admin"
-                element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
-                    <SuperAdminAddAdminPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/super-admin/audit-logs"
-                element={
-                  <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
-                    <SuperAdminAuditPage />
-                  </ProtectedRoute>
-                }
-              />
+                  {/* Super Admin Routes */}
+                  <Route
+                    path="/super-admin"
+                    element={
+                      <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                        <SuperAdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/super-admin/dashboard"
+                    element={
+                      <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                        <SuperAdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/super-admin/users"
+                    element={
+                      <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                        <SuperAdminUsersPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/super-admin/users/add-student"
+                    element={
+                      <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                        <SuperAdminAddStudentPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/super-admin/users/add-warden"
+                    element={
+                      <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                        <SuperAdminAddWardenPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/super-admin/users/add-admin"
+                    element={
+                      <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                        <SuperAdminAddAdminPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/super-admin/audit-logs"
+                    element={
+                      <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                        <SuperAdminAuditPage />
+                      </ProtectedRoute>
+                    }
+                  />
 
-              {/* Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
+                  {/* Fallback */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Suspense>
             </ErrorBoundary>
-        </main>
+          </main>
         </div>
       </Router>
     </AuthProvider>

@@ -16,6 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
 import { AppLayout } from '../../components/layout/AppLayout';
 import {
   Users,
@@ -91,6 +92,8 @@ export const WardenOccupancyPage = () => {
   useEffect(() => {
     fetchOccupancyData();
   }, []);
+
+  useRealtimeSync(fetchOccupancyData, { pollIntervalMs: 6000 });
 
   const totalOccupied = rooms.reduce((acc, r) => acc + (r.status === 'MAINTENANCE' ? 0 : r.occupied), 0);
   const totalCapacity = rooms.reduce((acc, r) => acc + r.capacity, 0);

@@ -16,7 +16,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
 import { AppLayout } from '../../components/layout/AppLayout';
+import { formatDateSafe } from '../../utils/dateUtils';
 import {
   ArrowLeftRight,
   ShieldCheck,
@@ -89,8 +91,8 @@ export const WardenProposalsPage = () => {
           status: statusInfo.status,
           statusLabel: statusInfo.label,
           statusColor: statusInfo.color,
-          created_at: q.created_at ? new Date(q.created_at).toLocaleDateString() : 'Today',
-          expires_at: q.expires_at ? new Date(q.expires_at).toLocaleDateString() : 'Active',
+          created_at: formatDateSafe(q.created_at, 'Today'),
+          expires_at: formatDateSafe(q.expires_at, 'Active'),
           studentsSummary: (q.participants || []).map((p) => p.student?.first_name || p.student_email?.split('@')[0] || 'Student').join(' → '),
           roomSummary: (q.participants || []).map((p) => p.current_bed_label || p.current_bed?.room?.room_number || 'Bed').join(' · '),
           participants: (q.participants || []).map((p) => ({
@@ -127,6 +129,8 @@ export const WardenProposalsPage = () => {
     fetchProposals();
   }, []);
 
+  useRealtimeSync(fetchProposals, { pollIntervalMs: 6000 });
+
   const handleExecuteDecision = async () => {
     if (!selectedProposalForReview || !decisionType) return;
     setSubmitting(true);
@@ -134,10 +138,10 @@ export const WardenProposalsPage = () => {
 
     try {
       if (decisionType === 'APPROVE') {
-        await api.approveProposal(selectedProposalForReview.id, remarks).catch(() => {});
+        await api.approveProposal(selectedProposalForReview.id, remarks).catch(() => { });
         setActionSuccess(`Proposal ${selectedProposalForReview.reference_code} approved successfully.`);
       } else {
-        await api.rejectProposal(selectedProposalForReview.id, remarks || 'Policy criteria unmet').catch(() => {});
+        await api.rejectProposal(selectedProposalForReview.id, remarks || 'Policy criteria unmet').catch(() => { });
         setActionSuccess(`Proposal ${selectedProposalForReview.reference_code} rejected.`);
       }
 
@@ -285,28 +289,27 @@ export const WardenProposalsPage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProposals.map((prop) => (
-            <div
-              key={prop.id}
-              className="bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs hover:shadow-md transition flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#f78c30]"></span>
-                    <span className="text-xs font-extrabold text-slate-900">{prop.type}</span>
-                  </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-[10px] font-bold ${
-                      prop.statusColor === 'amber'
+              <div
+                key={prop.id}
+                className="bg-white rounded-3xl p-5 border border-slate-200/70 shadow-xs hover:shadow-md transition flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#f78c30]"></span>
+                      <span className="text-xs font-extrabold text-slate-900">{prop.type}</span>
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-[10px] font-bold ${prop.statusColor === 'amber'
                         ? 'bg-amber-50 text-amber-700 border border-amber-200'
                         : prop.statusColor === 'rose'
-                        ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                        : 'bg-orange-50 text-[#f78c30] border border-orange-200'
-                    }`}
-                  >
-                    {prop.statusLabel}
-                  </span>
-                </div>
+                          ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                          : 'bg-orange-50 text-[#f78c30] border border-orange-200'
+                        }`}
+                    >
+                      {prop.statusLabel}
+                    </span>
+                  </div>
 
                 {/* Connected Room Thumbnail Chain */}
                 <div className="flex items-center justify-between py-2 my-2 bg-[#f8faff] rounded-2xl px-3 border border-slate-100 overflow-x-auto">
@@ -316,6 +319,7 @@ export const WardenProposalsPage = () => {
                         <img
                           src={img}
                           alt="Room"
+                          loading="lazy"
                           className="w-12 h-10 rounded-xl object-cover border border-slate-200 shadow-2xs group-hover:scale-105 transition"
                         />
                       </div>
@@ -326,63 +330,63 @@ export const WardenProposalsPage = () => {
                   ))}
                 </div>
 
-                {/* Path String */}
-                <p className="text-xs font-bold text-slate-900 mt-2 truncate">
-                  {prop.studentsSummary}
-                </p>
-                <p className="text-[11px] text-slate-400 mt-0.5 truncate">
-                  {prop.roomSummary}
-                </p>
+                  {/* Path String */}
+                  <p className="text-xs font-bold text-slate-900 mt-2 truncate">
+                    {prop.studentsSummary}
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                    {prop.roomSummary}
+                  </p>
 
-                {/* Conformance Tags */}
-                <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
-                  <span className="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Closed Cycle Verified
-                  </span>
-                  <span className="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-orange-50 text-[#e27518] border border-orange-200 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3" />
-                    Gender Segregated
-                  </span>
+                  {/* Conformance Tags */}
+                  <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
+                    <span className="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Closed Cycle Verified
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-orange-50 text-[#e27518] border border-orange-200 flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3" />
+                      Gender Segregated
+                    </span>
+                  </div>
+
+                  {/* Meta details */}
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 mt-4 pt-3 border-t border-slate-100">
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{prop.cycle_length} Students</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Created {prop.created_at}</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Meta details */}
-                <div className="flex items-center justify-between text-[11px] text-slate-400 mt-4 pt-3 border-t border-slate-100">
-                  <div className="flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{prop.cycle_length} Students</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Created {prop.created_at}</span>
-                  </div>
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 gap-2 mt-5 pt-3 border-t border-slate-100">
+                  <button
+                    onClick={() => {
+                      setSelectedProposalForReview(prop);
+                      setDecisionType('INSPECT');
+                    }}
+                    className="py-2.5 px-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition border border-slate-200/80 text-center"
+                  >
+                    View Details
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedProposalForReview(prop);
+                      setDecisionType('APPROVE');
+                    }}
+                    className="py-2.5 px-3 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-md shadow-[#f78c30]/20 text-center"
+                  >
+                    Review
+                  </button>
                 </div>
               </div>
-
-              {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-2 mt-5 pt-3 border-t border-slate-100">
-                <button
-                  onClick={() => {
-                    setSelectedProposalForReview(prop);
-                    setDecisionType('INSPECT');
-                  }}
-                  className="py-2.5 px-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition border border-slate-200/80 text-center"
-                >
-                  View Details
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedProposalForReview(prop);
-                    setDecisionType('APPROVE');
-                  }}
-                  className="py-2.5 px-3 rounded-2xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-md shadow-[#f78c30]/20 text-center"
-                >
-                  Review
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         )}
 
         {/* Modal: Review & Authorization */}
@@ -432,6 +436,7 @@ export const WardenProposalsPage = () => {
                         <img
                           src={p.avatar}
                           alt={p.studentName}
+                          loading="lazy"
                           className="w-9 h-9 rounded-full object-cover border border-slate-200"
                         />
                         <div>

@@ -18,6 +18,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
+import { formatDateTimeSafe } from '../../utils/dateUtils';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -35,27 +37,52 @@ export const AdminProposalsPage = () => {
   const [proposals, setProposals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [cycleFilter, setCycleFilter] = useState('ALL');
   const [selectedProposal, setSelectedProposal] = useState(null);
 
-  const fetchProposals = async () => {
+  const fetchProposals = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       const res = await api.getProposals();
       setProposals(res.results || res || []);
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProposals();
+    fetchProposals(false);
   }, []);
 
+  useRealtimeSync(() => {
+    fetchProposals(true);
+  }, { pollIntervalMs: 6000 });
+
   const filteredProposals = proposals.filter((p) => {
-    if (statusFilter === 'ALL') return true;
-    return p.status === statusFilter;
+    // Status filter
+    if (statusFilter !== 'ALL' && p.status !== statusFilter) return false;
+
+    // Cycle filter
+    if (cycleFilter !== 'ALL' && String(p.cycle_length) !== String(cycleFilter)) return false;
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const idMatch = String(p.id).toLowerCase().includes(q);
+      const refMatch = String(p.reference_code || '').toLowerCase().includes(q);
+      const partMatch = (p.participants || []).some((part) => {
+        const name = (part.student_name || part.student?.first_name || part.student?.full_name || '').toLowerCase();
+        const email = (part.student_email || part.student?.email || '').toLowerCase();
+        const bed = (part.current_bed_label || part.proposed_bed_label || '').toLowerCase();
+        return name.includes(q) || email.includes(q) || bed.includes(q);
+      });
+      if (!idMatch && !refMatch && !partMatch) return false;
+    }
+
+    return true;
   });
 
   return (
@@ -65,25 +92,51 @@ export const AdminProposalsPage = () => {
     >
       <div className="space-y-6">
         {/* Filter bar */}
-        <div className="flex items-center justify-between bg-white p-3.5 rounded-xl border border-slate-200">
-          <div className="flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5 text-slate-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-            >
-              <option value="ALL">All Cycle Statuses</option>
-              <option value="PENDING_ACCEPTANCE">Pending Student Responses</option>
-              <option value="PENDING_APPROVAL">Pending Warden Approval</option>
-              <option value="APPROVED">Approved & Executed</option>
-              <option value="REJECTED">Declined / Cancelled</option>
-              <option value="EXPIRED">Expired</option>
-            </select>
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by Ref ID, student name, email, or bed..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30]"
+            />
           </div>
-          <span className="text-xs text-slate-400 font-medium">
-            Showing {filteredProposals.length} proposal{filteredProposals.length === 1 ? '' : 's'}
-          </span>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <Filter className="w-3.5 h-3.5 text-slate-400" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30]"
+              >
+                <option value="ALL">All Cycle Statuses</option>
+                <option value="PENDING_ACCEPTANCE">Pending Student Responses</option>
+                <option value="PENDING_APPROVAL">Pending Warden Approval</option>
+                <option value="APPROVED">Approved & Executed</option>
+                <option value="REJECTED">Declined / Cancelled</option>
+                <option value="EXPIRED">Expired</option>
+              </select>
+            </div>
+
+            <select
+              value={cycleFilter}
+              onChange={(e) => setCycleFilter(e.target.value)}
+              className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30]"
+            >
+              <option value="ALL">All Cycle Lengths</option>
+              <option value="2">2-Way (Direct)</option>
+              <option value="3">3-Way Loop</option>
+              <option value="4">4-Way Loop</option>
+              <option value="5">5-Way Loop</option>
+            </select>
+
+            <span className="text-xs text-slate-500 font-semibold px-2">
+              Showing {filteredProposals.length} proposal{filteredProposals.length === 1 ? '' : 's'}
+            </span>
+          </div>
         </div>
 
         {/* Proposals Table */}
@@ -136,7 +189,7 @@ export const AdminProposalsPage = () => {
                           </span>
                         </td>
                         <td className="text-slate-500 text-xs">
-                          {p.expires_at ? new Date(p.expires_at).toLocaleString() : 'N/A'}
+                          {formatDateTimeSafe(p.expires_at, 'N/A')}
                         </td>
                         <td>
                           <StatusBadge status={p.status} />

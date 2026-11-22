@@ -16,6 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { formatDateSafe } from '../../utils/dateUtils';
 import { AppLayout } from '../../components/layout/AppLayout';
 import {
   BarChart3,
@@ -43,7 +44,7 @@ export const WardenReportsPage = () => {
         const list = res.results || res;
         const mapped = list.map((t) => ({
           id: t.id,
-          date: t.completed_at ? new Date(t.completed_at).toLocaleDateString() : 'Recent',
+          date: formatDateSafe(t.completed_at, 'Recent'),
           student: t.student ? `${t.student.first_name || ''} ${t.student.last_name || ''}`.trim() : (t.student_name || 'Student'),
           regNo: t.student?.student_profile?.registration_number || t.student?.student_profile?.roll_number || 'N/A',
           from: t.from_bed?.room?.room_number || t.from_bed_label || 'Current Bed',

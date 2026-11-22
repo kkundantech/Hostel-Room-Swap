@@ -100,6 +100,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -138,6 +140,25 @@ if os.getenv('USE_SQLITE', 'false').lower() in ('true', '1') or os.getenv('DB_EN
             'ATOMIC_REQUESTS': False,
         }
     }
+elif os.getenv('DATABASE_URL'):
+    # Standard Cloud DATABASE_URL support (Render, Railway, Heroku, Fly.io, Neon, Supabase)
+    from urllib.parse import urlparse, unquote
+    _url = urlparse(os.environ['DATABASE_URL'])
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': _url.path.lstrip('/'),
+            'USER': _url.username or '',
+            'PASSWORD': unquote(_url.password or ''),
+            'HOST': _url.hostname or 'localhost',
+            'PORT': str(_url.port or 5432),
+            'CONN_MAX_AGE': int(os.getenv('DATABASE_CONN_MAX_AGE', '0' if DEBUG else '60')),
+            'OPTIONS': {
+                'connect_timeout': 10,
+            },
+            'ATOMIC_REQUESTS': False,
+        }
+    }
 else:
     DATABASES = {
         'default': {
@@ -173,6 +194,17 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
+
+# Static file storage with WhiteNoise compression & caching
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        if not DEBUG else "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -229,6 +261,27 @@ CORS_ALLOWED_ORIGINS = os.getenv(
     'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173',
 ).split(',')
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF Trusted Origins for production HTTPS domains & reverse proxies
+_raw_csrf = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if _raw_csrf:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _raw_csrf.split(',') if o.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = list({
+        origin for origin in (
+            CORS_ALLOWED_ORIGINS + [
+                'http://localhost:3000',
+                'http://127.0.0.1:3000',
+                'http://localhost:5173',
+                'http://127.0.0.1:5173',
+                'http://localhost:8000',
+                'http://127.0.0.1:8000',
+            ]
+        ) if origin
+    })
+
+# Reverse proxy SSL header (for Nginx, AWS ALB, Cloudflare, Render, Railway)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Spectacular (OpenAPI/Swagger) settings
 SPECTACULAR_SETTINGS = {
@@ -351,6 +404,12 @@ LOGGING = {
 
 # Create logs directory if it doesn't exist
 (BASE_DIR / 'logs').mkdir(exist_ok=True)
+
+# Session & Cookie Security Controls
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+SECURE_REFERRER_POLICY = 'same-origin'
 
 # Production Security Hardening (active automatically when DJANGO_DEBUG=False)
 if not DEBUG:

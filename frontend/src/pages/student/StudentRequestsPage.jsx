@@ -19,10 +19,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ConfirmationModal } from '../../components/common/ConfirmationModal';
+import StudentCreateRequestModal from '../../components/student/StudentCreateRequestModal';
 import {
   ArrowLeftRight,
   PlusCircle,
@@ -32,7 +34,8 @@ import {
   AlertCircle,
   Clock,
   Trash2,
-  ShieldCheck
+  ShieldCheck,
+  AlertTriangle
 } from 'lucide-react';
 
 export const StudentRequestsPage = () => {
@@ -48,6 +51,8 @@ export const StudentRequestsPage = () => {
   // Create Modal
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedHostel, setSelectedHostel] = useState('');
+  const [preferredSeater, setPreferredSeater] = useState('2 Seater');
+  const [preferredFloor, setPreferredFloor] = useState('Ground Floor');
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
@@ -85,6 +90,8 @@ export const StudentRequestsPage = () => {
     fetchRequests();
   }, []);
 
+  useRealtimeSync(fetchRequests, { pollIntervalMs: 6000 });
+
   const handleCreateRequest = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -92,16 +99,22 @@ export const StudentRequestsPage = () => {
     setFormSuccess('');
 
     try {
-      await api.createExchangeRequest({
+      const res = await api.createExchangeRequest({
         preferred_hostel: selectedHostel || null,
-        reason: reason.trim(),
+        preferred_floor: preferredFloor,
+        reason: `${reason.trim()} [Preference: ${preferredSeater}, ${preferredFloor}]`,
       });
-      setFormSuccess('Request created successfully.');
+      const floorWarn = res?.floor_warning || res?.data?.floor_warning || res?.last_validation?.floor_warning;
+      if (floorWarn) {
+        setFormSuccess(`Request created. Note: ${floorWarn}`);
+      } else {
+        setFormSuccess('Request created successfully.');
+      }
       setTimeout(() => {
         setShowCreateModal(false);
         setReason('');
         setFormSuccess('');
-      }, 1000);
+      }, 1500);
       fetchRequests();
     } catch (err) {
       const msg =
@@ -158,7 +171,7 @@ export const StudentRequestsPage = () => {
               placeholder="Search by reason or hostel preference..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30]"
             />
           </div>
 
@@ -167,7 +180,7 @@ export const StudentRequestsPage = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30]"
             >
               <option value="ALL">All Statuses</option>
               <option value="OPEN">Open</option>
@@ -225,17 +238,27 @@ export const StudentRequestsPage = () => {
                           <span className="text-slate-500 italic">Any Compatible Hostel</span>
                         )}
                       </td>
-                      <td className="max-w-xs truncate text-slate-600" title={req.reason}>
-                        {req.reason || 'None specified'}
+                      <td className="max-w-xs text-slate-600" title={req.reason}>
+                        <div className="truncate">{req.reason || 'None specified'}</div>
+                        {(req.floor_warning || req.last_validation?.floor_warning) && (
+                          <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200/90 text-[10px] font-semibold">
+                            <AlertTriangle className="w-3 h-3 text-amber-600 shrink-0" />
+                            <span>{req.floor_warning || req.last_validation?.floor_warning}</span>
+                          </div>
+                        )}
                       </td>
                       <td>
                         <StatusBadge status={req.status} />
                       </td>
                       <td className="text-slate-500">
-                        {req.expires_at ? new Date(req.expires_at).toLocaleDateString() : 'N/A'}
+                        {req.expires_at && !isNaN(new Date(req.expires_at).getTime())
+                          ? new Date(req.expires_at).toLocaleDateString()
+                          : 'N/A'}
                       </td>
                       <td className="text-slate-500">
-                        {new Date(req.created_at).toLocaleDateString()}
+                        {req.created_at && !isNaN(new Date(req.created_at).getTime())
+                          ? new Date(req.created_at).toLocaleDateString()
+                          : 'Recent'}
                       </td>
                       <td className="text-right">
                         {req.status === 'OPEN' ? (
@@ -258,98 +281,25 @@ export const StudentRequestsPage = () => {
         </div>
       </div>
 
-      {/* Create Request Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-900">
-                New Room Exchange Request
-              </h3>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-semibold"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateRequest} className="mt-4 space-y-4">
-              {formError && (
-                <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{formError}</span>
-                </div>
-              )}
-              {formSuccess && (
-                <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{formSuccess}</span>
-                </div>
-              )}
-
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs">
-                <span className="font-semibold text-slate-700 block">Your Current Room:</span>
-                <span className="text-slate-800 font-mono mt-0.5 block">
-                  {allocation ? allocation.bed?.full_label || allocation.bed_label : 'Current Bed Assigned'}
-                </span>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Preferred Target Hostel
-                </label>
-                <select
-                  value={selectedHostel}
-                  onChange={(e) => setSelectedHostel(e.target.value)}
-                  className="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                >
-                  <option value="">Any Compatible Hostel (Recommended)</option>
-                  {hostels.map((h) => (
-                    <option key={h.id} value={h.id}>
-                      {h.name} ({h.code})
-                    </option>
-                  ))}
-                </select>
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Selecting "Any Compatible Hostel" allows 2-way, 3-way, 4-way, and 5-way matching rotations across all eligible student requests.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Reason for Exchange
-                </label>
-                <textarea
-                  rows={3}
-                  required
-                  placeholder="Explain why you wish to exchange rooms..."
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  className="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                />
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="btn-secondary text-xs"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="btn-primary text-xs flex items-center gap-1.5"
-                >
-                  {submitting ? 'Submitting...' : 'Submit Request'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Create Request Modal with Floor Availability Warning */}
+      <StudentCreateRequestModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreateRequest}
+        formError={formError}
+        formSuccess={formSuccess}
+        allocation={allocation}
+        selectedHostel={selectedHostel}
+        setSelectedHostel={setSelectedHostel}
+        hostels={hostels}
+        preferredSeater={preferredSeater}
+        setPreferredSeater={setPreferredSeater}
+        preferredFloor={preferredFloor}
+        setPreferredFloor={setPreferredFloor}
+        reason={reason}
+        setReason={setReason}
+        submitting={submitting}
+      />
 
       {/* Confirmation Modal for Withdrawal */}
       <ConfirmationModal

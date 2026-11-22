@@ -18,6 +18,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
+import { formatDateSafe, formatDateTimeSafe } from '../../utils/dateUtils';
 import { AppLayout } from '../../components/layout/AppLayout';
 import {
   Users,
@@ -59,13 +61,9 @@ export const SuperAdminUsersPage = () => {
   // Confirmation Modal
   const [confirmModal, setConfirmModal] = useState(null); // { action: 'suspend'|'reactivate'|'revoke', identity }
 
-  useEffect(() => {
-    fetchIdentities();
-  }, [roleFilter, statusFilter]);
-
-  const fetchIdentities = async () => {
+  const fetchIdentities = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       const params = {};
       if (roleFilter) params.role = roleFilter;
       if (statusFilter) params.activation_status = statusFilter;
@@ -79,11 +77,19 @@ export const SuperAdminUsersPage = () => {
       }
     } catch (err) {
       console.error('Failed to load authorized identities:', err);
-      showFeedback('error', 'Failed to load authorized identities.');
+      if (!isSilent) showFeedback('error', 'Failed to load authorized identities.');
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchIdentities(false);
+  }, [roleFilter, statusFilter]);
+
+  useRealtimeSync(() => {
+    fetchIdentities(true);
+  }, { pollIntervalMs: 6000 });
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -386,7 +392,7 @@ export const SuperAdminUsersPage = () => {
                       {getActivationBadge(item.activation_status)}
                     </td>
                     <td className="py-3.5 px-4 text-slate-500 font-mono text-[11px]">
-                      {new Date(item.created_at).toLocaleDateString()}
+                      {formatDateSafe(item.created_at, 'Recently')}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="inline-flex items-center gap-1.5 justify-end">
@@ -523,12 +529,12 @@ export const SuperAdminUsersPage = () => {
               </div>
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
                 <div className="text-[10px] text-slate-400 uppercase font-bold">Created Date</div>
-                <div className="font-mono text-slate-700 mt-0.5">{new Date(selectedIdentity.created_at).toLocaleString()}</div>
+                <div className="font-mono text-slate-700 mt-0.5">{formatDateTimeSafe(selectedIdentity.created_at, 'Recently')}</div>
               </div>
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
                 <div className="text-[10px] text-slate-400 uppercase font-bold">Last Login</div>
                 <div className="font-mono text-slate-700 mt-0.5">
-                  {selectedIdentity.last_login_at ? new Date(selectedIdentity.last_login_at).toLocaleString() : 'Not Yet Logged In'}
+                  {selectedIdentity.last_login_at ? formatDateTimeSafe(selectedIdentity.last_login_at, 'Recently') : 'Not Yet Logged In'}
                 </div>
               </div>
             </div>

@@ -42,4 +42,11 @@ class AuditEntryViewSet(viewsets.ReadOnlyModelViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        return AuditEntry.objects.select_related('user').all()
+        if getattr(self, 'swagger_fake_view', False) or not self.request.user.is_authenticated:
+            return AuditEntry.objects.none()
+        user = self.request.user
+        qs = AuditEntry.objects.select_related('user')
+        if user.role in ('SUPER_ADMIN', 'HOSTEL_ADMIN') or user.is_superuser:
+            return qs.all()
+        # Scoped isolation: non-admin staff only see actions they performed
+        return qs.filter(user=user)

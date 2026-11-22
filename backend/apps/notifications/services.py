@@ -97,26 +97,102 @@ def notify_participant_responded(proposal, participant, accepted):
 
 
 def notify_warden_approval_needed(proposal):
-    """Notify assigned wardens that a proposal needs approval."""
+    """Notify assigned wardens and admins that a proposal needs approval."""
     from apps.accounts.models import WardenAssignment, User
+    from .models import Notification
+
+    recipients = set()
     hostels = set()
     for p in proposal.participants.select_related('current_bed__room__block__hostel'):
-        hostels.add(p.current_bed.hostel)
+        if p.current_bed and p.current_bed.room.block.hostel:
+            hostels.add(p.current_bed.room.block.hostel)
 
     for hostel in hostels:
         warden_ids = WardenAssignment.objects.filter(
             hostel=hostel, is_active=True
         ).values_list('warden_id', flat=True)
-        wardens = User.objects.filter(id__in=warden_ids)
-        for warden in wardens:
-            send_notification(
-                recipient=warden,
-                notif_type='APPROVAL_NEEDED',
-                title='Room Exchange Approval Required',
-                message=f'Proposal {proposal.reference_code} requires your approval.',
-                related_type='ExchangeProposal',
-                related_id=proposal.id,
-            )
+        for w in User.objects.filter(id__in=warden_ids, is_active=True):
+            recipients.add(w)
+
+    # Also notify administrators and chief wardens
+    admin_users = User.objects.filter(
+        role__in=[User.Role.HOSTEL_ADMIN, User.Role.CHIEF_WARDEN, User.Role.SUPER_ADMIN],
+        is_active=True
+    )
+    for a in admin_users:
+        recipients.add(a)
+
+    for staff in recipients:
+        send_notification(
+            recipient=staff,
+            notif_type=Notification.NotifType.APPROVAL_NEEDED,
+            title='Room Exchange Approval Required',
+            message=f'Proposal {proposal.reference_code} requires your approval.',
+            related_type='ExchangeProposal',
+            related_id=proposal.id,
+        )
+
+
+def notify_staff_request_raised(exchange_request):
+    """
+    Notify hostel warden(s) and admins when a student raises any room change / swap request.
+    Ensures wardens of current hostel, wardens of preferred hostel, and admins receive in-app alerts.
+    """
+    from apps.accounts.models import WardenAssignment, User
+    from .models import Notification
+
+    student = exchange_request.student
+    student_name = student.get_full_name() or student.email
+    reg_no = getattr(getattr(student, 'student_profile', None), 'roll_number', '') or student.registration_number or student.username or 'N/A'
+    current_bed_label = exchange_request.current_bed.full_label if exchange_request.current_bed else 'Allocated Bed'
+    pref_hostel_name = exchange_request.preferred_hostel.name if exchange_request.preferred_hostel else 'Open Preference'
+    reason_text = f' Reason: "{exchange_request.reason}"' if exchange_request.reason else ''
+
+    title = f"New Room Request: {student_name} ({reg_no})"
+    message = (
+        f"Student {student_name} ({reg_no}) from {current_bed_label} has raised a room change request "
+        f"for {pref_hostel_name}.{reason_text} Action required in your approval queue."
+    )
+
+    recipients = set()
+
+    # 1. Wardens of the student's current hostel
+    if exchange_request.current_bed and exchange_request.current_bed.room.block.hostel:
+        current_hostel = exchange_request.current_bed.room.block.hostel
+        warden_ids = WardenAssignment.objects.filter(
+            hostel=current_hostel, is_active=True
+        ).values_list('warden_id', flat=True)
+        for w in User.objects.filter(id__in=warden_ids, is_active=True):
+            recipients.add(w)
+
+    # 2. Wardens of the preferred hostel (if specified and different)
+    if exchange_request.preferred_hostel:
+        pref_warden_ids = WardenAssignment.objects.filter(
+            hostel=exchange_request.preferred_hostel, is_active=True
+        ).values_list('warden_id', flat=True)
+        for w in User.objects.filter(id__in=pref_warden_ids, is_active=True):
+            recipients.add(w)
+
+    # 3. Administrators, Chief Wardens, and Super Admins
+    admin_users = User.objects.filter(
+        role__in=[User.Role.HOSTEL_ADMIN, User.Role.CHIEF_WARDEN, User.Role.SUPER_ADMIN],
+        is_active=True
+    )
+    for a in admin_users:
+        recipients.add(a)
+
+    # Exclude the requesting student themselves
+    recipients.discard(student)
+
+    for staff in recipients:
+        send_notification(
+            recipient=staff,
+            notif_type=Notification.NotifType.APPROVAL_NEEDED,
+            title=title,
+            message=message,
+            related_type='ExchangeRequest',
+            related_id=exchange_request.id,
+        )
 
 
 def notify_proposal_approved(proposal):

@@ -18,6 +18,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
+import { formatDateSafe, formatDateTimeSafe } from '../../utils/dateUtils';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -70,9 +72,9 @@ export const AdminRequestsPage = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [actionFeedback, setActionFeedback] = useState(null);
 
-  const fetchData = async () => {
+  const fetchData = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       const [reqRes, hostRes, wardenRes] = await Promise.allSettled([
         api.getExchangeRequests(),
         api.getHostels(),
@@ -91,13 +93,17 @@ export const AdminRequestsPage = () => {
     } catch (err) {
       console.error('Failed to load exchange requests data:', err);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(false);
   }, []);
+
+  useRealtimeSync(() => {
+    fetchData(true);
+  }, { pollIntervalMs: 6000 });
 
   // Summary Metrics calculations
   const totalOpen = requests.filter((r) => r.status === 'OPEN').length;
@@ -551,7 +557,7 @@ export const AdminRequestsPage = () => {
                     <StatusBadge status={selectedRequest.status} />
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Submitted on {new Date(selectedRequest.created_at).toLocaleDateString()} • {selectedRequest.days_remaining ?? 14} days validity remaining
+                    Submitted on {formatDateSafe(selectedRequest.created_at, 'Recently')} • {selectedRequest.days_remaining ?? 14} days validity remaining
                   </p>
                 </div>
               </div>
@@ -754,7 +760,7 @@ export const AdminRequestsPage = () => {
                       <div key={i} className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-xs">
                         <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
                           <span className="font-semibold text-slate-700">{n.author}</span>
-                          <span>{new Date(n.timestamp).toLocaleString()}</span>
+                          <span>{formatDateTimeSafe(n.timestamp, 'Recently')}</span>
                         </div>
                         <p className="text-slate-600">{n.note}</p>
                       </div>

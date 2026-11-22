@@ -17,6 +17,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -35,21 +36,25 @@ export const AdminAuditPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [actionFilter, setActionFilter] = useState('ALL');
 
-  const fetchLogs = async () => {
+  const fetchLogs = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       const res = await api.getAuditLogs();
       setLogs(res.results || res || []);
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLogs();
+    fetchLogs(false);
   }, []);
+
+  useRealtimeSync(() => {
+    fetchLogs(true);
+  }, { pollIntervalMs: 6000 });
 
   const filteredLogs = logs.filter((log) => {
     const q = searchQuery.toLowerCase();
@@ -57,8 +62,13 @@ export const AdminAuditPage = () => {
       (log.action || '').toLowerCase().includes(q) ||
       (log.actor_email || '').toLowerCase().includes(q) ||
       (log.target_type || '').toLowerCase().includes(q) ||
+      (log.description || '').toLowerCase().includes(q) ||
       (log.ip_address || '').toLowerCase().includes(q);
-    const matchesAction = actionFilter === 'ALL' || log.action === actionFilter;
+    const matchesAction =
+      actionFilter === 'ALL' ||
+      log.action === actionFilter ||
+      (actionFilter === 'EXCHANGE_EXECUTED' && (log.action === 'EXCHANGE_EXECUTED' || log.action === 'PROPOSAL_APPROVED')) ||
+      (actionFilter === 'PROPOSAL_APPROVED' && (log.action === 'EXCHANGE_EXECUTED' || log.action === 'PROPOSAL_APPROVED'));
     return matchesSearch && matchesAction;
   });
 
@@ -77,7 +87,7 @@ export const AdminAuditPage = () => {
               placeholder="Search by action, actor, target, or IP address..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30]"
             />
           </div>
 
@@ -86,14 +96,14 @@ export const AdminAuditPage = () => {
             <select
               value={actionFilter}
               onChange={(e) => setActionFilter(e.target.value)}
-              className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30]"
             >
               <option value="ALL">All Event Types</option>
-              <option value="LOGIN">User Logins</option>
+              <option value="EXCHANGE_EXECUTED">Exchange Executed (Approved)</option>
+              <option value="PROPOSAL_REJECTED">Proposal Declined / Rejected</option>
               <option value="EXCHANGE_REQUEST_CREATED">Request Created</option>
               <option value="PROPOSAL_CREATED">Proposal Created</option>
-              <option value="PROPOSAL_APPROVED">Proposal Approved</option>
-              <option value="PROPOSAL_REJECTED">Proposal Rejected</option>
+              <option value="LOGIN">User Logins</option>
               <option value="POLICY_UPDATED">Policy Updated</option>
             </select>
           </div>
@@ -126,7 +136,9 @@ export const AdminAuditPage = () => {
                   {filteredLogs.map((log) => (
                     <tr key={log.id}>
                       <td className="text-slate-500 text-xs font-mono">
-                        {new Date(log.created_at).toLocaleString()}
+                        {log.created_at && !isNaN(new Date(log.created_at).getTime())
+                          ? new Date(log.created_at).toLocaleString()
+                          : 'Recent'}
                       </td>
                       <td>
                         <span className="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">

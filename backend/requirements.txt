@@ -43,3 +43,4 @@ faker>=28.0,<35.0
 
 # Production
 gunicorn>=22.0,<24.0
+whitenoise>=6.7.0,<7.0

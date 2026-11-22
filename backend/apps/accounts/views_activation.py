@@ -62,38 +62,27 @@ def request_activation_otp_view(request):
     institution_id = serializer.validated_data['institution_id'].strip().upper()
     email = serializer.validated_data['email'].strip().lower()
 
-    # 1. Flexible lookup across AuthorizedIdentity
+    # 1. Lookup AuthorizedIdentity by institution_id or trusted_email
     identity = (
         AuthorizedIdentity.objects.filter(institution_id__iexact=institution_id).first() or
-        AuthorizedIdentity.objects.filter(trusted_email__iexact=email).first() or
-        AuthorizedIdentity.objects.filter(institution_id__iexact=email).first() or
-        AuthorizedIdentity.objects.filter(trusted_email__iexact=institution_id).first()
+        AuthorizedIdentity.objects.filter(trusted_email__iexact=email).first()
     )
 
     if identity:
-        # If another identity already holds this email, archive it to avoid unique collision
-        if identity.trusted_email.lower() != email:
-            conflict = AuthorizedIdentity.objects.filter(trusted_email__iexact=email).exclude(pk=identity.pk).first()
-            if conflict:
-                conflict.trusted_email = f"archived_{conflict.pk}_{conflict.trusted_email}"
-                conflict.save(update_fields=['trusted_email', 'updated_at'])
-            identity.trusted_email = email
-            identity.save(update_fields=['trusted_email', 'updated_at'])
+        # Security: The provided email MUST match the identity's trusted institutional email
+        # To prevent account hijacking, never allow arbitrary re-binding of trusted_email via public endpoints!
+        if identity.trusted_email.strip().lower() != email:
+            return Response({
+                'detail': 'If an authorized identity or active account matches these credentials, a one-time password has been dispatched.',
+                'identifier': institution_id,
+            }, status=status.HTTP_200_OK)
+
         if identity.authorization_status in ('SUSPENDED', 'REVOKED'):
             if identity.authorization_status == AuthorizedIdentity.AuthorizationStatus.SUSPENDED:
                 return Response({'detail': 'This account has been suspended by administration.'}, status=status.HTTP_403_FORBIDDEN)
             if identity.authorization_status == AuthorizedIdentity.AuthorizationStatus.REVOKED:
                 return Response({'detail': 'This account authorization has been revoked.'}, status=status.HTTP_403_FORBIDDEN)
-        if identity.activation_status == AuthorizedIdentity.ActivationStatus.ACTIVE:
-            identity.activation_status = AuthorizedIdentity.ActivationStatus.PENDING_ACTIVATION
-            identity.save(update_fields=['activation_status', 'updated_at'])
     else:
-        # Free up email if claimed by an inactive placeholder identity
-        conflict = AuthorizedIdentity.objects.filter(trusted_email__iexact=email).first()
-        if conflict:
-            conflict.trusted_email = f"archived_{conflict.pk}_{conflict.trusted_email}"
-            conflict.save(update_fields=['trusted_email', 'updated_at'])
-
         # Check if an existing User matches
         matched_user = (
             User.objects.filter(registration_number__iexact=institution_id).first() or
@@ -101,20 +90,24 @@ def request_activation_otp_view(request):
             User.objects.filter(warden_id__iexact=institution_id).first()
         )
         if matched_user:
+            # Both email and institution_id must match the matched user's registered credentials
+            user_reg = (matched_user.registration_number or matched_user.warden_id or '').strip().upper()
+            if matched_user.email.strip().lower() != email or (user_reg and user_reg != institution_id):
+                return Response({
+                    'detail': 'If an authorized identity or active account matches these credentials, a one-time password has been dispatched.',
+                    'identifier': institution_id,
+                }, status=status.HTTP_200_OK)
+
             identity, _ = AuthorizedIdentity.objects.get_or_create(
-                institution_id=institution_id,
+                institution_id=user_reg or institution_id,
                 defaults={
                     'name': matched_user.get_full_name() or f"User {institution_id}",
-                    'trusted_email': email,
+                    'trusted_email': matched_user.email.lower(),
                     'role': matched_user.role,
                     'authorization_status': AuthorizedIdentity.AuthorizationStatus.ACTIVE,
                     'activation_status': AuthorizedIdentity.ActivationStatus.PENDING_ACTIVATION,
                 }
             )
-            identity.trusted_email = email
-            identity.authorization_status = AuthorizedIdentity.AuthorizationStatus.ACTIVE
-            identity.activation_status = AuthorizedIdentity.ActivationStatus.PENDING_ACTIVATION
-            identity.save()
         else:
             return Response({
                 'detail': 'If an authorized identity or active account matches these credentials, a one-time password has been dispatched.',

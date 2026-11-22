@@ -140,7 +140,9 @@ export const NotificationsPopover = () => {
                   <div className="flex-1">
                     <p className="text-slate-800 leading-snug">{n.message}</p>
                     <span className="text-[10px] text-slate-400 mt-1 block">
-                      {new Date(n.created_at).toLocaleString()}
+                      {n.created_at && !isNaN(new Date(n.created_at).getTime())
+                        ? new Date(n.created_at).toLocaleString()
+                        : 'Just now'}
                     </span>
                   </div>
                   {!n.is_read && (

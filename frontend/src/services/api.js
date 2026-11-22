@@ -59,6 +59,7 @@
  */
 
 import axios from 'axios';
+import { notifyRealtimeUpdate } from '../utils/realtimeSync';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
@@ -130,38 +131,74 @@ export const api = {
   getHostels: async () => (await apiClient.get('/hostels/')).data,
   getHostelDetails: async (id) => (await apiClient.get(`/hostels/${id}/`)).data,
   getRooms: async (params) => (await apiClient.get('/rooms/', { params })).data,
+  getBeds: async (params) => (await apiClient.get('/beds/', { params })).data,
+  getVacantBeds: async (params) => (await apiClient.get('/beds/vacant/', { params })).data,
   getMyAllocation: async () => (await apiClient.get('/allocations/me/')).data,
   getAllocations: async (params) => (await apiClient.get('/allocations/', { params })).data,
 
   // Exchange Requests
   getExchangeRequests: async (params) => (await apiClient.get('/exchange-requests/', { params })).data,
-  createExchangeRequest: async (data) => (await apiClient.post('/exchange-requests/', data)).data,
-  withdrawExchangeRequest: async (id) => (await apiClient.post(`/exchange-requests/${id}/withdraw/`)).data,
+  createExchangeRequest: async (data) => {
+    const res = (await apiClient.post('/exchange-requests/', data)).data;
+    notifyRealtimeUpdate('EXCHANGE_REQUEST_CREATED', res);
+    return res;
+  },
+  withdrawExchangeRequest: async (id) => {
+    const res = (await apiClient.post(`/exchange-requests/${id}/withdraw/`)).data;
+    notifyRealtimeUpdate('EXCHANGE_REQUEST_WITHDRAWN', { id });
+    return res;
+  },
+  approveExchangeRequest: async (id, data = {}) => {
+    const res = (await apiClient.post(`/exchange-requests/${id}/approve/`, data)).data;
+    notifyRealtimeUpdate('EXCHANGE_REQUEST_APPROVED', { id, ...data });
+    return res;
+  },
+  rejectExchangeRequest: async (id, reason = '') => {
+    const res = (await apiClient.post(`/exchange-requests/${id}/reject/`, { reason })).data;
+    notifyRealtimeUpdate('EXCHANGE_REQUEST_REJECTED', { id, reason });
+    return res;
+  },
   validateEligibility: async () => (await apiClient.get('/exchange-requests/validate_eligibility/')).data,
 
   // Proposals & Multi-Party Cycles
   getProposals: async (params) => (await apiClient.get('/proposals/', { params })).data,
   getProposalDetail: async (id) => (await apiClient.get(`/proposals/${id}/`)).data,
   getPendingProposalCount: async () => (await apiClient.get('/proposals/pending-count/')).data,
-  respondToProposal: async (id, accepted, note = '') => 
-    (await apiClient.post(`/proposals/${id}/respond/`, { accepted, note })).data,
+  respondToProposal: async (id, accepted, note = '') => {
+    const res = (await apiClient.post(`/proposals/${id}/respond/`, { accepted, note })).data;
+    notifyRealtimeUpdate('PROPOSAL_RESPONDED', { id, accepted });
+    return res;
+  },
 
   // Matching Engine
-  triggerMatching: async (maxLength = 5) => 
-    (await apiClient.post('/matching/run/', { max_length: maxLength })).data,
+  triggerMatching: async (maxLength = 5) => {
+    const res = (await apiClient.post('/matching/run/', { max_length: maxLength })).data;
+    notifyRealtimeUpdate('MATCHING_TRIGGERED', res);
+    return res;
+  },
   getMatchingPreview: async () => (await apiClient.get('/matching/preview/')).data,
 
   // Approvals (Warden / Chief Warden / Admin)
   getApprovalQueue: async () => (await apiClient.get('/approvals/queue/')).data,
   getApprovalRecords: async (params) => (await apiClient.get('/approval-records/', { params })).data,
-  approveProposal: async (proposalId, remarks = '') => 
-    (await apiClient.post(`/approvals/${proposalId}/approve/`, { remarks })).data,
-  rejectProposal: async (proposalId, reason = '') => 
-    (await apiClient.post(`/approvals/${proposalId}/reject/`, { reason })).data,
+  approveProposal: async (proposalId, remarks = '') => {
+    const res = (await apiClient.post(`/approvals/${proposalId}/approve/`, { remarks })).data;
+    notifyRealtimeUpdate('PROPOSAL_APPROVED', { proposalId });
+    return res;
+  },
+  rejectProposal: async (proposalId, reason = '') => {
+    const res = (await apiClient.post(`/approvals/${proposalId}/reject/`, { reason })).data;
+    notifyRealtimeUpdate('PROPOSAL_REJECTED', { proposalId });
+    return res;
+  },
 
   // Policies
   getPolicies: async () => (await apiClient.get('/policies/')).data,
-  updatePolicy: async (id, data) => (await apiClient.patch(`/policies/${id}/`, data)).data,
+  updatePolicy: async (id, data) => {
+    const res = (await apiClient.patch(`/policies/${id}/`, data)).data;
+    notifyRealtimeUpdate('POLICY_UPDATED', { id });
+    return res;
+  },
 
   // Notifications
   getNotifications: async () => (await apiClient.get('/notifications/')).data,
@@ -206,56 +243,126 @@ export const api = {
   // Authorized Rosters (Admin)
   getAuthorizedStudents: async (params) =>
     (await apiClient.get('/admin/authorized-students/', { params })).data,
-  createAuthorizedStudent: async (data) =>
-    (await apiClient.post('/admin/authorized-students/', data)).data,
-  updateAuthorizedStudent: async (id, data) =>
-    (await apiClient.patch(`/admin/authorized-students/${id}/`, data)).data,
-  deleteAuthorizedStudent: async (id) =>
-    (await apiClient.delete(`/admin/authorized-students/${id}/`)).data,
-  importAuthorizedStudents: async (payload) =>
-    (await apiClient.post('/admin/authorized-students/import/', payload)).data,
+  createAuthorizedStudent: async (data) => {
+    const res = (await apiClient.post('/admin/authorized-students/', data)).data;
+    notifyRealtimeUpdate('ROSTER_UPDATED', res);
+    return res;
+  },
+  updateAuthorizedStudent: async (id, data) => {
+    const res = (await apiClient.patch(`/admin/authorized-students/${id}/`, data)).data;
+    notifyRealtimeUpdate('ROSTER_UPDATED', res);
+    return res;
+  },
+  deleteAuthorizedStudent: async (id) => {
+    const res = (await apiClient.delete(`/admin/authorized-students/${id}/`)).data;
+    notifyRealtimeUpdate('ROSTER_UPDATED', { id });
+    return res;
+  },
+  importAuthorizedStudents: async (payload) => {
+    const res = (await apiClient.post('/admin/authorized-students/import/', payload)).data;
+    notifyRealtimeUpdate('ROSTER_UPDATED', res);
+    return res;
+  },
 
   getAuthorizedWardens: async (params) =>
     (await apiClient.get('/admin/authorized-wardens/', { params })).data,
-  createAuthorizedWarden: async (data) =>
-    (await apiClient.post('/admin/authorized-wardens/', data)).data,
-  updateAuthorizedWarden: async (id, data) =>
-    (await apiClient.patch(`/admin/authorized-wardens/${id}/`, data)).data,
-  deleteAuthorizedWarden: async (id) =>
-    (await apiClient.delete(`/admin/authorized-wardens/${id}/`)).data,
-  importAuthorizedWardens: async (payload) =>
-    (await apiClient.post('/admin/authorized-wardens/import/', payload)).data,
+  createAuthorizedWarden: async (data) => {
+    const res = (await apiClient.post('/admin/authorized-wardens/', data)).data;
+    notifyRealtimeUpdate('ROSTER_UPDATED', res);
+    return res;
+  },
+  updateAuthorizedWarden: async (id, data) => {
+    const res = (await apiClient.patch(`/admin/authorized-wardens/${id}/`, data)).data;
+    notifyRealtimeUpdate('ROSTER_UPDATED', res);
+    return res;
+  },
+  deleteAuthorizedWarden: async (id) => {
+    const res = (await apiClient.delete(`/admin/authorized-wardens/${id}/`)).data;
+    notifyRealtimeUpdate('ROSTER_UPDATED', { id });
+    return res;
+  },
+  importAuthorizedWardens: async (payload) => {
+    const res = (await apiClient.post('/admin/authorized-wardens/import/', payload)).data;
+    notifyRealtimeUpdate('ROSTER_UPDATED', res);
+    return res;
+  },
 
   // Exchange Requests Pool (Gender Isolated)
   browseAvailableRequests: async () =>
     (await apiClient.get('/exchange-requests/browse/')).data,
 
   // Hostels & Rooms CRUD (Admin)
-  createHostel: async (data) => (await apiClient.post('/hostels/', data)).data,
-  updateHostel: async (id, data) => (await apiClient.patch(`/hostels/${id}/`, data)).data,
-  deleteHostel: async (id) => (await apiClient.delete(`/hostels/${id}/`)).data,
-  createRoom: async (data) => (await apiClient.post('/rooms/', data)).data,
-  updateRoom: async (id, data) => (await apiClient.patch(`/rooms/${id}/`, data)).data,
-  deleteRoom: async (id) => (await apiClient.delete(`/rooms/${id}/`)).data,
-  resetRoomInventory: async () => (await apiClient.post('/rooms/reset_inventory/')).data,
+  createHostel: async (data) => {
+    const res = (await apiClient.post('/hostels/', data)).data;
+    notifyRealtimeUpdate('HOSTEL_UPDATED', res);
+    return res;
+  },
+  updateHostel: async (id, data) => {
+    const res = (await apiClient.patch(`/hostels/${id}/`, data)).data;
+    notifyRealtimeUpdate('HOSTEL_UPDATED', res);
+    return res;
+  },
+  deleteHostel: async (id) => {
+    const res = (await apiClient.delete(`/hostels/${id}/`)).data;
+    notifyRealtimeUpdate('HOSTEL_UPDATED', { id });
+    return res;
+  },
+  createRoom: async (data) => {
+    const res = (await apiClient.post('/rooms/', data)).data;
+    notifyRealtimeUpdate('ROOM_UPDATED', res);
+    return res;
+  },
+  updateRoom: async (id, data) => {
+    const res = (await apiClient.patch(`/rooms/${id}/`, data)).data;
+    notifyRealtimeUpdate('ROOM_UPDATED', res);
+    return res;
+  },
+  deleteRoom: async (id) => {
+    const res = (await apiClient.delete(`/rooms/${id}/`)).data;
+    notifyRealtimeUpdate('ROOM_UPDATED', { id });
+    return res;
+  },
+  resetRoomInventory: async () => {
+    const res = (await apiClient.post('/rooms/reset_inventory/')).data;
+    notifyRealtimeUpdate('ROOM_UPDATED', res);
+    return res;
+  },
 
   // Integrations & P03
-  syncP03: async (data = {}) => (await apiClient.post('/admin/integrations/p03/sync/', data)).data,
+  syncP03: async (data = {}) => {
+    const res = (await apiClient.post('/admin/integrations/p03/sync/', data)).data;
+    notifyRealtimeUpdate('DATA_SYNC', res);
+    return res;
+  },
   getIntegrationsStatus: async () => (await apiClient.get('/admin/integrations/status/')).data,
   testEmailDispatch: async (data = {}) => (await apiClient.post('/admin/integrations/email/test/', data)).data,
-  triggerDataSync: async (data = {}) => (await apiClient.post('/admin/integrations/sync/trigger/', data)).data,
+  triggerDataSync: async (data = {}) => {
+    const res = (await apiClient.post('/admin/integrations/sync/trigger/', data)).data;
+    notifyRealtimeUpdate('DATA_SYNC', res);
+    return res;
+  },
   getIntegrationsLogs: async () => (await apiClient.get('/admin/integrations/logs/')).data,
 
   // Policies (Admin)
-  createPolicy: async (data) => (await apiClient.post('/policies/', data)).data,
+  createPolicy: async (data) => {
+    const res = (await apiClient.post('/policies/', data)).data;
+    notifyRealtimeUpdate('POLICY_UPDATED', res);
+    return res;
+  },
   getPolicyHistory: async (id) => (await apiClient.get(`/policies/${id}/history/`)).data,
   simulatePolicy: async (data) => (await apiClient.post('/policies/simulate/', data)).data,
 
   // Exchange Request Admin Actions
-  assignExchangeRequest: async (id, data) => 
-    (await apiClient.post(`/exchange-requests/${id}/assign/`, data)).data,
-  addRequestReviewNote: async (id, note) => 
-    (await apiClient.post(`/exchange-requests/${id}/review-note/`, { note })).data,
+  assignExchangeRequest: async (id, data) => {
+    const res = (await apiClient.post(`/exchange-requests/${id}/assign/`, data)).data;
+    notifyRealtimeUpdate('EXCHANGE_REQUEST_UPDATED', res);
+    return res;
+  },
+  addRequestReviewNote: async (id, note) => {
+    const res = (await apiClient.post(`/exchange-requests/${id}/review-note/`, { note })).data;
+    notifyRealtimeUpdate('EXCHANGE_REQUEST_UPDATED', res);
+    return res;
+  },
 
   // Reports
   generateAdminReport: async (data) => (await apiClient.post('/admin/reports/', data)).data,
@@ -275,28 +382,58 @@ export const api = {
     (await apiClient.get('/super-admin/authorized-identities/', { params })).data,
   getAuthorizedIdentity: async (id) =>
     (await apiClient.get(`/super-admin/authorized-identities/${id}/`)).data,
-  updateAuthorizedIdentity: async (id, data) =>
-    (await apiClient.patch(`/super-admin/authorized-identities/${id}/`, data)).data,
-  deleteAuthorizedIdentity: async (id) =>
-    (await apiClient.delete(`/super-admin/authorized-identities/${id}/`)).data,
-  addStudentIdentity: async (data) =>
-    (await apiClient.post('/super-admin/authorized-identities/students/', data)).data,
-  addWardenIdentity: async (data) =>
-    (await apiClient.post('/super-admin/authorized-identities/wardens/', data)).data,
-  addAdminIdentity: async (data) =>
-    (await apiClient.post('/super-admin/authorized-identities/admins/', data)).data,
-  resendActivationInvitation: async (id) =>
-    (await apiClient.post(`/super-admin/authorized-identities/${id}/resend-invitation/`)).data,
-  importAuthorizedIdentitiesCSV: async (formData) =>
-    (await apiClient.post('/super-admin/authorized-identities/import-csv/', formData, {
+  updateAuthorizedIdentity: async (id, data) => {
+    const res = (await apiClient.patch(`/super-admin/authorized-identities/${id}/`, data)).data;
+    notifyRealtimeUpdate('IDENTITY_UPDATED', res);
+    return res;
+  },
+  deleteAuthorizedIdentity: async (id) => {
+    const res = (await apiClient.delete(`/super-admin/authorized-identities/${id}/`)).data;
+    notifyRealtimeUpdate('IDENTITY_UPDATED', { id });
+    return res;
+  },
+  addStudentIdentity: async (data) => {
+    const res = (await apiClient.post('/super-admin/authorized-identities/students/', data)).data;
+    notifyRealtimeUpdate('IDENTITY_UPDATED', res);
+    return res;
+  },
+  addWardenIdentity: async (data) => {
+    const res = (await apiClient.post('/super-admin/authorized-identities/wardens/', data)).data;
+    notifyRealtimeUpdate('IDENTITY_UPDATED', res);
+    return res;
+  },
+  addAdminIdentity: async (data) => {
+    const res = (await apiClient.post('/super-admin/authorized-identities/admins/', data)).data;
+    notifyRealtimeUpdate('IDENTITY_UPDATED', res);
+    return res;
+  },
+  resendActivationInvitation: async (id) => {
+    const res = (await apiClient.post(`/super-admin/authorized-identities/${id}/resend-invitation/`)).data;
+    notifyRealtimeUpdate('IDENTITY_UPDATED', { id });
+    return res;
+  },
+  importAuthorizedIdentitiesCSV: async (formData) => {
+    const res = (await apiClient.post('/super-admin/authorized-identities/import-csv/', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-    })).data,
-  suspendAccount: async (id) =>
-    (await apiClient.post(`/super-admin/accounts/${id}/suspend/`)).data,
-  reactivateAccount: async (id) =>
-    (await apiClient.post(`/super-admin/accounts/${id}/reactivate/`)).data,
-  revokeAccount: async (id) =>
-    (await apiClient.post(`/super-admin/accounts/${id}/revoke/`)).data,
+    })).data;
+    notifyRealtimeUpdate('IDENTITY_UPDATED', res);
+    return res;
+  },
+  suspendAccount: async (id) => {
+    const res = (await apiClient.post(`/super-admin/accounts/${id}/suspend/`)).data;
+    notifyRealtimeUpdate('ACCOUNT_STATE_CHANGED', { id, action: 'SUSPEND' });
+    return res;
+  },
+  reactivateAccount: async (id) => {
+    const res = (await apiClient.post(`/super-admin/accounts/${id}/reactivate/`)).data;
+    notifyRealtimeUpdate('ACCOUNT_STATE_CHANGED', { id, action: 'REACTIVATE' });
+    return res;
+  },
+  revokeAccount: async (id) => {
+    const res = (await apiClient.post(`/super-admin/accounts/${id}/revoke/`)).data;
+    notifyRealtimeUpdate('ACCOUNT_STATE_CHANGED', { id, action: 'REVOKE' });
+    return res;
+  },
   getSuperAdminAuditLogs: async (params) =>
     (await apiClient.get('/super-admin/audit-logs/', { params })).data,
   getSuperAdminMetrics: async () =>

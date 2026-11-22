@@ -44,10 +44,11 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         approver_name = drf_serializers.CharField(source='approver.get_full_name', read_only=True)
         approver_email = drf_serializers.CharField(source='approver.email', read_only=True)
         proposal_reference = drf_serializers.CharField(source='proposal.reference_code', read_only=True)
+        created_at = drf_serializers.DateTimeField(source='decided_at', read_only=True)
 
         class Meta:
             model = Approval
-            fields = ['id', 'proposal', 'proposal_reference', 'approver', 'approver_name', 'approver_email', 'decision', 'remarks', 'decided_at']
+            fields = ['id', 'proposal', 'proposal_reference', 'approver', 'approver_name', 'approver_email', 'decision', 'remarks', 'decided_at', 'created_at']
             read_only_fields = fields
 
     serializer_class = ApprovalSerializer

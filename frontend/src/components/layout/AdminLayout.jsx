@@ -49,6 +49,47 @@ export const AdminLayout = ({
   handleLogout,
 }) => {
   const location = useLocation();
+  const sidebarScrollRef = React.useRef(null);
+
+  // Preserve and restore exact scroll position across route changes
+  React.useLayoutEffect(() => {
+    const restoreScroll = () => {
+      const saved = sessionStorage.getItem('admin_sidebar_scroll');
+      if (saved !== null && sidebarScrollRef.current) {
+        sidebarScrollRef.current.scrollTop = Number(saved);
+      } else if (sidebarScrollRef.current) {
+        // Fallback: Ensure active element stays in view without jumping to top
+        const activeLink = sidebarScrollRef.current.querySelector('.bg-\\[\\#f78c30\\]');
+        if (activeLink) {
+          activeLink.scrollIntoView({ block: 'nearest' });
+        }
+      }
+    };
+
+    restoreScroll();
+    const rAf = typeof window !== 'undefined' && window.requestAnimationFrame ? window.requestAnimationFrame(restoreScroll) : null;
+    const timeout = setTimeout(restoreScroll, 50);
+
+    return () => {
+      if (rAf && typeof window !== 'undefined' && window.cancelAnimationFrame) {
+        window.cancelAnimationFrame(rAf);
+      }
+      clearTimeout(timeout);
+    };
+  }, [location.pathname]);
+
+  const handleSidebarScroll = (e) => {
+    if (e?.currentTarget) {
+      sessionStorage.setItem('admin_sidebar_scroll', String(e.currentTarget.scrollTop));
+    }
+  };
+
+  const handleLinkClick = () => {
+    if (sidebarScrollRef.current) {
+      sessionStorage.setItem('admin_sidebar_scroll', String(sidebarScrollRef.current.scrollTop));
+    }
+    handleNavClick?.();
+  };
 
   const adminNavSections = getAdminNavSections({
     isSuperAdmin,
@@ -81,11 +122,15 @@ export const AdminLayout = ({
       <aside
         className={`fixed inset-y-0 left-0 z-50 bg-[#18110b] text-slate-300 flex flex-col justify-between transition-all duration-300 ease-in-out md:static md:h-screen md:shrink-0 ${
           sidebarOpen
-            ? 'w-64 translate-x-0 opacity-100 shadow-xl md:shadow-none'
-            : 'w-0 -translate-x-full md:translate-x-0 opacity-0 overflow-hidden border-r-0 pointer-events-none'
+            ? 'w-64 min-w-[16rem] max-w-[16rem] translate-x-0 opacity-100 shadow-xl md:shadow-none'
+            : 'w-0 min-w-0 max-w-0 -translate-x-full md:translate-x-0 opacity-0 overflow-hidden border-r-0 pointer-events-none'
         }`}
       >
-        <div className="w-64 min-w-[16rem] flex flex-col h-full justify-between overflow-y-auto overscroll-contain sidebar-scroll">
+        <div
+          ref={sidebarScrollRef}
+          onScroll={handleSidebarScroll}
+          className="w-64 min-w-[16rem] flex flex-col h-full justify-between overflow-y-auto overscroll-contain sidebar-scroll"
+        >
           <div>
             {/* Brand Header */}
             <div className="h-20 px-6 flex items-center justify-between border-b border-white/5">
@@ -105,12 +150,11 @@ export const AdminLayout = ({
               <button
                 type="button"
                 onClick={() => setSidebarOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
-                title="Hide menu options"
-                aria-label="Hide menu"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer md:hidden"
+                title="Close menu"
+                aria-label="Close menu"
               >
-                <Menu className="w-5 h-5 hidden sm:block text-slate-400 hover:text-white" />
-                <X className="w-5 h-5 sm:hidden block" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -119,7 +163,7 @@ export const AdminLayout = ({
               {/* Top Dashboard item */}
               <Link
                 to={isSuperAdmin ? '/super-admin' : '/admin'}
-                onClick={handleNavClick}
+                onClick={handleLinkClick}
                 className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition ${
                   (isSuperAdmin ? isCurrentActive('/super-admin') : isCurrentActive('/admin'))
                     ? 'bg-[#f78c30] text-white shadow-md shadow-[#f78c30]/30'
@@ -132,7 +176,7 @@ export const AdminLayout = ({
               {isSuperAdmin && (
                 <Link
                   to="/admin"
-                  onClick={handleNavClick}
+                  onClick={handleLinkClick}
                   className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition ${
                     isCurrentActive('/admin')
                       ? 'bg-[#f78c30] text-white shadow-md shadow-[#f78c30]/30'
@@ -157,7 +201,7 @@ export const AdminLayout = ({
                       <Link
                         key={item.label}
                         to={item.path}
-                        onClick={handleNavClick}
+                        onClick={handleLinkClick}
                         className={`flex items-center justify-between px-3.5 py-2 rounded-2xl text-xs font-medium transition ${
                           active
                             ? 'bg-[#f78c30] text-white shadow-md shadow-[#f78c30]/30'
@@ -229,8 +273,9 @@ export const AdminLayout = ({
 
             {/* Notifications */}
             <Link
-              to={isSuperAdmin ? '/super-admin/audit-logs' : '/admin/audit'}
+              to={isSuperAdmin ? '/super-admin/audit-logs' : '/admin/notifications'}
               className="relative p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition"
+              title="Notifications & Alerts"
             >
               <Bell className="w-5 h-5" />
               {unreadNotificationsCount > 0 && (

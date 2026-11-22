@@ -134,6 +134,7 @@ export const WardenProfilePage = () => {
             <img
               src="/images/student_user.jpg"
               alt="Warden"
+              loading="lazy"
               className="w-16 h-16 rounded-full object-cover border-2 border-orange-100 shadow-xs shrink-0"
             />
             <div>

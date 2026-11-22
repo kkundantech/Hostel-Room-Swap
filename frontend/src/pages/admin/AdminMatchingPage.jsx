@@ -93,7 +93,7 @@ export const AdminMatchingPage = () => {
               <select
                 value={maxLength}
                 onChange={(e) => setMaxLength(e.target.value)}
-                className="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-semibold"
+                className="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30] font-semibold"
               >
                 <option value={2}>2-Party Direct Swaps Only</option>
                 <option value={3}>Up to 3-Party Cycles</option>

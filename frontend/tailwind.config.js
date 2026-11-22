@@ -58,10 +58,33 @@ export default {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       boxShadow: {
+        '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
+        'xs': '0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06)',
         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
         'glow': '0 0 20px rgba(247, 140, 48, 0.35)',
         'lpu': '0 8px 24px -4px rgba(247, 140, 48, 0.3)',
-      }
+        'card-hover': '0 12px 28px -6px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04)',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-6px)' },
+        },
+        'pulse-subtle': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.85', transform: 'scale(1.02)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+      },
+      animation: {
+        float: 'float 4s ease-in-out infinite',
+        'float-delayed': 'float 4s ease-in-out 2s infinite',
+        'pulse-subtle': 'pulse-subtle 3s ease-in-out infinite',
+        shimmer: 'shimmer 3s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

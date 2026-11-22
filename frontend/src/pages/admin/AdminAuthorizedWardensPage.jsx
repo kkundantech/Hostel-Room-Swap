@@ -17,6 +17,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { EmptyState } from '../../components/common/EmptyState';
 import {
@@ -94,11 +95,11 @@ export const AdminAuthorizedWardensPage = () => {
 
   useEffect(() => {
     fetchData(false);
-    const interval = setInterval(() => {
-      fetchData(true);
-    }, 4000);
-    return () => clearInterval(interval);
   }, []);
+
+  useRealtimeSync(() => {
+    fetchData(true);
+  }, { pollIntervalMs: 5000 });
 
   const handleCreateWarden = async (e) => {
     e.preventDefault();
@@ -354,7 +355,7 @@ export const AdminAuthorizedWardensPage = () => {
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-[#f78c30] hover:bg-[#4C28DF] text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-xs transition shrink-0 ml-auto"
+              className="bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm shadow-[#f78c30]/25 transition shrink-0 ml-auto active:scale-95"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>+ Add Warden</span>
@@ -508,37 +509,37 @@ export const AdminAuthorizedWardensPage = () => {
 
       {/* Manual Add Warden Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-                  <UserPlus className="w-4 h-4" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-100/80 text-[#f78c30] flex items-center justify-center shadow-2xs">
+                  <UserPlus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Authorize New Warden</h3>
-                  <p className="text-[11px] text-slate-500">Pre-authorize institutional warden ID and hostel scope</p>
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">Authorize New Warden</h3>
+                  <p className="text-xs text-slate-500">Pre-authorize institutional warden ID and hostel scope</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {formError && (
-              <div className="mt-3 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+              <div className="mt-3.5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{formError}</span>
               </div>
             )}
 
-            <form onSubmit={handleCreateWarden} className="mt-4 space-y-3.5">
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleCreateWarden} className="mt-5 space-y-4">
+              <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     Warden / Employee ID *
                   </label>
                   <input
@@ -547,11 +548,11 @@ export const AdminAuthorizedWardensPage = () => {
                     placeholder="W106"
                     value={formData.warden_id}
                     onChange={(e) => setFormData({ ...formData, warden_id: e.target.value.toUpperCase() })}
-                    className="input-field font-mono uppercase"
+                    className="input-field font-mono uppercase tracking-wider"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     Official Email *
                   </label>
                   <input
@@ -565,9 +566,9 @@ export const AdminAuthorizedWardensPage = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     Full Name
                   </label>
                   <input
@@ -579,13 +580,13 @@ export const AdminAuthorizedWardensPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     Role *
                   </label>
                   <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="input-field"
+                    className="input-field font-medium cursor-pointer"
                   >
                     <option value="WARDEN">Hostel Warden</option>
                     <option value="CHIEF_WARDEN">Chief Warden</option>
@@ -598,11 +599,18 @@ export const AdminAuthorizedWardensPage = () => {
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     Assigned Hostel Scope (Server Enforced)
                   </label>
-                  <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-36 overflow-y-auto">
+                  <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 max-h-40 overflow-y-auto">
                     {hostels.map((h) => {
                       const checked = formData.assigned_hostels.includes(h.id);
                       return (
-                        <label key={h.id} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <label
+                          key={h.id}
+                          className={`flex items-center gap-2.5 p-2 rounded-xl border text-xs cursor-pointer transition-all ${
+                            checked
+                              ? 'bg-orange-50/80 border-orange-300 text-orange-950 font-bold shadow-2xs'
+                              : 'bg-white border-slate-200/70 text-slate-700 hover:border-slate-300 hover:bg-white'
+                          }`}
+                        >
                           <input
                             type="checkbox"
                             checked={checked}
@@ -619,10 +627,12 @@ export const AdminAuthorizedWardensPage = () => {
                                 });
                               }
                             }}
-                            className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                            className="rounded border-slate-300 text-[#f78c30] focus:ring-[#f78c30]"
                           />
-                          <span className="font-semibold">{h.code}</span>
-                          <span className="text-[11px] text-slate-500">({h.category})</span>
+                          <span className="font-bold">{h.code}</span>
+                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 uppercase">
+                            {h.hostel_category || h.category || h.name || 'Hostel'}
+                          </span>
                         </label>
                       );
                     })}
@@ -630,20 +640,21 @@ export const AdminAuthorizedWardensPage = () => {
                 </div>
               )}
 
-              <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+              <div className="pt-4 mt-6 flex items-center justify-end gap-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="btn-secondary text-xs"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="btn-primary text-xs flex items-center gap-1.5"
+                  className="btn-primary"
                 >
-                  {submitting ? 'Authorizing...' : 'Authorize Warden'}
+                  <UserPlus className="w-4 h-4" />
+                  <span>{submitting ? 'Authorizing...' : 'Authorize Warden'}</span>
                 </button>
               </div>
             </form>
@@ -816,8 +827,10 @@ export const AdminAuthorizedWardensPage = () => {
                             }}
                             className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
                           />
-                          <span className="font-semibold">{h.code}</span>
-                          <span className="text-[11px] text-slate-500">({h.category})</span>
+                          <span className="font-bold">{h.code}</span>
+                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 uppercase">
+                            {h.hostel_category || h.category || h.name || 'Hostel'}
+                          </span>
                         </label>
                       );
                     })}

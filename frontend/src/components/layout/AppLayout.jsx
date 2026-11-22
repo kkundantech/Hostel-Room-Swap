@@ -64,11 +64,21 @@ import AdminLayout from './AdminLayout';
 import ExecutiveLayout from './ExecutiveLayout';
 
 export const AppLayout = ({ children, pageTitle, pageDescription, actionButton }) => {
-  const { user, logout, isSuperAdmin, isStudent, isWarden, isChiefWarden, isAdmin, isDean } = useAuth();
+  const {
+    user,
+    logout,
+    isSuperAdmin,
+    isStudent,
+    isWarden,
+    isChiefWarden,
+    isAdmin,
+    isDean,
+    sidebarOpen,
+    setSidebarOpen,
+  } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
@@ -82,33 +92,39 @@ export const AppLayout = ({ children, pageTitle, pageDescription, actionButton }
 
     const fetchCounts = async () => {
       try {
-        const notifRes = await api.getUnreadNotificationCount();
-        if (isMounted) setUnreadNotificationsCount(notifRes.data?.unread_count || 0);
+        const notifRes = await api.getUnreadNotificationCount().catch(() => null);
+        const unread = notifRes?.unread_count ?? notifRes?.data?.unread_count ?? 0;
+        if (isMounted) setUnreadNotificationsCount(unread);
 
         if (isStudent) {
-          const propRes = await api.getPendingProposalCount();
-          if (isMounted) setPendingProposalsCount(propRes.data?.pending_count || 0);
+          const propRes = await api.getPendingProposalCount().catch(() => null);
+          const pending = propRes?.pending_count ?? propRes?.data?.pending_count ?? 0;
+          if (isMounted) setPendingProposalsCount(pending);
         }
 
         if (isWarden) {
-          const appRes = await api.getApprovalQueue({ status: 'pending' });
-          const appList = appRes.data?.results || appRes.data || [];
-          if (isMounted) setPendingApprovalsCount(Array.isArray(appList) ? appList.length : 0);
+          const [appRes, reqRes] = await Promise.allSettled([
+            api.getApprovalQueue(),
+            api.getExchangeRequests({ status: 'OPEN' }),
+          ]);
+          const aList = appRes.status === 'fulfilled' ? (appRes.value?.results || (Array.isArray(appRes.value) ? appRes.value : [])) : [];
+          const rList = reqRes.status === 'fulfilled' ? (reqRes.value?.results || (Array.isArray(reqRes.value) ? reqRes.value : [])) : [];
+          if (isMounted) setPendingApprovalsCount(aList.length + rList.length);
         }
 
         if (isAdmin) {
-          const [propRes, reqRes, appRes] = await Promise.all([
-            api.getProposals({ status: 'pending' }),
-            api.getExchangeRequests({ status: 'open' }),
-            api.getApprovalQueue({ status: 'pending' }),
+          const [propRes, reqRes, appRes] = await Promise.allSettled([
+            api.getProposals({ status: 'PENDING_APPROVAL' }),
+            api.getExchangeRequests({ status: 'OPEN' }),
+            api.getApprovalQueue(),
           ]);
+          const pList = propRes.status === 'fulfilled' ? (propRes.value?.results || (Array.isArray(propRes.value) ? propRes.value : [])) : [];
+          const rList = reqRes.status === 'fulfilled' ? (reqRes.value?.results || (Array.isArray(reqRes.value) ? reqRes.value : [])) : [];
+          const aList = appRes.status === 'fulfilled' ? (appRes.value?.results || (Array.isArray(appRes.value) ? appRes.value : [])) : [];
           if (isMounted) {
-            const pList = propRes.data?.results || propRes.data || [];
-            const rList = reqRes.data?.results || reqRes.data || [];
-            const aList = appRes.data?.results || appRes.data || [];
-            setPendingProposalsCount(Array.isArray(pList) ? pList.length : 0);
-            setAdminPendingRequestsCount(Array.isArray(rList) ? rList.length : 0);
-            setPendingApprovalsCount(Array.isArray(aList) ? aList.length : 0);
+            setPendingProposalsCount(pList.length);
+            setAdminPendingRequestsCount(rList.length);
+            setPendingApprovalsCount(aList.length);
           }
         }
       } catch (err) {
@@ -117,15 +133,17 @@ export const AppLayout = ({ children, pageTitle, pageDescription, actionButton }
     };
 
     fetchCounts();
-    const interval = setInterval(fetchCounts, 10000);
+    const interval = setInterval(fetchCounts, 8000);
 
     const handleRefreshCounts = () => fetchCounts();
     window.addEventListener('refresh-counts', handleRefreshCounts);
+    window.addEventListener('realtime-sync', handleRefreshCounts);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
       window.removeEventListener('refresh-counts', handleRefreshCounts);
+      window.removeEventListener('realtime-sync', handleRefreshCounts);
     };
   }, [user, isStudent, isWarden, isAdmin, location.pathname]);
 

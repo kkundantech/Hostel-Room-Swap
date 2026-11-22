@@ -21,6 +21,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { EmptyState } from '../../components/common/EmptyState';
@@ -60,6 +61,8 @@ export const StudentProposalsPage = () => {
   useEffect(() => {
     fetchProposals();
   }, []);
+
+  useRealtimeSync(fetchProposals, { pollIntervalMs: 6000 });
 
   const handleProposalDecision = async () => {
     if (!actionProposal) return;
@@ -101,7 +104,7 @@ export const StudentProposalsPage = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="text-xs rounded-lg border border-slate-200 py-1.5 px-2.5 bg-white text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#f78c30]/20 focus:border-[#f78c30]"
             >
               <option value="ALL">All Proposals</option>
               <option value="ACTION_REQUIRED">Awaiting My Decision</option>
@@ -138,9 +141,8 @@ export const StudentProposalsPage = () => {
               return (
                 <div
                   key={prop.id}
-                  className={`app-card overflow-hidden border ${
-                    isActionRequired ? 'border-blue-300 ring-2 ring-blue-500/10' : 'border-slate-200'
-                  }`}
+                  className={`app-card overflow-hidden border ${isActionRequired ? 'border-blue-300 ring-2 ring-blue-500/10' : 'border-slate-200'
+                    }`}
                 >
                   {/* Proposal Header */}
                   <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
@@ -158,8 +160,8 @@ export const StudentProposalsPage = () => {
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500 mt-0.5">
-                          Created {new Date(prop.created_at).toLocaleString()} &middot; Expires{' '}
-                          {prop.expires_at ? new Date(prop.expires_at).toLocaleString() : 'in 48 hours'}
+                          Created {prop.created_at && !isNaN(new Date(prop.created_at).getTime()) ? new Date(prop.created_at).toLocaleString() : 'Recently'} &middot; Expires{' '}
+                          {prop.expires_at && !isNaN(new Date(prop.expires_at).getTime()) ? new Date(prop.expires_at).toLocaleString() : 'in 48 hours'}
                         </p>
                       </div>
                     </div>
@@ -213,11 +215,10 @@ export const StudentProposalsPage = () => {
                         return (
                           <div
                             key={p.id || idx}
-                            className={`p-3.5 rounded-xl border text-xs relative ${
-                              isMe
-                                ? 'bg-blue-50/50 border-blue-200 ring-1 ring-blue-500/20'
-                                : 'bg-slate-50 border-slate-200'
-                            }`}
+                            className={`p-3.5 rounded-xl border text-xs relative ${isMe
+                              ? 'bg-blue-50/50 border-blue-200 ring-1 ring-blue-500/20'
+                              : 'bg-slate-50 border-slate-200'
+                              }`}
                           >
                             <div className="flex items-center justify-between mb-2">
                               <span className="font-mono text-[10px] text-slate-400 font-bold">
@@ -239,7 +240,7 @@ export const StudentProposalsPage = () => {
                             </div>
 
                             <div className="font-semibold text-slate-800 truncate">
-                              {p.student_name || p.student?.first_name 
+                              {p.student_name || p.student?.first_name
                                 ? `${p.student?.first_name || ''} ${p.student?.last_name || ''}`.trim()
                                 : 'Student Participant'}
                             </div>

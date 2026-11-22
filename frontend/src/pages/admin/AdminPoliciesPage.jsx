@@ -19,6 +19,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { EmptyState } from '../../components/common/EmptyState';
+import { formatDateSafe, formatDateTimeSafe } from '../../utils/dateUtils';
 import {
   Settings,
   CheckCircle2,
@@ -383,7 +384,7 @@ export const AdminPoliciesPage = () => {
 
                         <td>
                           <span className="text-[11px] text-slate-500">
-                            {new Date(p.updated_at).toLocaleDateString()}
+                            {formatDateSafe(p.updated_at, 'Recently')}
                           </span>
                         </td>
 
@@ -596,7 +597,7 @@ export const AdminPoliciesPage = () => {
                   <div key={entry.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200/70 text-xs">
                     <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
                       <span className="font-semibold text-slate-700">{entry.changed_by}</span>
-                      <span>{new Date(entry.timestamp).toLocaleString()}</span>
+                      <span>{formatDateTimeSafe(entry.timestamp, 'Recently')}</span>
                     </div>
                     <div className="flex items-center gap-2 font-mono text-xs my-1">
                       <span className="line-through text-slate-400">{entry.old_value || 'Initial'}</span>

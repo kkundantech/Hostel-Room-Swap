@@ -33,7 +33,7 @@ from .serializers import (
     BlockSerializer, RoomSerializer,
     BedSerializer, AllocationSerializer,
 )
-from apps.accounts.permissions import IsStudent, IsStaffRole, IsHostelAdmin
+from apps.accounts.permissions import IsStudent, IsStaffRole, IsHostelAdmin, IsSuperAdmin
 
 
 def get_user_allowed_hostel_categories(user):
@@ -193,6 +193,8 @@ class RoomViewSet(viewsets.ModelViewSet):
         if self.action in ('update', 'partial_update'):
             from apps.accounts.permissions import IsAdminOrWarden
             return [IsAdminOrWarden()]
+        if self.action == 'reset_inventory':
+            return [IsSuperAdmin()]
         return [IsHostelAdmin()]
 
     def create(self, request, *args, **kwargs):
@@ -223,18 +225,39 @@ class RoomViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(detail=False, methods=['post'], permission_classes=[IsHostelAdmin])
+    @action(detail=False, methods=['post'], permission_classes=[IsSuperAdmin])
     def reset_inventory(self, request):
-        """Wipe all rooms, beds, allocations, and requests so the system starts at 0 rooms."""
+        """
+        Wipe all rooms, beds, allocations, and requests so the system starts at 0 rooms.
+        STRICT SECURITY CONTROLS:
+        - Accessible ONLY by Super Administrator.
+        - Requires explicit confirmation payload {"confirm": "WIPE_ALL_ROOM_INVENTORY"}.
+        - Atomic and recorded in immutable audit log.
+        """
+        if request.data.get('confirm') != 'WIPE_ALL_ROOM_INVENTORY':
+            return Response({
+                'detail': 'Destructive operation rejected: You must provide {"confirm": "WIPE_ALL_ROOM_INVENTORY"} to execute this action.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        from django.db import transaction
         from apps.proposals.models import ExchangeProposal, ProposalParticipant
         from apps.exchange_requests.models import ExchangeRequest
-        
-        ProposalParticipant.objects.all().delete()
-        ExchangeProposal.objects.all().delete()
-        ExchangeRequest.objects.all().delete()
-        Allocation.objects.all().delete()
-        Bed.objects.all().delete()
-        Room.objects.all().delete()
+        from apps.audit.services import log_audit_event
+
+        with transaction.atomic():
+            ProposalParticipant.objects.all().delete()
+            ExchangeProposal.objects.all().delete()
+            ExchangeRequest.objects.all().delete()
+            Allocation.objects.all().delete()
+            Bed.objects.all().delete()
+            Room.objects.all().delete()
+
+            log_audit_event(
+                user=request.user,
+                action='INVENTORY_RESET',
+                description=f'Full room inventory and allocation wipe executed by Super Admin {request.user.email}',
+                request=request,
+            )
 
         return Response({
             'status': 'SUCCESS',
@@ -272,9 +295,41 @@ class BedViewSet(viewsets.ModelViewSet):
         return qs
 
     def get_permissions(self):
-        if self.action in ('list', 'retrieve'):
+        if self.action in ('list', 'retrieve', 'vacant_beds'):
             return [permissions.IsAuthenticated()]
         return [IsHostelAdmin()]
+
+    @action(detail=False, methods=['get'], url_path='vacant')
+    def vacant_beds(self, request):
+        """Return all vacant active beds accessible to the requesting user."""
+        qs = self.get_queryset().filter(
+            is_active=True,
+            is_available_for_exchange=True,
+        ).exclude(
+            allocations__is_active=True
+        ).select_related('room__block__hostel')
+
+        hostel_id = request.query_params.get('hostel')
+        if hostel_id:
+            qs = qs.filter(room__block__hostel_id=hostel_id)
+
+        data = []
+        for bed in qs:
+            data.append({
+                'id': bed.id,
+                'bed_number': bed.bed_number,
+                'room_id': bed.room.id,
+                'room_number': bed.room.room_number,
+                'floor': bed.room.floor,
+                'room_type': bed.room.room_type,
+                'room_type_display': bed.room.get_room_type_display(),
+                'block_name': bed.room.block.name,
+                'hostel_id': bed.room.block.hostel.id,
+                'hostel_name': bed.room.block.hostel.name,
+                'hostel_code': bed.room.block.hostel.code,
+                'full_label': f"{bed.room.block.hostel.code}/{bed.room.block.name}/{bed.room.room_number}/Bed-{bed.bed_number}",
+            })
+        return Response(data)
 
 
 class OccupancyViewSet(viewsets.ReadOnlyModelViewSet):

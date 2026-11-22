@@ -18,6 +18,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
+import { formatDateTimeSafe } from '../../utils/dateUtils';
 import { AppLayout } from '../../components/layout/AppLayout';
 import {
   ShieldCheck,
@@ -48,13 +50,9 @@ export const SuperAdminDashboard = () => {
   const [recentAudits, setRecentAudits] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       const [metricsData, auditsData] = await Promise.all([
         api.getSuperAdminMetrics(),
         api.getSuperAdminAuditLogs({ limit: 6 }),
@@ -64,9 +62,17 @@ export const SuperAdminDashboard = () => {
     } catch (err) {
       console.error('Failed to load Super Admin dashboard metrics:', err);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDashboardData(false);
+  }, []);
+
+  useRealtimeSync(() => {
+    fetchDashboardData(true);
+  }, { pollIntervalMs: 6000 });
 
   return (
     <AppLayout
@@ -313,7 +319,7 @@ export const SuperAdminDashboard = () => {
                     <span className="text-slate-800 font-medium">{entry.description}</span>
                   </div>
                   <div className="text-[11px] text-slate-400 font-mono">
-                    {new Date(entry.created_at).toLocaleString()}
+                    {formatDateTimeSafe(entry.created_at, 'Recently')}
                   </div>
                 </div>
               ))}

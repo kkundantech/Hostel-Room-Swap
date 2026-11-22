@@ -25,6 +25,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.http import FileResponse
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 
@@ -60,9 +61,11 @@ class TransferRecordViewSet(viewsets.ReadOnlyModelViewSet):
             assigned_hostel_ids = user.warden_assignments.filter(
                 is_active=True
             ).values_list('hostel_id', flat=True)
+            # Wardens can view transfers originating from OR arriving into their assigned hostel
             return qs.filter(
-                old_bed__room__block__hostel_id__in=assigned_hostel_ids
-            )
+                Q(old_bed__room__block__hostel_id__in=assigned_hostel_ids) |
+                Q(new_bed__room__block__hostel_id__in=assigned_hostel_ids)
+            ).distinct()
         return qs.all()
 
     @action(detail=True, methods=['get'], url_path='letter')
@@ -178,8 +181,13 @@ def _generate_transfer_letter_pdf(transfer: TransferRecord) -> io.BytesIO:
         f"<b>Proposal Reference:</b> {transfer.proposal.reference_code if transfer.proposal else 'N/A'}",
         body_style,
     ))
+    date_str = (
+        transfer.completed_at.strftime('%B %d, %Y at %H:%M')
+        if transfer.completed_at
+        else 'Pending Official Execution'
+    )
     story.append(Paragraph(
-        f"<b>Date:</b> {transfer.completed_at.strftime('%B %d, %Y at %H:%M')}",
+        f"<b>Date:</b> {date_str}",
         body_style,
     ))
     story.append(Spacer(1, 0.3*inch))

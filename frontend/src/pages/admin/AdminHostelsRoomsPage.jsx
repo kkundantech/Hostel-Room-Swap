@@ -16,6 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
 import { AppLayout } from '../../components/layout/AppLayout';
 import {
   Building,
@@ -139,6 +140,8 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useRealtimeSync(fetchData, { pollIntervalMs: 6000 });
 
   const handleSyncP03 = async () => {
     setSyncingP03(true);

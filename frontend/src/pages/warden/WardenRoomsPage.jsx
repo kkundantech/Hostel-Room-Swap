@@ -16,6 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
+import { useRealtimeSync } from '../../utils/realtimeSync';
 import { AppLayout } from '../../components/layout/AppLayout';
 import {
   Bed,
@@ -113,6 +114,8 @@ export const WardenRoomsPage = () => {
   useEffect(() => {
     fetchRoomsData();
   }, []);
+
+  useRealtimeSync(fetchRoomsData, { pollIntervalMs: 6000 });
 
   const handleToggleMaintenance = async (roomId) => {
     const targetRoom = rooms.find((r) => r.id === roomId);
@@ -385,6 +388,7 @@ export const WardenRoomsPage = () => {
                               <img
                                 src={res.avatar}
                                 alt={res.name}
+                                loading="lazy"
                                 className="w-6 h-6 rounded-full object-cover border border-slate-200"
                               />
                               <div>
@@ -474,6 +478,7 @@ export const WardenRoomsPage = () => {
                           <img
                             src={r.avatar}
                             alt={r.name}
+                            loading="lazy"
                             className="w-8 h-8 rounded-full object-cover border border-slate-200"
                           />
                           <div>

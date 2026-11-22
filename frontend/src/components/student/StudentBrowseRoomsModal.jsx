@@ -67,11 +67,10 @@ export const StudentBrowseRoomsModal = ({
               <button
                 key={blk}
                 onClick={() => setRoomFilterBlock(blk)}
-                className={`px-2.5 py-1 rounded-lg font-semibold transition ${
-                  roomFilterBlock === blk
-                    ? 'bg-[#f78c30] text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                className={`px-2.5 py-1 rounded-lg font-semibold transition ${roomFilterBlock === blk
+                  ? 'bg-[#f78c30] text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
               >
                 {blk}
               </button>
@@ -91,6 +90,7 @@ export const StudentBrowseRoomsModal = ({
                   <img
                     src="/images/hostel_room_view.jpg"
                     alt={r.room}
+                    loading="lazy"
                     className="w-16 h-14 rounded-xl object-cover border border-slate-200 shrink-0"
                   />
                   <div>
@@ -112,10 +112,11 @@ export const StudentBrowseRoomsModal = ({
                 </div>
 
                 <button
-                  onClick={onRequestSwap}
-                  className="px-4 py-2 rounded-xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-xs shrink-0 self-end sm:self-center"
+                  onClick={() => onRequestSwap && onRequestSwap(r)}
+                  className="px-4 py-2 rounded-xl bg-[#f78c30] hover:bg-[#e27518] text-white text-xs font-bold transition shadow-xs shrink-0 self-end sm:self-center cursor-pointer flex items-center gap-1.5"
                 >
-                  Request Swap
+                  <span>Go Ahead</span>
+                  <span>&rarr;</span>
                 </button>
               </div>
             ))

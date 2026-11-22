@@ -1,0 +1,96 @@
+# ==============================================================================
+# Render.com Blueprint Infrastructure as Code
+# Deploys: PostgreSQL + Redis + Django Web API + Celery Worker + React Static App
+# ==============================================================================
+
+services:
+  # 1. Django REST API Web Service
+  - type: web
+    name: hostelswap-backend
+    runtime: python
+    buildCommand: "pip install -r backend/requirements.txt && python backend/manage.py collectstatic --noinput && python backend/manage.py migrate --noinput"
+    startCommand: "cd backend && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120"
+    plan: starter
+    healthCheckPath: /api/health/
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hostelswap-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: hostelswap-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: hostelswap-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: hostelswap-redis
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: 3.12.3
+
+  # 2. Celery Asynchronous Background Worker
+  - type: worker
+    name: hostelswap-celery-worker
+    runtime: python
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && celery -A config worker -l info --concurrency=3"
+    plan: starter
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        fromService:
+          type: web
+          name: hostelswap-backend
+          envVarKey: DJANGO_SECRET_KEY
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hostelswap-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: hostelswap-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: hostelswap-redis
+          property: connectionString
+
+  # 3. React Frontend Static Site
+  - type: web
+    name: hostelswap-frontend
+    runtime: static
+    buildCommand: "cd frontend && npm install && npm run build"
+    staticPublishPath: frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: hostelswap-backend
+          property: host
+
+databases:
+  - name: hostelswap-db
+    plan: starter
+    databaseName: hostel_exchange
+    user: postgres
+
+# Managed Redis
+# (Configure on Render Dashboard as a Redis service or Upstash Redis URL)
