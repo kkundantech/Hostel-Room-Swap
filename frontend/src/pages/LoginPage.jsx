@@ -286,7 +286,7 @@ export const LoginPage = () => {
         <div className="w-full max-w-[430px] shrink-0 my-4 relative">
           {/* Subtle glowing halo behind card */}
           <div className="absolute -inset-1.5 bg-gradient-to-r from-[#f78c30]/20 to-amber-400/20 rounded-[34px] blur-xl opacity-75 pointer-events-none" />
-          
+
           <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 sm:p-9 shadow-2xl shadow-slate-300/40 border border-white/90 relative">
             {/* Top Avatar Circle Badge */}
             <div className="w-12 h-12 rounded-2xl bg-orange-50 border border-orange-100/90 mx-auto flex items-center justify-center text-[#f78c30] shadow-xs mb-3.5">
@@ -339,11 +339,11 @@ export const LoginPage = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleQuickFill('superadmin@lpu.in', 'SuperAdmin@123')}
+                  onClick={() => handleQuickFill('Kundanchaturbedi@gmail.com', 'Kundan@123')}
                   className="py-1.5 px-2.5 rounded-lg bg-white border border-orange-200/60 hover:border-[#f78c30] text-[11px] font-semibold text-slate-800 hover:text-[#f78c30] transition shadow-2xs text-left flex items-center justify-between group cursor-pointer"
                 >
                   <span>👑 Super Admin</span>
-                  <span className="text-[9px] text-slate-400 group-hover:text-[#f78c30]">LPU</span>
+                  <span className="text-[9px] text-slate-400 group-hover:text-[#f78c30]">Kundan</span>
                 </button>
               </div>
             </div>
