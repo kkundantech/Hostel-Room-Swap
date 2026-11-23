@@ -56,68 +56,69 @@
  *   - react-router-dom (npm package)
  */
 
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
-// Lazy-loaded Route Modules for Production Code-Splitting
-const InteractiveDemo = lazy(() => import('./pages/InteractiveDemo'));
+// Lazy-loaded Route Modules with Automatic Deployment Chunk Retry & Recovery
+const InteractiveDemo = lazyWithRetry(() => import('./pages/InteractiveDemo'));
 
 // OTP Activation Pages
-const ActivateAccountPage = lazy(() => import('./pages/auth/ActivateAccountPage'));
-const VerifyOtpPage = lazy(() => import('./pages/auth/VerifyOtpPage'));
-const SetPasswordPage = lazy(() => import('./pages/auth/SetPasswordPage'));
+const ActivateAccountPage = lazyWithRetry(() => import('./pages/auth/ActivateAccountPage'));
+const VerifyOtpPage = lazyWithRetry(() => import('./pages/auth/VerifyOtpPage'));
+const SetPasswordPage = lazyWithRetry(() => import('./pages/auth/SetPasswordPage'));
 
 // Super Admin Pages
-const SuperAdminDashboard = lazy(() => import('./pages/super_admin/SuperAdminDashboard'));
-const SuperAdminUsersPage = lazy(() => import('./pages/super_admin/SuperAdminUsersPage'));
-const SuperAdminAddStudentPage = lazy(() => import('./pages/super_admin/SuperAdminAddStudentPage'));
-const SuperAdminAddWardenPage = lazy(() => import('./pages/super_admin/SuperAdminAddWardenPage'));
-const SuperAdminAddAdminPage = lazy(() => import('./pages/super_admin/SuperAdminAddAdminPage'));
-const SuperAdminAuditPage = lazy(() => import('./pages/super_admin/SuperAdminAuditPage'));
+const SuperAdminDashboard = lazyWithRetry(() => import('./pages/super_admin/SuperAdminDashboard'));
+const SuperAdminUsersPage = lazyWithRetry(() => import('./pages/super_admin/SuperAdminUsersPage'));
+const SuperAdminAddStudentPage = lazyWithRetry(() => import('./pages/super_admin/SuperAdminAddStudentPage'));
+const SuperAdminAddWardenPage = lazyWithRetry(() => import('./pages/super_admin/SuperAdminAddWardenPage'));
+const SuperAdminAddAdminPage = lazyWithRetry(() => import('./pages/super_admin/SuperAdminAddAdminPage'));
+const SuperAdminAuditPage = lazyWithRetry(() => import('./pages/super_admin/SuperAdminAuditPage'));
 
 // Student Pages
-const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'));
-const StudentRequestsPage = lazy(() => import('./pages/student/StudentRequestsPage'));
-const StudentProposalsPage = lazy(() => import('./pages/student/StudentProposalsPage'));
-const StudentHistoryPage = lazy(() => import('./pages/student/StudentHistoryPage'));
+const StudentDashboard = lazyWithRetry(() => import('./pages/student/StudentDashboard'));
+const StudentRequestsPage = lazyWithRetry(() => import('./pages/student/StudentRequestsPage'));
+const StudentProposalsPage = lazyWithRetry(() => import('./pages/student/StudentProposalsPage'));
+const StudentHistoryPage = lazyWithRetry(() => import('./pages/student/StudentHistoryPage'));
 
 // Warden Pages
-const WardenDashboard = lazy(() => import('./pages/warden/WardenDashboard'));
-const WardenApprovalQueuePage = lazy(() => import('./pages/warden/WardenApprovalQueuePage'));
-const WardenOccupancyPage = lazy(() => import('./pages/warden/WardenOccupancyPage'));
-const WardenHistoryPage = lazy(() => import('./pages/warden/WardenHistoryPage'));
-const WardenRoomsPage = lazy(() => import('./pages/warden/WardenRoomsPage'));
-const WardenProposalsPage = lazy(() => import('./pages/warden/WardenProposalsPage'));
-const WardenPoliciesPage = lazy(() => import('./pages/warden/WardenPoliciesPage'));
-const WardenNotificationsPage = lazy(() => import('./pages/warden/WardenNotificationsPage'));
-const WardenReportsPage = lazy(() => import('./pages/warden/WardenReportsPage'));
-const WardenStudentsPage = lazy(() => import('./pages/warden/WardenStudentsPage'));
-const WardenProfilePage = lazy(() => import('./pages/warden/WardenProfilePage'));
+const WardenDashboard = lazyWithRetry(() => import('./pages/warden/WardenDashboard'));
+const WardenApprovalQueuePage = lazyWithRetry(() => import('./pages/warden/WardenApprovalQueuePage'));
+const WardenOccupancyPage = lazyWithRetry(() => import('./pages/warden/WardenOccupancyPage'));
+const WardenHistoryPage = lazyWithRetry(() => import('./pages/warden/WardenHistoryPage'));
+const WardenRoomsPage = lazyWithRetry(() => import('./pages/warden/WardenRoomsPage'));
+const WardenProposalsPage = lazyWithRetry(() => import('./pages/warden/WardenProposalsPage'));
+const WardenPoliciesPage = lazyWithRetry(() => import('./pages/warden/WardenPoliciesPage'));
+const WardenNotificationsPage = lazyWithRetry(() => import('./pages/warden/WardenNotificationsPage'));
+const WardenReportsPage = lazyWithRetry(() => import('./pages/warden/WardenReportsPage'));
+const WardenStudentsPage = lazyWithRetry(() => import('./pages/warden/WardenStudentsPage'));
+const WardenProfilePage = lazyWithRetry(() => import('./pages/warden/WardenProfilePage'));
 
 // Chief Warden Pages
-const ChiefWardenDashboard = lazy(() => import('./pages/chief_warden/ChiefWardenDashboard'));
+const ChiefWardenDashboard = lazyWithRetry(() => import('./pages/chief_warden/ChiefWardenDashboard'));
 
 // Admin Pages
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
-const AdminRequestsPage = lazy(() => import('./pages/admin/AdminRequestsPage'));
-const AdminProposalsPage = lazy(() => import('./pages/admin/AdminProposalsPage'));
-const AdminMatchingPage = lazy(() => import('./pages/admin/AdminMatchingPage'));
-const AdminPoliciesPage = lazy(() => import('./pages/admin/AdminPoliciesPage'));
-const AdminAuditPage = lazy(() => import('./pages/admin/AdminAuditPage'));
-const AdminAuthorizedStudentsPage = lazy(() => import('./pages/admin/AdminAuthorizedStudentsPage'));
-const AdminAuthorizedWardensPage = lazy(() => import('./pages/admin/AdminAuthorizedWardensPage'));
-const AdminHostelsRoomsPage = lazy(() => import('./pages/admin/AdminHostelsRoomsPage'));
-const AdminReportsPage = lazy(() => import('./pages/admin/AdminReportsPage'));
-const AdminIntegrationsPage = lazy(() => import('./pages/admin/AdminIntegrationsPage'));
+const AdminDashboard = lazyWithRetry(() => import('./pages/admin/AdminDashboard'));
+const AdminRequestsPage = lazyWithRetry(() => import('./pages/admin/AdminRequestsPage'));
+const AdminProposalsPage = lazyWithRetry(() => import('./pages/admin/AdminProposalsPage'));
+const AdminMatchingPage = lazyWithRetry(() => import('./pages/admin/AdminMatchingPage'));
+const AdminPoliciesPage = lazyWithRetry(() => import('./pages/admin/AdminPoliciesPage'));
+const AdminAuditPage = lazyWithRetry(() => import('./pages/admin/AdminAuditPage'));
+const AdminAuthorizedStudentsPage = lazyWithRetry(() => import('./pages/admin/AdminAuthorizedStudentsPage'));
+const AdminAuthorizedWardensPage = lazyWithRetry(() => import('./pages/admin/AdminAuthorizedWardensPage'));
+const AdminHostelsRoomsPage = lazyWithRetry(() => import('./pages/admin/AdminHostelsRoomsPage'));
+const AdminReportsPage = lazyWithRetry(() => import('./pages/admin/AdminReportsPage'));
+const AdminIntegrationsPage = lazyWithRetry(() => import('./pages/admin/AdminIntegrationsPage'));
 
 // Dean & Shared Pages
-const DeanDashboard = lazy(() => import('./pages/dean/DeanDashboard'));
-const TransfersPage = lazy(() => import('./pages/transfers/TransfersPage'));
+const DeanDashboard = lazyWithRetry(() => import('./pages/dean/DeanDashboard'));
+const TransfersPage = lazyWithRetry(() => import('./pages/transfers/TransfersPage'));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
