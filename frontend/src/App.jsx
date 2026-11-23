@@ -171,6 +171,7 @@ function App() {
 
                   {/* Centralized OTP Authorization & Activation Public Routes */}
                   <Route path="/activate-account" element={<ActivateAccountPage />} />
+                  <Route path="/activate" element={<ActivateAccountPage />} />
                   <Route path="/verify-otp" element={<VerifyOtpPage />} />
                   <Route path="/set-password" element={<SetPasswordPage />} />
 
@@ -356,159 +357,159 @@ function App() {
                     }
                   />
 
-              {/* Hostel Administrator Routes */}
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/requests"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminRequestsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/proposals"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminProposalsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/matching"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminMatchingPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/policies"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminPoliciesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/audit"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminAuditPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/authorized-students"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminAuthorizedStudentsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/authorized-wardens"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminAuthorizedWardensPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/hostels"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminHostelsRoomsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/rooms"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminHostelsRoomsPage initialTab="rooms" />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/reports"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminReportsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/notifications"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN', 'CHIEF_WARDEN']}>
-                    <WardenNotificationsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/analytics"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminReportsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/occupancy"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminHostelsRoomsPage initialTab="hostels" />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/approvals"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminRequestsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/integrations"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminIntegrationsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/integrations/p03"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminIntegrationsPage initialTab="p03" />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/integrations/email"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminIntegrationsPage initialTab="email" />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/integrations/sync"
-                element={
-                  <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
-                    <AdminIntegrationsPage initialTab="sync" />
-                  </ProtectedRoute>
-                }
-              />
+                  {/* Hostel Administrator Routes */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/requests"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminRequestsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/proposals"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminProposalsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/matching"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminMatchingPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/policies"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminPoliciesPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/audit"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminAuditPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/authorized-students"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminAuthorizedStudentsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/authorized-wardens"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminAuthorizedWardensPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/hostels"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminHostelsRoomsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/rooms"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminHostelsRoomsPage initialTab="rooms" />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/reports"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminReportsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/notifications"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN', 'CHIEF_WARDEN']}>
+                        <WardenNotificationsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/analytics"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminReportsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/occupancy"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminHostelsRoomsPage initialTab="hostels" />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/approvals"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminRequestsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/integrations"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminIntegrationsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/integrations/p03"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminIntegrationsPage initialTab="p03" />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/integrations/email"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminIntegrationsPage initialTab="email" />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/integrations/sync"
+                    element={
+                      <ProtectedRoute allowedRoles={['HOSTEL_ADMIN']}>
+                        <AdminIntegrationsPage initialTab="sync" />
+                      </ProtectedRoute>
+                    }
+                  />
 
                   {/* Dean of Student Welfare Routes */}
                   <Route

@@ -329,9 +329,28 @@ class StudentSignupRequestOtpSerializer(serializers.Serializer):
                 'email': 'An account with this email address is already registered. Please login.'
             })
 
-        # 3. Check authorized student roster
-        from .models import AuthorizedStudent
+        # 3. Check authorized student roster (with AuthorizedIdentity fallback)
+        from .models import AuthorizedStudent, AuthorizedIdentity
         authorized = AuthorizedStudent.objects.filter(registration_number__iexact=reg_no).first()
+        if not authorized:
+            ident = AuthorizedIdentity.objects.filter(institution_id__iexact=reg_no).first()
+            if ident and ident.role == 'STUDENT':
+                authorized, _ = AuthorizedStudent.objects.get_or_create(
+                    registration_number=ident.institution_id,
+                    defaults={
+                        'email': ident.trusted_email,
+                        'full_name': ident.name,
+                        'gender': ident.gender or 'MALE',
+                        'approved_eligibility': ident.eligibility_classification or 'BOYS',
+                        'department': ident.department or 'Computer Science',
+                        'year_of_study': ident.year_of_study or 1,
+                        'initial_hostel_code': ident.initial_hostel_code or 'BH1',
+                        'initial_room': ident.initial_room or '101',
+                        'initial_bed': ident.initial_bed or 'A',
+                        'authorization_status': AuthorizedStudent.Status.ACTIVE,
+                    }
+                )
+
         if not authorized:
             raise serializers.ValidationError({
                 'registration_number': 'Registration number not found in university authorized student roster. Contact hostel administration.'
@@ -410,9 +429,21 @@ class WardenSignupRequestOtpSerializer(serializers.Serializer):
                 'warden_id': 'An account is already registered with this Warden ID/email. Please login.'
             })
 
-        # 2. Check AuthorizedWarden pre-authorized roster
-        from .models import AuthorizedWarden
+        # 2. Check AuthorizedWarden pre-authorized roster (with AuthorizedIdentity fallback)
+        from .models import AuthorizedWarden, AuthorizedIdentity
         authorized = AuthorizedWarden.objects.filter(warden_id__iexact=warden_id).first()
+        if not authorized:
+            ident = AuthorizedIdentity.objects.filter(institution_id__iexact=warden_id).first()
+            if ident and ident.role in ('WARDEN', 'CHIEF_WARDEN'):
+                authorized, _ = AuthorizedWarden.objects.get_or_create(
+                    warden_id=ident.institution_id,
+                    defaults={
+                        'email': ident.trusted_email,
+                        'full_name': ident.name,
+                        'authorization_status': AuthorizedWarden.Status.ACTIVE,
+                    }
+                )
+
         if not authorized:
             raise serializers.ValidationError({
                 'warden_id': 'Warden/Employee ID is not pre-authorized. Registration must be authorized by Hostel Administration.'

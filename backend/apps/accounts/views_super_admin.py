@@ -198,6 +198,22 @@ class SuperAdminIdentityViewSet(viewsets.ModelViewSet):
             created_by=request.user,
         )
 
+        AuthorizedStudent.objects.update_or_create(
+            registration_number=identity.institution_id,
+            defaults={
+                'email': identity.trusted_email,
+                'full_name': identity.name,
+                'gender': identity.gender,
+                'approved_eligibility': identity.eligibility_classification,
+                'department': identity.department,
+                'year_of_study': identity.year_of_study,
+                'initial_hostel_code': identity.initial_hostel_code,
+                'initial_room': identity.initial_room,
+                'initial_bed': identity.initial_bed,
+                'authorization_status': 'ACTIVE',
+            }
+        )
+
         log_audit_event(
             user=request.user,
             action='IDENTITY_AUTHORIZED',
@@ -226,6 +242,15 @@ class SuperAdminIdentityViewSet(viewsets.ModelViewSet):
             authorization_status=AuthorizedIdentity.AuthorizationStatus.ACTIVE,
             activation_status=AuthorizedIdentity.ActivationStatus.INVITED,
             created_by=request.user,
+        )
+
+        AuthorizedWarden.objects.update_or_create(
+            warden_id=identity.institution_id,
+            defaults={
+                'email': identity.trusted_email,
+                'full_name': identity.name,
+                'authorization_status': 'ACTIVE',
+            }
         )
 
         log_audit_event(
