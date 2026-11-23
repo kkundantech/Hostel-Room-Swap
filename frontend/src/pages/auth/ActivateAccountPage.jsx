@@ -77,6 +77,9 @@ export const ActivateAccountPage = () => {
           email: trimmedEmail,
           role: detectedRole,
         });
+        if (res.dev_otp) {
+          queryParams.set('dev_otp', res.dev_otp);
+        }
         navigate(`/verify-otp?${queryParams.toString()}`);
       }, 350);
     } catch (err) {

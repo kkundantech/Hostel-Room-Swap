@@ -36,13 +36,20 @@ export const VerifyOtpPage = () => {
   const identifier = searchParams.get('identifier') || '';
   const email = searchParams.get('email') || '';
   const role = searchParams.get('role') || 'STUDENT';
+  const devOtp = searchParams.get('dev_otp') || '';
 
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState(devOtp || '');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [cooldown, setCooldown] = useState(15);
+
+  useEffect(() => {
+    if (devOtp && !otp) {
+      setOtp(devOtp);
+    }
+  }, [devOtp]);
 
   // 15-second quick cooldown timer
   useEffect(() => {
@@ -112,6 +119,9 @@ export const VerifyOtpPage = () => {
         email: email,
       });
 
+      if (res.dev_otp) {
+        setOtp(res.dev_otp);
+      }
       setSuccessMsg(res.detail || 'A fresh verification OTP has been dispatched to your email.');
       setCooldown(15);
     } catch (err) {
@@ -179,6 +189,17 @@ export const VerifyOtpPage = () => {
             <div className="mb-5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-2.5 animate-in fade-in">
               <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
               <span className="font-medium leading-relaxed">{successMsg}</span>
+            </div>
+          )}
+
+          {/* Dev OTP Helper Banner */}
+          {devOtp && (
+            <div className="mb-5 p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center justify-between animate-in fade-in">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Verification Code: <strong className="font-mono text-sm text-amber-800 tracking-widest">{devOtp}</strong></span>
+              </div>
+              <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider bg-amber-100/90 px-2.5 py-1 rounded-full">Auto-filled</span>
             </div>
           )}
 

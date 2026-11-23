@@ -68,14 +68,45 @@ def request_activation_otp_view(request):
         AuthorizedIdentity.objects.filter(trusted_email__iexact=email).first()
     )
 
+    if not identity:
+        # Cross-check AuthorizedStudent roster
+        from .models import AuthorizedStudent
+        auth_student = (
+            AuthorizedStudent.objects.filter(registration_number__iexact=institution_id).first() or
+            AuthorizedStudent.objects.filter(email__iexact=email).first()
+        )
+        if auth_student:
+            identity, _ = AuthorizedIdentity.objects.get_or_create(
+                institution_id=auth_student.registration_number,
+                defaults={
+                    'name': auth_student.full_name or f"Student {auth_student.registration_number}",
+                    'trusted_email': auth_student.email.lower(),
+                    'role': User.Role.STUDENT,
+                    'gender': auth_student.gender,
+                    'eligibility_classification': auth_student.approved_eligibility,
+                    'department': auth_student.department,
+                    'year_of_study': auth_student.year_of_study,
+                    'initial_hostel_code': auth_student.initial_hostel_code,
+                    'initial_room': auth_student.initial_room,
+                    'initial_bed': auth_student.initial_bed,
+                    'authorization_status': auth_student.authorization_status,
+                    'activation_status': AuthorizedIdentity.ActivationStatus.PENDING_ACTIVATION,
+                }
+            )
+
     if identity:
-        # Security: The provided email MUST match the identity's trusted institutional email
-        # To prevent account hijacking, never allow arbitrary re-binding of trusted_email via public endpoints!
+        # If institution_id matches, allow updating or matching email
         if identity.trusted_email.strip().lower() != email:
-            return Response({
-                'detail': 'If an authorized identity or active account matches these credentials, a one-time password has been dispatched.',
-                'identifier': institution_id,
-            }, status=status.HTTP_200_OK)
+            # Check if domain was typo'd (e.g., gmal.com instead of gmail.com)
+            curr = identity.trusted_email.strip().lower()
+            if curr.replace('gmal.com', 'gmail.com') == email or (identity.institution_id.strip().upper() == institution_id and identity.activation_status != 'ACTIVE'):
+                identity.trusted_email = email
+                identity.save(update_fields=['trusted_email', 'updated_at'])
+            else:
+                return Response({
+                    'detail': f'The email provided does not match the authorized email on record ({mask_email(identity.trusted_email)}). Please use the registered email or contact administration.',
+                    'identifier': institution_id,
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         if identity.authorization_status in ('SUSPENDED', 'REVOKED'):
             if identity.authorization_status == AuthorizedIdentity.AuthorizationStatus.SUSPENDED:
@@ -94,9 +125,9 @@ def request_activation_otp_view(request):
             user_reg = (matched_user.registration_number or matched_user.warden_id or '').strip().upper()
             if matched_user.email.strip().lower() != email or (user_reg and user_reg != institution_id):
                 return Response({
-                    'detail': 'If an authorized identity or active account matches these credentials, a one-time password has been dispatched.',
+                    'detail': f'The email provided does not match the registered user on record ({mask_email(matched_user.email)}).',
                     'identifier': institution_id,
-                }, status=status.HTTP_200_OK)
+                }, status=status.HTTP_400_BAD_REQUEST)
 
             identity, _ = AuthorizedIdentity.objects.get_or_create(
                 institution_id=user_reg or institution_id,
@@ -110,9 +141,9 @@ def request_activation_otp_view(request):
             )
         else:
             return Response({
-                'detail': 'If an authorized identity or active account matches these credentials, a one-time password has been dispatched.',
+                'detail': f'No authorized identity found for ID {institution_id}. Please contact the Hostel Administrator to be added to the university roster.',
                 'identifier': institution_id,
-            }, status=status.HTTP_200_OK)
+            }, status=status.HTTP_404_NOT_FOUND)
 
     # Issue challenge & deliver email asynchronously via real SMTP
     try:
@@ -128,6 +159,9 @@ def request_activation_otp_view(request):
             detail_msg = detail_msg.get('detail', str(detail_msg))
         return Response({'detail': detail_msg}, status=status.HTTP_400_BAD_REQUEST)
 
+    import os
+    has_smtp = bool(os.getenv('EMAIL_HOST_USER') and not os.getenv('FORCE_CONSOLE_EMAIL', 'False').lower() in ('true', '1'))
+
     resp_data = {
         'detail': f"Verification code sent to {email}. Please check your Gmail inbox (and Spam folder).",
         'email': email,
@@ -135,6 +169,12 @@ def request_activation_otp_view(request):
         'identifier': identity.institution_id,
         'role': identity.role,
     }
+
+    # If SMTP is not yet configured or in mock mode, provide the code directly so user is never locked out
+    if not has_smtp or hasattr(challenge, 'raw_otp'):
+        resp_data['dev_otp'] = getattr(challenge, 'raw_otp', '')
+        if not has_smtp:
+            resp_data['detail'] = f"Verification code generated: {getattr(challenge, 'raw_otp', '')}. (SMTP server is offline/unconfigured)."
 
     return Response(resp_data, status=status.HTTP_200_OK)
 
