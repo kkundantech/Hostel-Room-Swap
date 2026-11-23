@@ -342,8 +342,8 @@ else:
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1')
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '').strip()
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'kundanmusic03@gmail.com').strip()
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'kosihqnwdukulmpa').strip()
 
 _raw_from = os.getenv('DEFAULT_FROM_EMAIL')
 if _raw_from and 'noreply@hostel.edu' not in _raw_from:
@@ -351,7 +351,7 @@ if _raw_from and 'noreply@hostel.edu' not in _raw_from:
 elif EMAIL_HOST_USER:
     DEFAULT_FROM_EMAIL = f"RoomSwap Security <{EMAIL_HOST_USER}>"
 else:
-    DEFAULT_FROM_EMAIL = 'RoomSwap Security <noreply@hostel.edu>'
+    DEFAULT_FROM_EMAIL = 'RoomSwap Security <kundanmusic03@gmail.com>'
 
 # Frontend URL
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
