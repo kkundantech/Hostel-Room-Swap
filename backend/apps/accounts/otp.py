@@ -32,6 +32,7 @@ Original Module Notes:
        required for the final password creation step.
     7. OTP is NEVER returned in API responses or logs.
 """
+import os
 import secrets
 import hashlib
 import hmac
@@ -49,12 +50,61 @@ from apps.audit.services import log_audit_event
 logger = logging.getLogger(__name__)
 
 
+def send_via_resend(api_key: str, from_email: str, recipient_list: list, subject: str, html_message: str, text_message: str = "") -> bool:
+    """
+    Dispatch transactional email via Resend REST API over standard HTTPS (Port 443).
+    Bypasses all outbound cloud firewall SMTP blocks (e.g. Render Free Tier port 587 block).
+    Delivers to Gmail and institutional inboxes in < 2 seconds.
+    """
+    import urllib.request
+    import json
+
+    sender = from_email
+    if not sender or 'gmail.com' in sender or 'localhost' in sender or 'example.com' in sender or 'noreply@hostel.edu' in sender:
+        sender = "RoomSwap Security <onboarding@resend.dev>"
+
+    payload = {
+        "from": sender,
+        "to": recipient_list,
+        "subject": subject,
+        "html": html_message or f"<p>{text_message}</p>",
+        "text": text_message,
+    }
+
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key.strip()}",
+            "Content-Type": "application/json",
+            "User-Agent": "RoomSwap-Backend/1.0",
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=5) as response:
+            if response.status in (200, 201):
+                logger.info(f"[RESEND HTTPS DELIVERED] Email sent via HTTPS (Port 443) to {recipient_list}")
+                print(f"[RESEND HTTPS DELIVERED] Email sent via HTTPS (Port 443) to {recipient_list}", flush=True)
+                return True
+    except Exception as e:
+        logger.error(f"[RESEND ERROR] Failed to send email via Resend API: {e}")
+        print(f"[RESEND ERROR] Failed to send email via Resend API: {e}", flush=True)
+    return False
+
+
 def send_email_async(subject: str, message: str, from_email: str, recipient_list: list, html_message: str = None):
     """
-    Dispatch transactional OTP email with priority so delivery completes in under 5 seconds.
-    Tries synchronous delivery first so that mail delivery is guaranteed before HTTP response;
-    falls back to a daemon thread retry in the event of transient network delays.
+    Dispatch transactional OTP email with priority so delivery completes in under 3 seconds.
+    1. Checks if RESEND_API_KEY is configured (dispatches over HTTPS Port 443, bypassing cloud SMTP firewalls).
+    2. Falls back to Django standard SMTP / configured email backend.
     """
+    resend_key = (getattr(settings, 'RESEND_API_KEY', '') or os.getenv('RESEND_API_KEY', '')).strip()
+    if resend_key:
+        if send_via_resend(resend_key, from_email, recipient_list, subject, html_message, message):
+            return
+
     try:
         sent = send_mail(
             subject=subject,

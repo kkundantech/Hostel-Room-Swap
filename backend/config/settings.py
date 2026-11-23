@@ -331,6 +331,9 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
+# Resend HTTPS Email API (operates over Port 443, immune to cloud firewall SMTP blocks)
+RESEND_API_KEY = os.getenv('RESEND_API_KEY', '').strip()
+
 # Email settings (defaults to verified Gmail SMTP so OTP emails deliver in real time)
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
