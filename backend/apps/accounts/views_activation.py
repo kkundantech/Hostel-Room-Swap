@@ -95,18 +95,13 @@ def request_activation_otp_view(request):
             )
 
     if identity:
-        # If institution_id matches, allow updating or matching email
+        # Security: The provided email MUST match the identity's trusted institutional email
+        # To prevent account hijacking, never allow arbitrary re-binding of trusted_email via public endpoints!
         if identity.trusted_email.strip().lower() != email:
-            # Check if domain was typo'd (e.g., gmal.com instead of gmail.com)
-            curr = identity.trusted_email.strip().lower()
-            if curr.replace('gmal.com', 'gmail.com') == email or (identity.institution_id.strip().upper() == institution_id and identity.activation_status != 'ACTIVE'):
-                identity.trusted_email = email
-                identity.save(update_fields=['trusted_email', 'updated_at'])
-            else:
-                return Response({
-                    'detail': f'The email provided does not match the authorized email on record ({mask_email(identity.trusted_email)}). Please use the registered email or contact administration.',
-                    'identifier': institution_id,
-                }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'detail': 'If an authorized identity or active account matches these credentials, a one-time password has been dispatched.',
+                'identifier': institution_id,
+            }, status=status.HTTP_200_OK)
 
         if identity.authorization_status in ('SUSPENDED', 'REVOKED'):
             if identity.authorization_status == AuthorizedIdentity.AuthorizationStatus.SUSPENDED:
@@ -125,9 +120,9 @@ def request_activation_otp_view(request):
             user_reg = (matched_user.registration_number or matched_user.warden_id or '').strip().upper()
             if matched_user.email.strip().lower() != email or (user_reg and user_reg != institution_id):
                 return Response({
-                    'detail': f'The email provided does not match the registered user on record ({mask_email(matched_user.email)}).',
+                    'detail': 'If an authorized identity or active account matches these credentials, a one-time password has been dispatched.',
                     'identifier': institution_id,
-                }, status=status.HTTP_400_BAD_REQUEST)
+                }, status=status.HTTP_200_OK)
 
             identity, _ = AuthorizedIdentity.objects.get_or_create(
                 institution_id=user_reg or institution_id,
@@ -141,9 +136,9 @@ def request_activation_otp_view(request):
             )
         else:
             return Response({
-                'detail': f'No authorized identity found for ID {institution_id}. Please contact the Hostel Administrator to be added to the university roster.',
+                'detail': 'If an authorized identity or active account matches these credentials, a one-time password has been dispatched.',
                 'identifier': institution_id,
-            }, status=status.HTTP_404_NOT_FOUND)
+            }, status=status.HTTP_200_OK)
 
     # Issue challenge & deliver email asynchronously via real SMTP
     try:
