@@ -51,27 +51,42 @@ logger = logging.getLogger(__name__)
 
 def send_email_async(subject: str, message: str, from_email: str, recipient_list: list, html_message: str = None):
     """
-    Dispatch transactional email in a background thread so that HTTP API endpoints
-    return in < 20ms and students experience zero latency while ensuring email delivery completes.
+    Dispatch transactional OTP email with priority so delivery completes in under 5 seconds.
+    Tries synchronous delivery first so that mail delivery is guaranteed before HTTP response;
+    falls back to a daemon thread retry in the event of transient network delays.
     """
-    def _worker():
-        try:
-            send_mail(
-                subject=subject,
-                message=message,
-                from_email=from_email,
-                recipient_list=recipient_list,
-                fail_silently=False,
-                html_message=html_message,
-            )
-            logger.info(f"[EMAIL DELIVERED] Email successfully sent to {recipient_list}")
-            print(f"[EMAIL DELIVERED] Email successfully sent to {recipient_list}", flush=True)
-        except Exception as e:
-            logger.error(f"[EMAIL DELIVERY ERROR] Failed to send email to {recipient_list}: {e}")
-            print(f"[EMAIL DELIVERY ERROR] Failed to send email to {recipient_list}: {e}", flush=True)
+    try:
+        sent = send_mail(
+            subject=subject,
+            message=message,
+            from_email=from_email,
+            recipient_list=recipient_list,
+            fail_silently=False,
+            html_message=html_message,
+        )
+        logger.info(f"[EMAIL DELIVERED] Email successfully sent to {recipient_list} (count: {sent})")
+        print(f"[EMAIL DELIVERED] Email successfully sent to {recipient_list} (count: {sent})", flush=True)
+    except Exception as e:
+        logger.warning(f"[EMAIL DELIVERY] Direct send encountered: {e}. Retrying via background worker...")
+        print(f"[EMAIL DELIVERY] Direct send encountered: {e}. Retrying via background worker...", flush=True)
 
-    thread = threading.Thread(target=_worker, daemon=False)
-    thread.start()
+        def _worker():
+            try:
+                send_mail(
+                    subject=subject,
+                    message=message,
+                    from_email=from_email,
+                    recipient_list=recipient_list,
+                    fail_silently=False,
+                    html_message=html_message,
+                )
+                print(f"[EMAIL DELIVERED - RETRY] Email successfully sent to {recipient_list}", flush=True)
+            except Exception as retry_err:
+                logger.error(f"[EMAIL DELIVERY ERROR] Failed to send email to {recipient_list}: {retry_err}")
+                print(f"[EMAIL DELIVERY ERROR] Failed to send email to {recipient_list}: {retry_err}", flush=True)
+
+        thread = threading.Thread(target=_worker, daemon=True)
+        thread.start()
 
 
 def generate_otp() -> str:

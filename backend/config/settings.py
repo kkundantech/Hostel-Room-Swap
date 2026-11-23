@@ -331,19 +331,20 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-# Email settings (switches to real SMTP whenever EMAIL_HOST_USER is configured)
-if os.getenv('FORCE_CONSOLE_EMAIL', 'False').lower() in ('true', '1'):
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-elif os.getenv('EMAIL_HOST_USER'):
-    EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-else:
-    EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
-
+# Email settings (defaults to verified Gmail SMTP so OTP emails deliver in real time)
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'kundanmusic03@gmail.com').strip()
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'kosihqnwdukulmpa').strip()
+EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '7'))
+
+if os.getenv('FORCE_CONSOLE_EMAIL', 'False').lower() in ('true', '1'):
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+elif EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+else:
+    EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 
 _raw_from = os.getenv('DEFAULT_FROM_EMAIL')
 if _raw_from and 'noreply@hostel.edu' not in _raw_from:
