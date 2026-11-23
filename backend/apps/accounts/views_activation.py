@@ -42,7 +42,7 @@ from .otp import (
     consume_identity_activation_grant,
 )
 from apps.audit.services import log_audit_event
-from apps.hostels.models import Hostel
+from apps.hostels.models import Hostel, Bed, Allocation, Room, Block
 from drf_spectacular.utils import extend_schema, OpenApiTypes
 
 User = get_user_model()
@@ -351,13 +351,25 @@ def set_activation_password_view(request):
 
             # Auto-assign initial bed if specified in authorized identity
             if identity.initial_hostel_code and identity.initial_room and identity.initial_bed:
-                from apps.hostels.models import Bed, Allocation
                 bed = Bed.objects.filter(
                     room__block__hostel__code__iexact=identity.initial_hostel_code,
                     room__room_number__iexact=identity.initial_room,
                     bed_number__iexact=identity.initial_bed,
                     is_active=True,
                 ).first()
+                if not bed:
+                    hostel = Hostel.objects.filter(code__iexact=identity.initial_hostel_code).first()
+                    if hostel:
+                        block = hostel.blocks.first() or Block.objects.create(hostel=hostel, name="A")
+                        room, _ = Room.objects.get_or_create(
+                            block=block,
+                            room_number=identity.initial_room,
+                            defaults={'capacity': 2, 'floor': 1}
+                        )
+                        bed, _ = Bed.objects.get_or_create(
+                            room=room,
+                            bed_number=identity.initial_bed
+                        )
                 if bed and not Allocation.objects.filter(bed=bed, is_active=True).exists():
                     Allocation.objects.create(
                         student=user,

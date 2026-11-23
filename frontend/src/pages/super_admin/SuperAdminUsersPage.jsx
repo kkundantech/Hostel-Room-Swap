@@ -143,6 +143,9 @@ export const SuperAdminUsersPage = () => {
       name: identity.name || '',
       eligibility_classification: identity.eligibility_classification || 'BOYS',
       department: identity.department || '',
+      initial_hostel_code: identity.initial_hostel_code || '',
+      initial_room: identity.initial_room || '',
+      initial_bed: identity.initial_bed || '',
     });
     setShowEditModal(true);
   };
@@ -600,18 +603,56 @@ export const SuperAdminUsersPage = () => {
                 </div>
 
                 {selectedIdentity.role === 'STUDENT' && (
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">Hostel Eligibility Category</label>
-                    <select
-                      value={editForm.eligibility_classification}
-                      onChange={(e) => setEditForm({ ...editForm, eligibility_classification: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:bg-white focus:outline-none"
-                    >
-                      <option value="BOYS">Boys' Hostel (Male)</option>
-                      <option value="GIRLS">Girls' Hostel (Female)</option>
-                      <option value="COED">Co-ed / Special</option>
-                    </select>
-                  </div>
+                  <>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Hostel Eligibility Category</label>
+                      <select
+                        value={editForm.eligibility_classification}
+                        onChange={(e) => setEditForm({ ...editForm, eligibility_classification: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:bg-white focus:outline-none"
+                      >
+                        <option value="BOYS">Boys' Hostel (Male)</option>
+                        <option value="GIRLS">Girls' Hostel (Female)</option>
+                        <option value="COED">Co-ed / Special</option>
+                      </select>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100">
+                      <span className="block font-bold text-slate-700 text-xs mb-1">Allocated Room (For Swaps)</span>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className="block text-[10px] text-slate-500 mb-0.5 font-bold">Hostel</label>
+                          <input
+                            type="text"
+                            placeholder="BH1"
+                            value={editForm.initial_hostel_code}
+                            onChange={(e) => setEditForm({ ...editForm, initial_hostel_code: e.target.value.toUpperCase() })}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-slate-500 mb-0.5 font-bold">Room</label>
+                          <input
+                            type="text"
+                            placeholder="102"
+                            value={editForm.initial_room}
+                            onChange={(e) => setEditForm({ ...editForm, initial_room: e.target.value })}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-slate-500 mb-0.5 font-bold">Bed</label>
+                          <input
+                            type="text"
+                            placeholder="A"
+                            value={editForm.initial_bed}
+                            onChange={(e) => setEditForm({ ...editForm, initial_bed: e.target.value.toUpperCase() })}
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none font-mono text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </>
                 )}
 
                 <div>

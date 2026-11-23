@@ -314,13 +314,26 @@ def student_signup_complete_view(request):
 
         # Pre-allocate bed if assigned in authorized roster
         if auth_student.initial_hostel_code and auth_student.initial_room and auth_student.initial_bed:
-            from apps.hostels.models import Bed, Allocation
+            from apps.hostels.models import Bed, Allocation, Room, Block, Hostel
             bed = Bed.objects.filter(
                 room__block__hostel__code__iexact=auth_student.initial_hostel_code,
                 room__room_number__iexact=auth_student.initial_room,
                 bed_number__iexact=auth_student.initial_bed,
                 is_active=True,
             ).first()
+            if not bed:
+                hostel = Hostel.objects.filter(code__iexact=auth_student.initial_hostel_code).first()
+                if hostel:
+                    block = hostel.blocks.first() or Block.objects.create(hostel=hostel, name="A")
+                    room, _ = Room.objects.get_or_create(
+                        block=block,
+                        room_number=auth_student.initial_room,
+                        defaults={'capacity': 2, 'floor': 1}
+                    )
+                    bed, _ = Bed.objects.get_or_create(
+                        room=room,
+                        bed_number=auth_student.initial_bed
+                    )
             if bed and not Allocation.objects.filter(bed=bed, is_active=True).exists():
                 Allocation.objects.create(
                     student=user,

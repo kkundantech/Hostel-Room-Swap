@@ -15,7 +15,7 @@
  *   - react-router-dom (npm package)
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { AppLayout } from '../../components/layout/AppLayout';
@@ -38,6 +38,16 @@ export const SuperAdminAddStudentPage = () => {
 
   // Tab: 'single' or 'bulk'
   const [activeTab, setActiveTab] = useState('single');
+  const [hostels, setHostels] = useState([]);
+
+  useEffect(() => {
+    api.getHostels()
+      .then((data) => {
+        if (Array.isArray(data)) setHostels(data);
+        else if (data?.results && Array.isArray(data.results)) setHostels(data.results);
+      })
+      .catch(() => {});
+  }, []);
 
   // Single Student Form
   const [formData, setFormData] = useState({
@@ -48,9 +58,9 @@ export const SuperAdminAddStudentPage = () => {
     gender: 'MALE',
     department: '',
     year_of_study: 1,
-    initial_hostel_code: '',
+    initial_hostel_code: 'BH1',
     initial_room: '',
-    initial_bed: '',
+    initial_bed: 'A',
   });
 
   const [loading, setLoading] = useState(false);
@@ -309,6 +319,55 @@ export const SuperAdminAddStudentPage = () => {
                       <option key={y} value={y}>Year {y}</option>
                     ))}
                   </select>
+                </div>
+
+                {/* Pre-Allocated Current Room (Required for Room Swaps) */}
+                <div className="sm:col-span-2 pt-3 border-t border-slate-100">
+                  <div className="mb-2">
+                    <span className="font-bold text-slate-800 text-xs block">Current Room Allocation (Required for Room Swap)</span>
+                    <span className="text-[10px] text-slate-500">Specify the student's currently assigned hostel room so they can immediately initiate or join room swaps.</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Hostel *</label>
+                      <input
+                        type="text"
+                        list="hostels-list"
+                        required
+                        value={formData.initial_hostel_code}
+                        onChange={(e) => setFormData({ ...formData, initial_hostel_code: e.target.value.toUpperCase() })}
+                        placeholder="e.g. BH1"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none"
+                      />
+                      <datalist id="hostels-list">
+                        {hostels.map((h) => (
+                          <option key={h.id || h.code} value={h.code}>{h.name} ({h.code})</option>
+                        ))}
+                      </datalist>
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Room Number *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.initial_room}
+                        onChange={(e) => setFormData({ ...formData, initial_room: e.target.value })}
+                        placeholder="e.g. 102"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Bed Identifier *</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.initial_bed}
+                        onChange={(e) => setFormData({ ...formData, initial_bed: e.target.value.toUpperCase() })}
+                        placeholder="e.g. A"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none font-mono"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
