@@ -50,6 +50,61 @@ from apps.audit.services import log_audit_event
 logger = logging.getLogger(__name__)
 
 
+def send_via_brevo(api_key: str, from_email: str, recipient_list: list, subject: str, html_message: str, text_message: str = "") -> bool:
+    """
+    Dispatch transactional email via Brevo REST API over standard HTTPS (Port 443).
+    Bypasses cloud outbound SMTP firewalls (e.g. Render port 587 block).
+    Allows sending to ANY recipient email without requiring a custom domain.
+    """
+    import urllib.request
+    import json
+
+    sender_email = from_email
+    sender_name = "RoomSwap Security"
+    if "<" in from_email and ">" in from_email:
+        parts = from_email.split("<")
+        sender_name = parts[0].strip() or sender_name
+        sender_email = parts[1].replace(">", "").strip()
+
+    if not sender_email or "noreply@hostel.edu" in sender_email or "localhost" in sender_email or "example.com" in sender_email:
+        sender_email = getattr(settings, 'EMAIL_HOST_USER', 'kundanmusic03@gmail.com')
+
+    to_payload = [{"email": r.strip()} for r in recipient_list if r and r.strip()]
+    if not to_payload:
+        return False
+
+    payload = {
+        "sender": {"name": sender_name, "email": sender_email},
+        "to": to_payload,
+        "subject": subject,
+        "htmlContent": html_message or f"<p>{text_message}</p>",
+        "textContent": text_message or "Your OTP verification code.",
+    }
+
+    req = urllib.request.Request(
+        "https://api.brevo.com/v3/smtp/email",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "api-key": api_key.strip(),
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "RoomSwap-Backend/1.0",
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=5) as response:
+            if response.status in (200, 201, 202):
+                logger.info(f"[BREVO HTTPS DELIVERED] Email sent via HTTPS (Port 443) to {recipient_list}")
+                print(f"[BREVO HTTPS DELIVERED] Email sent via HTTPS (Port 443) to {recipient_list}", flush=True)
+                return True
+    except Exception as e:
+        logger.error(f"[BREVO ERROR] Failed to send email via Brevo API: {e}")
+        print(f"[BREVO ERROR] Failed to send email via Brevo API: {e}", flush=True)
+    return False
+
+
 def send_via_resend(api_key: str, from_email: str, recipient_list: list, subject: str, html_message: str, text_message: str = "") -> bool:
     """
     Dispatch transactional email via Resend REST API over standard HTTPS (Port 443).
@@ -97,9 +152,15 @@ def send_via_resend(api_key: str, from_email: str, recipient_list: list, subject
 def send_email_async(subject: str, message: str, from_email: str, recipient_list: list, html_message: str = None):
     """
     Dispatch transactional OTP email with priority so delivery completes in under 3 seconds.
-    1. Checks if RESEND_API_KEY is configured (dispatches over HTTPS Port 443, bypassing cloud SMTP firewalls).
-    2. Falls back to Django standard SMTP / configured email backend.
+    1. Checks if BREVO_API_KEY is configured (HTTPS Port 443 REST API, sends to any recipient).
+    2. Checks if RESEND_API_KEY is configured (HTTPS Port 443 REST API).
+    3. Falls back to Django standard SMTP / configured email backend.
     """
+    brevo_key = (getattr(settings, 'BREVO_API_KEY', '') or os.getenv('BREVO_API_KEY', '')).strip()
+    if brevo_key:
+        if send_via_brevo(brevo_key, from_email, recipient_list, subject, html_message, message):
+            return
+
     resend_key = (getattr(settings, 'RESEND_API_KEY', '') or os.getenv('RESEND_API_KEY', '')).strip()
     if resend_key:
         if send_via_resend(resend_key, from_email, recipient_list, subject, html_message, message):
