@@ -71,15 +71,16 @@ export const SuperAdminAddWardenPage = () => {
     { key: 'GENERATE_WARDEN_REPORTS', label: 'Export Warden Occupancy & Movement Reports' },
   ];
 
-  const toggleHostel = (hostelId) => {
-    const strId = String(hostelId);
+  const toggleHostel = (h) => {
+    const code = h.code || String(h.id);
+    const strId = String(h.id);
     setFormData((prev) => {
-      const exists = prev.assigned_hostel_ids.includes(strId);
+      const exists = prev.assigned_hostel_ids.includes(code) || prev.assigned_hostel_ids.includes(strId);
       return {
         ...prev,
         assigned_hostel_ids: exists
-          ? prev.assigned_hostel_ids.filter((id) => id !== strId)
-          : [...prev.assigned_hostel_ids, strId],
+          ? prev.assigned_hostel_ids.filter((id) => id !== code && id !== strId)
+          : [...prev.assigned_hostel_ids, code],
       };
     });
   };
@@ -285,7 +286,7 @@ export const SuperAdminAddWardenPage = () => {
                   <button
                     key={h.id}
                     type="button"
-                    onClick={() => toggleHostel(h.id)}
+                    onClick={() => toggleHostel(h)}
                     className={`p-3 rounded-xl border text-left flex items-center justify-between transition ${
                       isSelected
                         ? 'border-amber-500 bg-amber-50/40 text-amber-900 font-bold'

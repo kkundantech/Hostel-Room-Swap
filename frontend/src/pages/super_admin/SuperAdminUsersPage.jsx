@@ -51,6 +51,16 @@ export const SuperAdminUsersPage = () => {
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [feedback, setFeedback] = useState(null);
+  const [hostels, setHostels] = useState([]);
+
+  useEffect(() => {
+    api.getHostels()
+      .then((data) => {
+        if (Array.isArray(data)) setHostels(data);
+        else if (data?.results && Array.isArray(data.results)) setHostels(data.results);
+      })
+      .catch(() => {});
+  }, []);
 
   // Detail & Edit Modals
   const [selectedIdentity, setSelectedIdentity] = useState(null);
@@ -375,7 +385,7 @@ export const SuperAdminUsersPage = () => {
                         {item.institution_id}
                       </td>
                       <td className="py-3.5 px-4 font-bold text-slate-800">
-                        {item.full_name || '—'}
+                        {item.full_name || item.name || '—'}
                       </td>
                       <td className="py-3.5 px-4 font-mono text-slate-600">
                         {item.masked_email || item.trusted_email}
@@ -385,10 +395,10 @@ export const SuperAdminUsersPage = () => {
                       </td>
                       <td className="py-3.5 px-4 text-[11px] text-slate-500">
                         {item.role === 'STUDENT'
-                          ? item.eligibility_classification
+                          ? (item.initial_hostel_code ? `${item.initial_hostel_code} - Room ${item.initial_room || '?'}` : item.eligibility_classification)
                           : Array.isArray(item.assigned_hostel_ids) && item.assigned_hostel_ids.length > 0
-                          ? item.assigned_hostel_ids.join(', ')
-                          : 'All Hostels'}
+                            ? item.assigned_hostel_ids.join(', ')
+                            : 'All Hostels'}
                       </td>
                       <td className="py-3.5 px-4">
                         {getActivationBadge(item.activation_status)}
@@ -653,6 +663,49 @@ export const SuperAdminUsersPage = () => {
                       </div>
                     </div>
                   </>
+                )}
+
+                {(selectedIdentity.role === 'WARDEN' || selectedIdentity.role === 'CHIEF_WARDEN') && (
+                  <div className="pt-2 border-t border-slate-100">
+                    <span className="block font-bold text-slate-700 text-xs mb-1.5">
+                      Assigned Hostel Scope (e.g. BH1, GH1)
+                    </span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {hostels.map((h) => {
+                        const isAssigned = (editForm.assigned_hostel_ids || []).includes(String(h.id)) || (editForm.assigned_hostel_ids || []).includes(h.code);
+                        return (
+                          <button
+                            key={h.id || h.code}
+                            type="button"
+                            onClick={() => {
+                              const strCode = h.code;
+                              const strId = String(h.id);
+                              const list = editForm.assigned_hostel_ids || [];
+                              const exists = list.includes(strCode) || list.includes(strId);
+                              setEditForm({
+                                ...editForm,
+                                assigned_hostel_ids: exists
+                                  ? list.filter((x) => x !== strCode && x !== strId)
+                                  : [...list, strCode],
+                              });
+                            }}
+                            className={`px-3 py-2 rounded-xl border text-left flex items-center justify-between text-xs transition ${
+                              isAssigned
+                                ? 'border-[#f78c30] bg-orange-50/60 text-slate-900 font-bold'
+                                : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                            }`}
+                          >
+                            <span>{h.name} ({h.code})</span>
+                            <span className={`w-4 h-4 rounded flex items-center justify-center text-[10px] ${
+                              isAssigned ? 'bg-[#f78c30] text-white' : 'border border-slate-300 bg-white'
+                            }`}>
+                              {isAssigned ? '✓' : ''}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
 
                 <div>

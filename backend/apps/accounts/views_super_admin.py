@@ -93,6 +93,62 @@ class SuperAdminIdentityViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        if instance.role in (User.Role.WARDEN, User.Role.CHIEF_WARDEN):
+            user = User.objects.filter(email__iexact=instance.trusted_email).first()
+            if not user:
+                user = User.objects.filter(warden_id__iexact=instance.institution_id).first()
+            if user:
+                from apps.hostels.models import Hostel
+                WardenAssignment.objects.filter(warden=user).delete()
+                for hid_or_code in instance.assigned_hostel_ids:
+                    hostel = None
+                    if str(hid_or_code).isdigit():
+                        hostel = Hostel.objects.filter(id=int(hid_or_code)).first()
+                    if not hostel:
+                        hostel = Hostel.objects.filter(code__iexact=str(hid_or_code)).first()
+                    if hostel:
+                        WardenAssignment.objects.get_or_create(warden=user, hostel=hostel, defaults={'is_active': True})
+        elif instance.role == User.Role.STUDENT:
+            AuthorizedStudent.objects.filter(registration_number__iexact=instance.institution_id).update(
+                initial_hostel_code=instance.initial_hostel_code,
+                initial_room=instance.initial_room,
+                initial_bed=instance.initial_bed,
+            )
+            user = User.objects.filter(email__iexact=instance.trusted_email).first()
+            if not user:
+                user = User.objects.filter(registration_number__iexact=instance.institution_id).first()
+            if user and instance.initial_hostel_code and instance.initial_room and instance.initial_bed:
+                from apps.hostels.models import Bed, Allocation, Room, Block, Hostel
+                bed = Bed.objects.filter(
+                    room__block__hostel__code__iexact=instance.initial_hostel_code,
+                    room__room_number__iexact=instance.initial_room,
+                    bed_number__iexact=instance.initial_bed,
+                    is_active=True,
+                ).first()
+                if not bed:
+                    hostel = Hostel.objects.filter(code__iexact=instance.initial_hostel_code).first()
+                    if hostel:
+                        block = hostel.blocks.first() or Block.objects.create(hostel=hostel, name="A")
+                        room, _ = Room.objects.get_or_create(
+                            block=block,
+                            room_number=instance.initial_room,
+                            defaults={'capacity': 2, 'floor': 1}
+                        )
+                        bed, _ = Bed.objects.get_or_create(
+                            room=room,
+                            bed_number=instance.initial_bed
+                        )
+                if bed:
+                    Allocation.objects.filter(student=user, is_active=True).update(is_active=False)
+                    Allocation.objects.create(
+                        student=user,
+                        bed=bed,
+                        is_active=True,
+                        reason='Admin updated allocation',
+                    )
+
     def destroy(self, request, *args, **kwargs):
         """
         Delete an authorized identity and its linked user credentials.
