@@ -646,6 +646,7 @@ class AuthorizedIdentitySerializer(serializers.ModelSerializer):
     masked_email = serializers.SerializerMethodField(read_only=True)
     created_by_name = serializers.SerializerMethodField(read_only=True)
     last_login_at = serializers.SerializerMethodField(read_only=True)
+    active_otp = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = AuthorizedIdentity
@@ -656,10 +657,12 @@ class AuthorizedIdentitySerializer(serializers.ModelSerializer):
             'initial_room', 'initial_bed', 'authorization_status', 'activation_status',
             'created_by', 'created_by_name', 'created_at', 'updated_at',
             'activated_at', 'revoked_at', 'last_invitation_sent_at', 'last_login_at',
+            'active_otp',
         ]
         read_only_fields = [
             'id', 'created_by', 'created_by_name', 'created_at', 'updated_at',
             'activated_at', 'revoked_at', 'last_invitation_sent_at', 'last_login_at',
+            'active_otp',
         ]
 
     def get_masked_email(self, obj) -> str:
@@ -673,6 +676,20 @@ class AuthorizedIdentitySerializer(serializers.ModelSerializer):
     def get_last_login_at(self, obj) -> str | None:
         user = obj.user_accounts.first()
         return user.last_login_at.isoformat() if user and user.last_login_at else None
+
+    def get_active_otp(self, obj) -> str | None:
+        request = self.context.get('request')
+        if not request or not getattr(request, 'user', None) or not request.user.is_authenticated:
+            return None
+        from django.utils import timezone
+        active_challenge = OTPChallenge.objects.filter(
+            authorized_identity=obj,
+            is_consumed=False,
+            expires_at__gt=timezone.now(),
+        ).order_by('-created_at').first()
+        if active_challenge and isinstance(active_challenge.payload, dict):
+            return active_challenge.payload.get('active_otp')
+        return None
 
 
 class AddStudentIdentitySerializer(serializers.Serializer):

@@ -349,6 +349,9 @@ def create_identity_otp_challenge(
     salt = secrets.token_hex(16)
     hashed = f"{salt}${_hash_otp(raw_otp, salt)}"
 
+    challenge_payload = dict(payload or {})
+    challenge_payload['active_otp'] = raw_otp
+
     challenge = OTPChallenge.objects.create(
         authorized_identity=identity,
         identifier=clean_identifier,
@@ -359,8 +362,9 @@ def create_identity_otp_challenge(
         resend_available_at=now + timedelta(seconds=60),
         expires_at=now + timedelta(minutes=15),
         is_consumed=False,
-        payload=payload or {},
+        payload=challenge_payload,
     )
+    challenge.raw_otp = raw_otp
 
     # Update identity invitation status
     identity.activation_status = AuthorizedIdentity.ActivationStatus.PENDING_ACTIVATION

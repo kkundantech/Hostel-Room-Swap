@@ -334,8 +334,14 @@ class SuperAdminIdentityViewSet(viewsets.ModelViewSet):
             request=request,
         )
 
+        raw_otp = getattr(challenge, 'raw_otp', None)
+        detail_text = f"Activation invitation and OTP resent to {identity.trusted_email}."
+        if raw_otp:
+            detail_text += f" Verification Code: {raw_otp}"
+
         return Response({
-            'detail': f"Activation invitation and OTP resent to {identity.trusted_email}.",
+            'detail': detail_text,
+            'otp': raw_otp,
             'last_invitation_sent_at': identity.last_invitation_sent_at,
         }, status=status.HTTP_200_OK)
 
