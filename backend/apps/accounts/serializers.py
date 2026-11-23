@@ -553,6 +553,30 @@ class AuthorizedStudentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Registration number must be exactly 8 characters.')
         return val
 
+    def validate(self, data):
+        inst = getattr(self, 'instance', None)
+        hostel = data.get('initial_hostel_code') if 'initial_hostel_code' in data else (inst.initial_hostel_code if inst else None)
+        room = data.get('initial_room') if 'initial_room' in data else (inst.initial_room if inst else None)
+        bed = data.get('initial_bed') if 'initial_bed' in data else (inst.initial_bed if inst else None)
+        reg_no = data.get('registration_number') if 'registration_number' in data else (inst.registration_number if inst else None)
+        email = data.get('email') if 'email' in data else (inst.email if inst else None)
+
+        if hostel and room:
+            from apps.hostels.services import validate_and_check_bed_occupancy
+            check = validate_and_check_bed_occupancy(
+                hostel_code=hostel,
+                room_number=room,
+                bed_number=bed or '',
+                exclude_reg_no=reg_no,
+                exclude_email=email,
+            )
+            if check['is_occupied']:
+                raise serializers.ValidationError({
+                    'initial_bed': check['message'],
+                    'detail': check['message'],
+                })
+        return data
+
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         if not ret.get('is_registered'):
@@ -599,6 +623,27 @@ class AuthorizedWardenSerializer(serializers.ModelSerializer):
             {'id': h.id, 'name': h.name, 'code': h.code, 'category': h.hostel_category}
             for h in obj.assigned_hostels.all()
         ]
+
+    def validate(self, data):
+        instance = getattr(self, 'instance', None)
+        assigned = data.get('assigned_hostels')
+        wid = data.get('warden_id') or (instance.warden_id if instance else None)
+        email = data.get('email') or (instance.email if instance else None)
+
+        if assigned is not None:
+            from apps.hostels.services import validate_and_check_warden_assignment
+            for h in assigned:
+                check = validate_and_check_warden_assignment(
+                    hostel_code_or_id=h.id,
+                    exclude_warden_id=wid,
+                    exclude_email=email,
+                )
+                if check['is_assigned']:
+                    raise serializers.ValidationError({
+                        'assigned_hostels': check['message'],
+                        'detail': check['message'],
+                    })
+        return data
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -691,6 +736,50 @@ class AuthorizedIdentitySerializer(serializers.ModelSerializer):
             return active_challenge.payload.get('active_otp')
         return None
 
+    def validate(self, data):
+        instance = getattr(self, 'instance', None)
+        role = data.get('role') or (instance.role if instance else None)
+
+        if role == 'STUDENT':
+            hostel = data.get('initial_hostel_code') if 'initial_hostel_code' in data else (instance.initial_hostel_code if instance else None)
+            room = data.get('initial_room') if 'initial_room' in data else (instance.initial_room if instance else None)
+            bed = data.get('initial_bed') if 'initial_bed' in data else (instance.initial_bed if instance else None)
+            inst_id = data.get('institution_id') or (instance.institution_id if instance else None)
+            email = data.get('trusted_email') or (instance.trusted_email if instance else None)
+
+            if hostel and room:
+                from apps.hostels.services import validate_and_check_bed_occupancy
+                check = validate_and_check_bed_occupancy(
+                    hostel_code=hostel,
+                    room_number=room,
+                    bed_number=bed or '',
+                    exclude_reg_no=inst_id,
+                    exclude_email=email,
+                )
+                if check['is_occupied']:
+                    raise serializers.ValidationError({
+                        'initial_bed': check['message'],
+                        'detail': check['message'],
+                    })
+        elif role in ('WARDEN', 'CHIEF_WARDEN'):
+            hostels = data.get('assigned_hostel_ids')
+            if hostels is not None:
+                inst_id = data.get('institution_id') or (instance.institution_id if instance else None)
+                email = data.get('trusted_email') or (instance.trusted_email if instance else None)
+                from apps.hostels.services import validate_and_check_warden_assignment
+                for h in hostels:
+                    check = validate_and_check_warden_assignment(
+                        hostel_code_or_id=h,
+                        exclude_warden_id=inst_id,
+                        exclude_email=email,
+                    )
+                    if check['is_assigned']:
+                        raise serializers.ValidationError({
+                            'assigned_hostel_ids': check['message'],
+                            'detail': check['message'],
+                        })
+        return data
+
 
 class AddStudentIdentitySerializer(serializers.Serializer):
     """Add student identity validation."""
@@ -722,6 +811,29 @@ class AddStudentIdentitySerializer(serializers.Serializer):
         if AuthorizedIdentity.objects.filter(trusted_email__iexact=val).exists():
             raise serializers.ValidationError('An authorized identity with this email already exists.')
         return val
+
+    def validate(self, data):
+        hostel = data.get('initial_hostel_code')
+        room = data.get('initial_room')
+        bed = data.get('initial_bed')
+        reg_no = data.get('registration_number')
+        email = data.get('email')
+
+        if hostel and room:
+            from apps.hostels.services import validate_and_check_bed_occupancy
+            check = validate_and_check_bed_occupancy(
+                hostel_code=hostel,
+                room_number=room,
+                bed_number=bed or '',
+                exclude_reg_no=reg_no,
+                exclude_email=email,
+            )
+            if check['is_occupied']:
+                raise serializers.ValidationError({
+                    'initial_bed': check['message'],
+                    'detail': check['message'],
+                })
+        return data
 
 
 class AddWardenIdentitySerializer(serializers.Serializer):
@@ -761,6 +873,19 @@ class AddWardenIdentitySerializer(serializers.Serializer):
 
         hostels = data.get('assigned_hostel_ids') or data.get('assigned_hostels') or []
         data['assigned_hostel_ids'] = hostels
+
+        from apps.hostels.services import validate_and_check_warden_assignment
+        for h in hostels:
+            check = validate_and_check_warden_assignment(
+                hostel_code_or_id=h,
+                exclude_warden_id=clean_wid,
+                exclude_email=data.get('email'),
+            )
+            if check['is_assigned']:
+                raise serializers.ValidationError({
+                    'assigned_hostels': check['message'],
+                    'detail': check['message'],
+                })
         return data
 
     def validate_email(self, value):

@@ -74,11 +74,19 @@ export const SuperAdminAddWardenPage = () => {
   const toggleHostel = (h) => {
     const code = h.code || String(h.id);
     const strId = String(h.id);
+    const isCurrentlySelected = formData.assigned_hostel_ids.includes(code) || formData.assigned_hostel_ids.includes(strId);
+
+    // If not currently selected, but already assigned to another warden
+    if (!isCurrentlySelected && h.assigned_warden_details) {
+      setError(`Hostel ${h.code} (${h.name}) is already assigned to Warden ${h.assigned_warden_details.name} (${h.assigned_warden_details.warden_id}). Each hostel can only have one warden. Please remove the existing warden first before assigning this hostel.`);
+      return;
+    }
+
+    setError('');
     setFormData((prev) => {
-      const exists = prev.assigned_hostel_ids.includes(code) || prev.assigned_hostel_ids.includes(strId);
       return {
         ...prev,
-        assigned_hostel_ids: exists
+        assigned_hostel_ids: isCurrentlySelected
           ? prev.assigned_hostel_ids.filter((id) => id !== code && id !== strId)
           : [...prev.assigned_hostel_ids, code],
       };
@@ -282,6 +290,7 @@ export const SuperAdminAddWardenPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {hostels.map((h) => {
                 const isSelected = formData.assigned_hostel_ids.includes(String(h.id)) || formData.assigned_hostel_ids.includes(h.code);
+                const isAlreadyAssigned = Boolean(h.assigned_warden_details);
                 return (
                   <button
                     key={h.id}
@@ -290,19 +299,30 @@ export const SuperAdminAddWardenPage = () => {
                     className={`p-3 rounded-xl border text-left flex items-center justify-between transition ${
                       isSelected
                         ? 'border-amber-500 bg-amber-50/40 text-amber-900 font-bold'
-                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                        : isAlreadyAssigned
+                          ? 'border-amber-200 bg-amber-50/50 text-slate-700 hover:border-amber-300'
+                          : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
                     <div>
                       <div className="text-xs font-bold">{h.name}</div>
                       <div className="text-[10px] text-slate-500 font-mono">Code: {h.code} &bull; {h.hostel_category}</div>
+                      {isAlreadyAssigned && (
+                        <div className="text-[10px] text-amber-800 font-medium mt-0.5">
+                          Assigned: {h.assigned_warden_details.name} ({h.assigned_warden_details.warden_id})
+                        </div>
+                      )}
                     </div>
                     <div
-                      className={`w-5 h-5 rounded-lg flex items-center justify-center border ${
-                        isSelected ? 'bg-amber-600 border-amber-600 text-white' : 'border-slate-300 bg-white'
+                      className={`w-5 h-5 rounded-lg flex items-center justify-center border shrink-0 ml-2 ${
+                        isSelected
+                          ? 'bg-amber-600 border-amber-600 text-white'
+                          : isAlreadyAssigned
+                            ? 'border-amber-400 bg-amber-100 text-amber-800 text-[10px] font-bold'
+                            : 'border-slate-300 bg-white'
                       }`}
                     >
-                      {isSelected && <Check className="w-3 h-3" />}
+                      {isSelected ? <Check className="w-3 h-3" /> : isAlreadyAssigned ? '!' : ''}
                     </div>
                   </button>
                 );

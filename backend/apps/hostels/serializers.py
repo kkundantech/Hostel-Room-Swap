@@ -112,6 +112,8 @@ class HostelSerializer(serializers.ModelSerializer):
     max_floor = serializers.SerializerMethodField()
     floor_count = serializers.SerializerMethodField()
     available_floors = serializers.SerializerMethodField()
+    assigned_wardens = serializers.SerializerMethodField()
+    assigned_warden_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Hostel
@@ -120,7 +122,36 @@ class HostelSerializer(serializers.ModelSerializer):
             'address', 'total_blocks', 'warden_contact', 'is_active',
             'total_beds', 'occupied_beds', 'vacant_beds', 'blocks',
             'max_floor', 'floor_count', 'available_floors',
+            'assigned_wardens', 'assigned_warden_details',
         ]
+
+    def get_assigned_wardens(self, obj) -> list[str]:
+        assignments = obj.warden_assignments.filter(is_active=True).select_related('warden')
+        names = [a.warden.get_full_name() or a.warden.email for a in assignments]
+        if not names:
+            for aw in obj.authorized_wardens.filter(authorization_status='ACTIVE'):
+                names.append(aw.full_name or f"Warden {aw.warden_id}")
+        return names if names else ['Not Assigned']
+
+    def get_assigned_warden_details(self, obj) -> dict | None:
+        assignment = obj.warden_assignments.filter(is_active=True).select_related('warden').first()
+        if assignment:
+            u = assignment.warden
+            return {
+                'id': u.id,
+                'name': u.get_full_name() or u.email,
+                'warden_id': getattr(u, 'warden_id', '') or getattr(u, 'registration_number', ''),
+                'email': u.email,
+            }
+        aw = obj.authorized_wardens.filter(authorization_status='ACTIVE').first()
+        if aw:
+            return {
+                'id': aw.id,
+                'name': aw.full_name or f"Warden {aw.warden_id}",
+                'warden_id': aw.warden_id,
+                'email': aw.email,
+            }
+        return None
 
     def get_max_floor(self, obj) -> int:
         from django.db.models import Max
@@ -166,6 +197,8 @@ class HostelMinimalSerializer(serializers.ModelSerializer):
     max_floor = serializers.SerializerMethodField()
     floor_count = serializers.SerializerMethodField()
     available_floors = serializers.SerializerMethodField()
+    assigned_wardens = serializers.SerializerMethodField()
+    assigned_warden_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Hostel
@@ -173,7 +206,36 @@ class HostelMinimalSerializer(serializers.ModelSerializer):
             'id', 'name', 'code', 'hostel_category', 'eligibility_policy',
             'is_active', 'total_beds', 'occupied_beds', 'vacant_beds', 'total_rooms',
             'max_floor', 'floor_count', 'available_floors',
+            'assigned_wardens', 'assigned_warden_details',
         ]
+
+    def get_assigned_wardens(self, obj) -> list[str]:
+        assignments = obj.warden_assignments.filter(is_active=True).select_related('warden')
+        names = [a.warden.get_full_name() or a.warden.email for a in assignments]
+        if not names:
+            for aw in obj.authorized_wardens.filter(authorization_status='ACTIVE'):
+                names.append(aw.full_name or f"Warden {aw.warden_id}")
+        return names if names else ['Not Assigned']
+
+    def get_assigned_warden_details(self, obj) -> dict | None:
+        assignment = obj.warden_assignments.filter(is_active=True).select_related('warden').first()
+        if assignment:
+            u = assignment.warden
+            return {
+                'id': u.id,
+                'name': u.get_full_name() or u.email,
+                'warden_id': getattr(u, 'warden_id', '') or getattr(u, 'registration_number', ''),
+                'email': u.email,
+            }
+        aw = obj.authorized_wardens.filter(authorization_status='ACTIVE').first()
+        if aw:
+            return {
+                'id': aw.id,
+                'name': aw.full_name or f"Warden {aw.warden_id}",
+                'warden_id': aw.warden_id,
+                'email': aw.email,
+            }
+        return None
 
     def get_max_floor(self, obj) -> int:
         from django.db.models import Max

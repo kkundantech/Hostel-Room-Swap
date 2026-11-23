@@ -103,7 +103,8 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
           total_beds: h.total_beds || 0,
           occupied_beds: h.occupied_beds || 0,
           available_beds: h.vacant_beds || 0,
-          assigned_wardens: ['Hostel Authority'],
+          assigned_wardens: (h.assigned_wardens && h.assigned_wardens.length > 0 && h.assigned_wardens[0] !== 'Not Assigned') ? h.assigned_wardens : [],
+          assigned_warden_details: h.assigned_warden_details || null,
           is_active: h.is_active !== false,
           last_sync: 'Today',
         }));
@@ -486,8 +487,24 @@ export const AdminHostelsRoomsPage = ({ initialTab = 'HOSTELS' }) => {
                         <td className="py-3.5 px-3">
                           <span className="font-bold text-emerald-600">{h.available_beds} Open</span>
                         </td>
-                        <td className="py-3.5 px-3 text-slate-600">
-                          {h.assigned_wardens.join(', ')}
+                        <td className="py-3.5 px-3">
+                          {h.assigned_warden_details ? (
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-slate-800 text-xs flex items-center gap-1">
+                                <ShieldCheck className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                <span>{h.assigned_warden_details.name}</span>
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-mono">
+                                {h.assigned_warden_details.warden_id || h.assigned_warden_details.email}
+                              </span>
+                            </div>
+                          ) : h.assigned_wardens.length > 0 ? (
+                            <span className="text-xs text-slate-700 font-medium">
+                              {h.assigned_wardens.join(', ')}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-slate-400 italic">Not Assigned</span>
+                          )}
                         </td>
                         <td className="py-3.5 px-3">
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">

@@ -746,8 +746,51 @@ class AuthorizedStudentViewSet(viewsets.ModelViewSet):
             eligibility_classification=instance.approved_eligibility,
             department=instance.department,
             year_of_study=instance.year_of_study,
+            initial_hostel_code=instance.initial_hostel_code,
+            initial_room=instance.initial_room,
+            initial_bed=instance.initial_bed,
             authorization_status=instance.authorization_status,
         )
+
+        user = User.objects.filter(registration_number__iexact=instance.registration_number).first() or \
+               User.objects.filter(email__iexact=instance.email).first()
+        if user:
+            from apps.hostels.models import Bed, Allocation, Room, Block, Hostel
+            if not instance.initial_hostel_code or not instance.initial_room or not instance.initial_bed:
+                Allocation.objects.filter(student=user, is_active=True).update(
+                    is_active=False,
+                    deallocated_at=timezone.now(),
+                    reason='Admin updated room allocation (deallocated)',
+                )
+            else:
+                bed = Bed.objects.filter(
+                    room__block__hostel__code__iexact=instance.initial_hostel_code,
+                    room__room_number__iexact=instance.initial_room,
+                    bed_number__iexact=instance.initial_bed,
+                    is_active=True,
+                ).first()
+                if not bed:
+                    hostel = Hostel.objects.filter(code__iexact=instance.initial_hostel_code).first()
+                    if hostel:
+                        block = hostel.blocks.first() or Block.objects.create(hostel=hostel, name="A")
+                        room, _ = Room.objects.get_or_create(
+                            block=block,
+                            room_number=instance.initial_room,
+                            defaults={'capacity': 2, 'floor': 1}
+                        )
+                        bed, _ = Bed.objects.get_or_create(
+                            room=room,
+                            bed_number=instance.initial_bed
+                        )
+                if bed:
+                    Allocation.objects.filter(student=user, is_active=True).exclude(bed=bed).update(is_active=False)
+                    Allocation.objects.filter(bed=bed, is_active=True).exclude(student=user).update(is_active=False)
+                    Allocation.objects.update_or_create(
+                        student=user,
+                        bed=bed,
+                        defaults={'is_active': True, 'reason': 'Admin updated allocation'}
+                    )
+
         log_audit_event(
             user=self.request.user,
             action='ROSTER_STUDENT_UPDATED',
@@ -756,6 +799,23 @@ class AuthorizedStudentViewSet(viewsets.ModelViewSet):
             target_id=instance.id,
             request=self.request,
         )
+
+    @action(detail=True, methods=['post'], url_path='deallocate-room')
+    def deallocate_room(self, request, pk=None):
+        """
+        Deallocate an authorized student from their current room/bed.
+        Frees up the seat for reassignment.
+        """
+        student = self.get_object()
+        from apps.hostels.services import deallocate_student_room
+        reason = request.data.get('reason', 'Deallocated by Administrator')
+        result = deallocate_student_room(
+            identifier=student.registration_number,
+            reason=reason,
+            user_performing=request.user,
+            request=request,
+        )
+        return Response(result, status=status.HTTP_200_OK)
 
     def perform_destroy(self, instance):
         reg_no = instance.registration_number
@@ -900,6 +960,14 @@ class AuthorizedWardenViewSet(viewsets.ModelViewSet):
             assigned_hostel_ids=hostel_codes,
             authorization_status=instance.authorization_status,
         )
+
+        user = User.objects.filter(warden_id__iexact=instance.warden_id).first() or \
+               User.objects.filter(email__iexact=instance.email).first()
+        if user:
+            WardenAssignment.objects.filter(warden=user).delete()
+            for hostel in instance.assigned_hostels.all():
+                WardenAssignment.objects.get_or_create(warden=user, hostel=hostel, defaults={'is_active': True})
+
         log_audit_event(
             user=self.request.user,
             action='ROSTER_WARDEN_UPDATED',
@@ -908,6 +976,25 @@ class AuthorizedWardenViewSet(viewsets.ModelViewSet):
             target_id=instance.id,
             request=self.request,
         )
+
+    @action(detail=True, methods=['post'], url_path='unassign-hostel')
+    def unassign_hostel(self, request, pk=None):
+        """
+        Unassign a hostel from a warden.
+        Frees the hostel for reassignment to another warden.
+        """
+        warden = self.get_object()
+        hostel = request.data.get('hostel') or request.data.get('hostel_id') or request.data.get('hostel_code')
+        if not hostel:
+            return Response({'detail': 'Hostel code or ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        from apps.hostels.services import unassign_warden_from_hostel
+        result = unassign_warden_from_hostel(
+            warden_identifier=warden.warden_id,
+            hostel_code_or_id=hostel,
+            user_performing=request.user,
+            request=request,
+        )
+        return Response(result, status=status.HTTP_200_OK)
 
     def perform_destroy(self, instance):
         warden_id = instance.warden_id

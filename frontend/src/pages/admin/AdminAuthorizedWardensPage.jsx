@@ -53,6 +53,7 @@ export const AdminAuthorizedWardensPage = () => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showScopeModal, setShowScopeModal] = useState(false);
   const [selectedWarden, setSelectedWarden] = useState(null);
+  const [scopeError, setScopeError] = useState('');
 
   // Add Form
   const [formData, setFormData] = useState({
@@ -155,6 +156,7 @@ export const AdminAuthorizedWardensPage = () => {
   const handleUpdateScope = async (e) => {
     e.preventDefault();
     if (!selectedWarden) return;
+    setScopeError('');
 
     try {
       setSubmitting(true);
@@ -166,9 +168,27 @@ export const AdminAuthorizedWardensPage = () => {
       setSelectedWarden(null);
       fetchData();
     } catch (err) {
-      alert('Failed to update hostel scope.');
+      setScopeError(
+        err.response?.data?.detail ||
+        err.response?.data?.assigned_hostels?.[0] ||
+        err.response?.data?.non_field_errors?.[0] ||
+        'Failed to update hostel scope.'
+      );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleUnassignHostel = async (warden, hostel) => {
+    const hCode = hostel.code || hostel.name || hostel;
+    if (!window.confirm(`Are you sure you want to unassign ${hCode} from Warden ${warden.full_name || warden.warden_id}? This will vacate the hostel so it can be assigned to another warden.`)) {
+      return;
+    }
+    try {
+      await api.unassignAuthorizedWardenHostel(warden.id, hCode);
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Failed to unassign hostel.');
     }
   };
 
@@ -417,13 +437,24 @@ export const AdminAuthorizedWardensPage = () => {
                             {w.assigned_hostel_details.map((h) => (
                               <span
                                 key={h.code}
-                                className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                                className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded border ${
                                   h.category === 'BOYS'
                                     ? 'bg-blue-50 text-blue-700 border-blue-200'
                                     : 'bg-rose-50 text-rose-700 border-rose-200'
                                 }`}
                               >
-                                {h.code} ({h.name})
+                                <span>{h.code} ({h.name})</span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUnassignHostel(w, h);
+                                  }}
+                                  title={`Unassign ${h.code} from Warden ${w.full_name || w.warden_id}`}
+                                  className="text-slate-400 hover:text-rose-600 hover:bg-white/80 rounded p-0.5 transition cursor-pointer"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
                               </span>
                             ))}
                           </div>
@@ -597,43 +628,61 @@ export const AdminAuthorizedWardensPage = () => {
               {formData.role !== 'CHIEF_WARDEN' && (
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Assigned Hostel Scope (Server Enforced)
+                    Assigned Hostel Scope (1 Warden per Hostel Policy)
                   </label>
-                  <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 max-h-40 overflow-y-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 max-h-48 overflow-y-auto">
                     {hostels.map((h) => {
                       const checked = formData.assigned_hostels.includes(h.id);
+                      const isAlreadyAssigned = Boolean(h.assigned_warden_details);
                       return (
-                        <label
+                        <div
                           key={h.id}
-                          className={`flex items-center gap-2.5 p-2 rounded-xl border text-xs cursor-pointer transition-all ${
+                          onClick={() => {
+                            if (!checked && isAlreadyAssigned) {
+                              setFormError(`Hostel ${h.code} (${h.name}) is already assigned to Warden ${h.assigned_warden_details.name} (${h.assigned_warden_details.warden_id || h.assigned_warden_details.email}). You must unassign the existing warden before assigning this hostel.`);
+                              return;
+                            }
+                            setFormError('');
+                            if (checked) {
+                              setFormData({
+                                ...formData,
+                                assigned_hostels: formData.assigned_hostels.filter((id) => id !== h.id),
+                              });
+                            } else {
+                              setFormData({
+                                ...formData,
+                                assigned_hostels: [...formData.assigned_hostels, h.id],
+                              });
+                            }
+                          }}
+                          className={`flex items-start gap-2.5 p-2 rounded-xl border text-xs cursor-pointer transition-all ${
                             checked
                               ? 'bg-orange-50/80 border-orange-300 text-orange-950 font-bold shadow-2xs'
+                              : isAlreadyAssigned
+                              ? 'bg-amber-50/50 border-amber-200 text-slate-700 hover:border-amber-300'
                               : 'bg-white border-slate-200/70 text-slate-700 hover:border-slate-300 hover:bg-white'
                           }`}
                         >
                           <input
                             type="checkbox"
                             checked={checked}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setFormData({
-                                  ...formData,
-                                  assigned_hostels: [...formData.assigned_hostels, h.id],
-                                });
-                              } else {
-                                setFormData({
-                                  ...formData,
-                                  assigned_hostels: formData.assigned_hostels.filter((id) => id !== h.id),
-                                });
-                              }
-                            }}
-                            className="rounded border-slate-300 text-[#f78c30] focus:ring-[#f78c30]"
+                            onChange={() => {}}
+                            className="mt-0.5 rounded border-slate-300 text-[#f78c30] focus:ring-[#f78c30]"
                           />
-                          <span className="font-bold">{h.code}</span>
-                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 uppercase">
-                            {h.hostel_category || h.category || h.name || 'Hostel'}
-                          </span>
-                        </label>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold">{h.code}</span>
+                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 uppercase">
+                                {h.hostel_category || h.category || h.name || 'Hostel'}
+                              </span>
+                            </div>
+                            {isAlreadyAssigned && (
+                              <div className="text-[10px] text-amber-800 font-medium mt-0.5 truncate">
+                                Assigned: {h.assigned_warden_details.name}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
@@ -781,6 +830,13 @@ export const AdminAuthorizedWardensPage = () => {
               </button>
             </div>
 
+            {scopeError && (
+              <div className="mt-3.5 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{scopeError}</span>
+              </div>
+            )}
+
             <form onSubmit={handleUpdateScope} className="mt-4 space-y-3.5">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -801,37 +857,65 @@ export const AdminAuthorizedWardensPage = () => {
               {selectedWarden.role !== 'CHIEF_WARDEN' && (
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Authorized Hostels
+                    Authorized Hostels (1 Warden per Hostel Policy)
                   </label>
-                  <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-40 overflow-y-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 max-h-48 overflow-y-auto">
                     {hostels.map((h) => {
                       const checked = (selectedWarden.assigned_hostels || []).includes(h.id);
+                      const isAssignedToOther = h.assigned_warden_details &&
+                        !checked &&
+                        h.assigned_warden_details.warden_id !== selectedWarden.warden_id &&
+                        h.assigned_warden_details.email !== selectedWarden.email;
                       return (
-                        <label key={h.id} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                        <div
+                          key={h.id}
+                          onClick={() => {
+                            if (!checked && isAssignedToOther) {
+                              setScopeError(`Hostel ${h.code} is already assigned to Warden ${h.assigned_warden_details.name} (${h.assigned_warden_details.warden_id || h.assigned_warden_details.email}). You must unassign it from that warden first.`);
+                              return;
+                            }
+                            setScopeError('');
+                            const curr = selectedWarden.assigned_hostels || [];
+                            if (checked) {
+                              setSelectedWarden({
+                                ...selectedWarden,
+                                assigned_hostels: curr.filter((id) => id !== h.id),
+                              });
+                            } else {
+                              setSelectedWarden({
+                                ...selectedWarden,
+                                assigned_hostels: [...curr, h.id],
+                              });
+                            }
+                          }}
+                          className={`flex items-start gap-2 p-2 rounded-xl border text-xs cursor-pointer transition ${
+                            checked
+                              ? 'bg-amber-50 border-amber-300 font-bold text-amber-900'
+                              : isAssignedToOther
+                              ? 'bg-amber-50/50 border-amber-200 text-slate-700'
+                              : 'bg-white border-slate-200 text-slate-700'
+                          }`}
+                        >
                           <input
                             type="checkbox"
                             checked={checked}
-                            onChange={(e) => {
-                              const curr = selectedWarden.assigned_hostels || [];
-                              if (e.target.checked) {
-                                setSelectedWarden({
-                                  ...selectedWarden,
-                                  assigned_hostels: [...curr, h.id],
-                                });
-                              } else {
-                                setSelectedWarden({
-                                  ...selectedWarden,
-                                  assigned_hostels: curr.filter((id) => id !== h.id),
-                                });
-                              }
-                            }}
-                            className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                            onChange={() => {}}
+                            className="mt-0.5 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
                           />
-                          <span className="font-bold">{h.code}</span>
-                          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 uppercase">
-                            {h.hostel_category || h.category || h.name || 'Hostel'}
-                          </span>
-                        </label>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold">{h.code}</span>
+                              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 uppercase">
+                                {h.hostel_category || h.category || h.name || 'Hostel'}
+                              </span>
+                            </div>
+                            {isAssignedToOther && (
+                              <div className="text-[10px] text-amber-800 font-medium mt-0.5 truncate">
+                                Assigned: {h.assigned_warden_details.name}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       );
                     })}
                   </div>

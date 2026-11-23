@@ -119,35 +119,78 @@ class SuperAdminIdentityViewSet(viewsets.ModelViewSet):
             user = User.objects.filter(email__iexact=instance.trusted_email).first()
             if not user:
                 user = User.objects.filter(registration_number__iexact=instance.institution_id).first()
-            if user and instance.initial_hostel_code and instance.initial_room and instance.initial_bed:
+            if user:
                 from apps.hostels.models import Bed, Allocation, Room, Block, Hostel
-                bed = Bed.objects.filter(
-                    room__block__hostel__code__iexact=instance.initial_hostel_code,
-                    room__room_number__iexact=instance.initial_room,
-                    bed_number__iexact=instance.initial_bed,
-                    is_active=True,
-                ).first()
-                if not bed:
-                    hostel = Hostel.objects.filter(code__iexact=instance.initial_hostel_code).first()
-                    if hostel:
-                        block = hostel.blocks.first() or Block.objects.create(hostel=hostel, name="A")
-                        room, _ = Room.objects.get_or_create(
-                            block=block,
-                            room_number=instance.initial_room,
-                            defaults={'capacity': 2, 'floor': 1}
-                        )
-                        bed, _ = Bed.objects.get_or_create(
-                            room=room,
-                            bed_number=instance.initial_bed
-                        )
-                if bed:
-                    Allocation.objects.filter(student=user, is_active=True).update(is_active=False)
-                    Allocation.objects.create(
-                        student=user,
-                        bed=bed,
-                        is_active=True,
-                        reason='Admin updated allocation',
+                if not instance.initial_hostel_code or not instance.initial_room or not instance.initial_bed:
+                    Allocation.objects.filter(student=user, is_active=True).update(
+                        is_active=False,
+                        deallocated_at=timezone.now(),
+                        reason='Admin updated room allocation (deallocated)',
                     )
+                else:
+                    bed = Bed.objects.filter(
+                        room__block__hostel__code__iexact=instance.initial_hostel_code,
+                        room__room_number__iexact=instance.initial_room,
+                        bed_number__iexact=instance.initial_bed,
+                        is_active=True,
+                    ).first()
+                    if not bed:
+                        hostel = Hostel.objects.filter(code__iexact=instance.initial_hostel_code).first()
+                        if hostel:
+                            block = hostel.blocks.first() or Block.objects.create(hostel=hostel, name="A")
+                            room, _ = Room.objects.get_or_create(
+                                block=block,
+                                room_number=instance.initial_room,
+                                defaults={'capacity': 2, 'floor': 1}
+                            )
+                            bed, _ = Bed.objects.get_or_create(
+                                room=room,
+                                bed_number=instance.initial_bed
+                            )
+                    if bed:
+                        Allocation.objects.filter(student=user, is_active=True).exclude(bed=bed).update(is_active=False)
+                        Allocation.objects.filter(bed=bed, is_active=True).exclude(student=user).update(is_active=False)
+                        Allocation.objects.update_or_create(
+                            student=user,
+                            bed=bed,
+                            defaults={'is_active': True, 'reason': 'Admin updated allocation'}
+                        )
+
+    @action(detail=True, methods=['post'], url_path='deallocate-room')
+    def deallocate_room(self, request, pk=None):
+        """
+        Deallocate a student from their currently assigned bed.
+        Immediately frees the seat so it can be assigned to someone else.
+        """
+        identity = self.get_object()
+        from apps.hostels.services import deallocate_student_room
+        reason = request.data.get('reason', 'Deallocated by Super Administrator')
+        result = deallocate_student_room(
+            identifier=identity.institution_id,
+            reason=reason,
+            user_performing=request.user,
+            request=request,
+        )
+        return Response(result, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='unassign-hostel')
+    def unassign_hostel(self, request, pk=None):
+        """
+        Remove a hostel from a warden's jurisdiction.
+        Frees the hostel so it can be reassigned to another warden.
+        """
+        identity = self.get_object()
+        hostel = request.data.get('hostel') or request.data.get('hostel_code') or request.data.get('hostel_id')
+        if not hostel:
+            return Response({'detail': 'Hostel code or ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        from apps.hostels.services import unassign_warden_from_hostel
+        result = unassign_warden_from_hostel(
+            warden_identifier=identity.institution_id,
+            hostel_code_or_id=hostel,
+            user_performing=request.user,
+            request=request,
+        )
+        return Response(result, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
         """

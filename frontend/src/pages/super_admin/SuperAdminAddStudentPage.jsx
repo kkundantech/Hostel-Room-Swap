@@ -67,6 +67,44 @@ export const SuperAdminAddStudentPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Live Room & Bed Occupancy Check
+  const [roomOccupancy, setRoomOccupancy] = useState(null);
+  const [occupancyWarning, setOccupancyWarning] = useState('');
+  const [checkingOccupancy, setCheckingOccupancy] = useState(false);
+
+  useEffect(() => {
+    if (!formData.initial_hostel_code || !formData.initial_room) {
+      setRoomOccupancy(null);
+      setOccupancyWarning('');
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setCheckingOccupancy(true);
+        const res = await api.checkRoomOccupancy({
+          hostel_code: formData.initial_hostel_code,
+          room_number: formData.initial_room,
+          bed_number: formData.initial_bed,
+        });
+        setRoomOccupancy(res);
+        if (res.target_bed_occupied) {
+          setOccupancyWarning(res.target_bed_warning || `Bed ${formData.initial_bed} in ${formData.initial_hostel_code} ${formData.initial_room} is already occupied!`);
+        } else if (res.is_full) {
+          setOccupancyWarning(`Room ${formData.initial_room} in ${formData.initial_hostel_code} is already at full capacity (${res.capacity}/${res.capacity}). All seats are taken.`);
+        } else {
+          setOccupancyWarning('');
+        }
+      } catch (err) {
+        console.error('Failed to check room occupancy:', err);
+      } finally {
+        setCheckingOccupancy(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [formData.initial_hostel_code, formData.initial_room, formData.initial_bed]);
+
   // Bulk CSV
   const [csvFile, setCsvFile] = useState(null);
   const [csvLoading, setCsvLoading] = useState(false);
@@ -77,6 +115,12 @@ export const SuperAdminAddStudentPage = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    if (occupancyWarning) {
+      setError(occupancyWarning);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -364,10 +408,103 @@ export const SuperAdminAddStudentPage = () => {
                         value={formData.initial_bed}
                         onChange={(e) => setFormData({ ...formData, initial_bed: e.target.value.toUpperCase() })}
                         placeholder="e.g. A"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none font-mono"
+                        className={`w-full px-3.5 py-2.5 rounded-xl border font-semibold focus:bg-white focus:outline-none font-mono ${
+                          occupancyWarning
+                            ? 'border-rose-400 bg-rose-50/50 text-rose-900 focus:ring-2 focus:ring-rose-200'
+                            : 'border-slate-200 bg-slate-50 text-slate-900'
+                        }`}
                       />
                     </div>
                   </div>
+
+                  {/* Live Room Occupancy Visualizer & Warning */}
+                  {checkingOccupancy && (
+                    <div className="mt-2.5 text-[11px] text-slate-500 flex items-center gap-1.5">
+                      <div className="w-3 h-3 border-2 border-[#f78c30] border-t-transparent rounded-full animate-spin" />
+                      <span>Checking seat availability in {formData.initial_hostel_code} {formData.initial_room}...</span>
+                    </div>
+                  )}
+
+                  {roomOccupancy && roomOccupancy.exists && (
+                    <div className="mt-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-slate-800">
+                          {roomOccupancy.hostel_code} Room {roomOccupancy.room_number} Seat Status:
+                        </span>
+                        <span className="text-[11px] font-semibold text-slate-500">
+                          Capacity: {roomOccupancy.occupied_count} / {roomOccupancy.capacity} Occupied
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        {roomOccupancy.beds.map((b) => {
+                          const isSelected = formData.initial_bed.toUpperCase() === b.bed_number.toUpperCase();
+                          return (
+                            <button
+                              key={b.bed_number}
+                              type="button"
+                              onClick={() => setFormData({ ...formData, initial_bed: b.bed_number })}
+                              className={`p-2.5 rounded-xl border text-left transition flex items-center justify-between ${
+                                isSelected && b.is_occupied
+                                  ? 'border-rose-400 bg-rose-50 text-rose-950 font-bold'
+                                  : isSelected
+                                    ? 'border-emerald-500 bg-emerald-50 text-emerald-950 font-bold ring-2 ring-emerald-200'
+                                    : b.is_occupied
+                                      ? 'border-amber-200 bg-amber-50/60 text-slate-700'
+                                      : 'border-slate-200 bg-white text-slate-700 hover:border-emerald-300'
+                              }`}
+                            >
+                              <div>
+                                <div className="text-xs font-bold flex items-center gap-1.5">
+                                  <span>Seat {b.bed_number}</span>
+                                  {b.is_occupied ? (
+                                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 border border-amber-300">
+                                      Occupied
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                      Vacant
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[10px] text-slate-500 truncate max-w-[170px] mt-0.5">
+                                  {b.is_occupied && b.occupant ? `${b.occupant.name} (${b.occupant.registration_number || b.occupant.email})` : 'Available to assign'}
+                                </div>
+                              </div>
+                              <div className="text-xs font-bold">
+                                {isSelected ? 'Selected' : 'Pick'}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {occupancyWarning && (
+                    <div className="mt-3 p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-950 text-xs flex items-start gap-2.5">
+                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        <span className="font-bold block text-amber-900">Warning: Seat Not Available</span>
+                        <p>{occupancyWarning}</p>
+                        {roomOccupancy?.available_beds && roomOccupancy.available_beds.length > 0 && (
+                          <div className="pt-1 flex items-center gap-2">
+                            <span className="text-[11px] font-semibold text-slate-700">Available Alternative:</span>
+                            {roomOccupancy.available_beds.map((seat) => (
+                              <button
+                                key={seat}
+                                type="button"
+                                onClick={() => setFormData({ ...formData, initial_bed: seat })}
+                                className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition shadow-xs"
+                              >
+                                Assign Seat {seat} instead &rarr;
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -130,11 +130,18 @@ export const api = {
   // Hostels & Allocations
   getHostels: async () => (await apiClient.get('/hostels/')).data,
   getHostelDetails: async (id) => (await apiClient.get(`/hostels/${id}/`)).data,
+  checkWardenAssignment: async (params) => (await apiClient.get('/hostels/check-warden/', { params })).data,
   getRooms: async (params) => (await apiClient.get('/rooms/', { params })).data,
+  checkRoomOccupancy: async (params) => (await apiClient.get('/rooms/check-occupancy/', { params })).data,
   getBeds: async (params) => (await apiClient.get('/beds/', { params })).data,
   getVacantBeds: async (params) => (await apiClient.get('/beds/vacant/', { params })).data,
   getMyAllocation: async () => (await apiClient.get('/allocations/me/')).data,
   getAllocations: async (params) => (await apiClient.get('/allocations/', { params })).data,
+  deallocateStudentRoom: async (identifier, reason = '') => {
+    const res = (await apiClient.post('/allocations/deallocate/', { identifier, reason })).data;
+    notifyRealtimeUpdate('ALLOCATION_UPDATED', res);
+    return res;
+  },
 
   // Exchange Requests
   getExchangeRequests: async (params) => (await apiClient.get('/exchange-requests/', { params })).data,
@@ -258,6 +265,11 @@ export const api = {
     notifyRealtimeUpdate('ROSTER_UPDATED', { id });
     return res;
   },
+  deallocateAuthorizedStudentRoom: async (id, reason = '') => {
+    const res = (await apiClient.post(`/admin/authorized-students/${id}/deallocate-room/`, { reason })).data;
+    notifyRealtimeUpdate('ROSTER_UPDATED', res);
+    return res;
+  },
   importAuthorizedStudents: async (payload) => {
     const res = (await apiClient.post('/admin/authorized-students/import/', payload)).data;
     notifyRealtimeUpdate('ROSTER_UPDATED', res);
@@ -279,6 +291,11 @@ export const api = {
   deleteAuthorizedWarden: async (id) => {
     const res = (await apiClient.delete(`/admin/authorized-wardens/${id}/`)).data;
     notifyRealtimeUpdate('ROSTER_UPDATED', { id });
+    return res;
+  },
+  unassignAuthorizedWardenHostel: async (id, hostel) => {
+    const res = (await apiClient.post(`/admin/authorized-wardens/${id}/unassign-hostel/`, { hostel })).data;
+    notifyRealtimeUpdate('ROSTER_UPDATED', res);
     return res;
   },
   importAuthorizedWardens: async (payload) => {
@@ -390,6 +407,16 @@ export const api = {
   deleteAuthorizedIdentity: async (id) => {
     const res = (await apiClient.delete(`/super-admin/authorized-identities/${id}/`)).data;
     notifyRealtimeUpdate('IDENTITY_UPDATED', { id });
+    return res;
+  },
+  deallocateIdentityRoom: async (id, reason = '') => {
+    const res = (await apiClient.post(`/super-admin/authorized-identities/${id}/deallocate-room/`, { reason })).data;
+    notifyRealtimeUpdate('IDENTITY_UPDATED', res);
+    return res;
+  },
+  unassignIdentityHostel: async (id, hostel) => {
+    const res = (await apiClient.post(`/super-admin/authorized-identities/${id}/unassign-hostel/`, { hostel })).data;
+    notifyRealtimeUpdate('IDENTITY_UPDATED', res);
     return res;
   },
   addStudentIdentity: async (data) => {

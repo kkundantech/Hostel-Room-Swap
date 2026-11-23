@@ -124,6 +124,23 @@ class HostelViewSet(viewsets.ModelViewSet):
                 gender_restriction='MALE' if hostel.hostel_category == 'BOYS' else ('FEMALE' if hostel.hostel_category == 'GIRLS' else 'ANY')
             )
 
+    @action(detail=False, methods=['get'], url_path='check-warden', permission_classes=[permissions.IsAuthenticated])
+    def check_warden(self, request):
+        """
+        Check whether a hostel is already assigned to a warden.
+        Enforces single-warden assignment warning/governance.
+        """
+        from .services import validate_and_check_warden_assignment
+        hostel_ref = request.query_params.get('hostel_code') or request.query_params.get('hostel_id') or request.query_params.get('code')
+        exclude_wid = request.query_params.get('exclude_warden_id')
+        exclude_email = request.query_params.get('exclude_email')
+        result = validate_and_check_warden_assignment(
+            hostel_code_or_id=hostel_ref,
+            exclude_warden_id=exclude_wid,
+            exclude_email=exclude_email,
+        )
+        return Response(result)
+
 
 class BlockViewSet(viewsets.ModelViewSet):
     """Block management within hostels with server-side gender isolation."""
@@ -188,7 +205,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         return qs
 
     def get_permissions(self):
-        if self.action in ('list', 'retrieve'):
+        if self.action in ('list', 'retrieve', 'check_occupancy'):
             return [permissions.IsAuthenticated()]
         if self.action in ('update', 'partial_update'):
             from apps.accounts.permissions import IsAdminOrWarden
@@ -196,6 +213,33 @@ class RoomViewSet(viewsets.ModelViewSet):
         if self.action == 'reset_inventory':
             return [IsSuperAdmin()]
         return [IsHostelAdmin()]
+
+    @action(detail=False, methods=['get'], url_path='check-occupancy', permission_classes=[permissions.IsAuthenticated])
+    def check_occupancy(self, request):
+        """
+        Check live occupancy breakdown of a room and its individual beds.
+        Warns if a specific bed or the whole room is already allocated.
+        """
+        from .services import get_room_bed_occupancy_summary, validate_and_check_bed_occupancy
+        hostel_code = request.query_params.get('hostel_code') or request.query_params.get('hostel') or ''
+        room_number = request.query_params.get('room_number') or request.query_params.get('room') or ''
+        bed_number = request.query_params.get('bed_number') or request.query_params.get('bed') or ''
+        exclude_reg_no = request.query_params.get('exclude_reg_no')
+        exclude_email = request.query_params.get('exclude_email')
+
+        summary = get_room_bed_occupancy_summary(hostel_code, room_number)
+        if bed_number:
+            check_bed = validate_and_check_bed_occupancy(
+                hostel_code=hostel_code,
+                room_number=room_number,
+                bed_number=bed_number,
+                exclude_reg_no=exclude_reg_no,
+                exclude_email=exclude_email,
+            )
+            summary['target_bed'] = bed_number.upper()
+            summary['target_bed_occupied'] = check_bed['is_occupied']
+            summary['target_bed_warning'] = check_bed['message']
+        return Response(summary)
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
@@ -379,3 +423,30 @@ class OccupancyViewSet(viewsets.ReadOnlyModelViewSet):
     def me(self, request):
         """Alias for my-allocation."""
         return self.my_allocation(request)
+
+    @action(detail=False, methods=['post'], url_path='deallocate', permission_classes=[IsHostelAdmin])
+    def deallocate(self, request):
+        """
+        Deallocate a student from their currently assigned room/bed.
+        Frees the bed immediately for reassignment.
+        """
+        from .services import deallocate_student_room
+        identifier = (
+            request.data.get('identifier') or
+            request.data.get('student_id') or
+            request.data.get('registration_number') or
+            request.data.get('email')
+        )
+        reason = request.data.get('reason', 'Deallocated by administrator')
+        if not identifier:
+            return Response(
+                {'detail': 'Student identifier (ID, Registration Number, or Email) is required.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        result = deallocate_student_room(
+            identifier=identifier,
+            reason=reason,
+            user_performing=request.user,
+            request=request,
+        )
+        return Response(result, status=status.HTTP_200_OK)

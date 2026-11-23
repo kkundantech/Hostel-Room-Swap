@@ -68,6 +68,46 @@ export const SuperAdminUsersPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', eligibility_classification: '', department: '' });
 
+  // Live Room & Bed Occupancy for Student Editing
+  const [editRoomOccupancy, setEditRoomOccupancy] = useState(null);
+  const [editOccupancyWarning, setEditOccupancyWarning] = useState('');
+  const [checkingEditOccupancy, setCheckingEditOccupancy] = useState(false);
+
+  useEffect(() => {
+    if (!showEditModal || selectedIdentity?.role !== 'STUDENT' || !editForm.initial_hostel_code || !editForm.initial_room) {
+      setEditRoomOccupancy(null);
+      setEditOccupancyWarning('');
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setCheckingEditOccupancy(true);
+        const res = await api.checkRoomOccupancy({
+          hostel_code: editForm.initial_hostel_code,
+          room_number: editForm.initial_room,
+          bed_number: editForm.initial_bed,
+          exclude_reg_no: selectedIdentity.institution_id,
+          exclude_email: selectedIdentity.trusted_email,
+        });
+        setEditRoomOccupancy(res);
+        if (res.target_bed_occupied) {
+          setEditOccupancyWarning(res.target_bed_warning || `Bed ${editForm.initial_bed} is already occupied by someone else.`);
+        } else if (res.is_full) {
+          setEditOccupancyWarning(`Room ${editForm.initial_room} is at full capacity.`);
+        } else {
+          setEditOccupancyWarning('');
+        }
+      } catch (err) {
+        console.error('Failed to check room occupancy in edit:', err);
+      } finally {
+        setCheckingEditOccupancy(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [showEditModal, editForm.initial_hostel_code, editForm.initial_room, editForm.initial_bed, selectedIdentity]);
+
   // Confirmation Modal
   const [confirmModal, setConfirmModal] = useState(null); // { action: 'suspend'|'reactivate'|'revoke', identity }
 
@@ -156,20 +196,49 @@ export const SuperAdminUsersPage = () => {
       initial_hostel_code: identity.initial_hostel_code || '',
       initial_room: identity.initial_room || '',
       initial_bed: identity.initial_bed || '',
+      assigned_hostel_ids: identity.assigned_hostel_ids || [],
     });
+    setEditOccupancyWarning('');
     setShowEditModal(true);
+  };
+
+  const handleDeallocateIdentityRoom = async () => {
+    if (!selectedIdentity) return;
+    const roomStr = `${editForm.initial_hostel_code}-${editForm.initial_room} (Bed ${editForm.initial_bed})`;
+    if (!window.confirm(`Are you sure you want to remove ${selectedIdentity.name} from room ${roomStr}?\n\nThis seat will be vacated immediately so it can be assigned to another student.`)) {
+      return;
+    }
+    try {
+      await api.deallocateIdentityRoom(selectedIdentity.id, 'Deallocated by Super Admin');
+      setEditForm((prev) => ({
+        ...prev,
+        initial_hostel_code: '',
+        initial_room: '',
+        initial_bed: '',
+      }));
+      setEditRoomOccupancy(null);
+      setEditOccupancyWarning('');
+      showFeedback('success', `Student ${selectedIdentity.name} deallocated from room successfully. Seat is now vacant.`);
+      fetchIdentities();
+    } catch (err) {
+      showFeedback('error', err.response?.data?.detail || 'Failed to deallocate student from room.');
+    }
   };
 
   const handleSaveEdit = async (e) => {
     e.preventDefault();
     if (!selectedIdentity) return;
+    if (editOccupancyWarning) {
+      showFeedback('error', editOccupancyWarning);
+      return;
+    }
     try {
       await api.updateAuthorizedIdentity(selectedIdentity.id, editForm);
       showFeedback('success', 'Identity metadata updated successfully.');
       setShowEditModal(false);
       fetchIdentities();
     } catch (err) {
-      showFeedback('error', err.response?.data?.detail || 'Failed to update metadata.');
+      showFeedback('error', err.response?.data?.detail || err.response?.data?.initial_bed?.[0] || 'Failed to update metadata.');
     }
   };
 
@@ -628,7 +697,18 @@ export const SuperAdminUsersPage = () => {
                     </div>
 
                     <div className="pt-2 border-t border-slate-100">
-                      <span className="block font-bold text-slate-700 text-xs mb-1">Allocated Room (For Swaps)</span>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-bold text-slate-700 text-xs">Allocated Room (For Swaps)</span>
+                        {(editForm.initial_hostel_code || editForm.initial_room) && (
+                          <button
+                            type="button"
+                            onClick={handleDeallocateIdentityRoom}
+                            className="text-[10px] text-rose-600 hover:text-rose-700 font-bold bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-200 transition"
+                          >
+                            Remove Room (Vacate Seat)
+                          </button>
+                        )}
+                      </div>
                       <div className="grid grid-cols-3 gap-2">
                         <div>
                           <label className="block text-[10px] text-slate-500 mb-0.5 font-bold">Hostel</label>
@@ -657,10 +737,88 @@ export const SuperAdminUsersPage = () => {
                             placeholder="A"
                             value={editForm.initial_bed}
                             onChange={(e) => setEditForm({ ...editForm, initial_bed: e.target.value.toUpperCase() })}
-                            className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 font-semibold focus:bg-white focus:outline-none font-mono text-xs"
+                            className={`w-full px-2.5 py-1.5 rounded-lg border font-semibold focus:bg-white focus:outline-none font-mono text-xs ${
+                              editOccupancyWarning ? 'border-rose-400 bg-rose-50 text-rose-900' : 'border-slate-200 bg-slate-50 text-slate-900'
+                            }`}
                           />
                         </div>
                       </div>
+
+                      {/* Live Room Occupancy Visualizer */}
+                      {checkingEditOccupancy && (
+                        <div className="mt-2 text-[10px] text-slate-500 flex items-center gap-1.5">
+                          <div className="w-2.5 h-2.5 border-2 border-[#f78c30] border-t-transparent rounded-full animate-spin" />
+                          <span>Checking {editForm.initial_hostel_code}-{editForm.initial_room} occupancy...</span>
+                        </div>
+                      )}
+
+                      {editRoomOccupancy && editRoomOccupancy.exists && (
+                        <div className="mt-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="font-bold text-slate-800">
+                              {editRoomOccupancy.hostel_code} Room {editRoomOccupancy.room_number} Seats:
+                            </span>
+                            <span className="text-[10px] text-slate-500">
+                              {editRoomOccupancy.occupied_count} / {editRoomOccupancy.capacity} Beds
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-1.5">
+                            {editRoomOccupancy.beds.map((b) => {
+                              const isSelected = editForm.initial_bed.toUpperCase() === b.bed_number.toUpperCase();
+                              return (
+                                <button
+                                  key={b.bed_number}
+                                  type="button"
+                                  onClick={() => setEditForm({ ...editForm, initial_bed: b.bed_number })}
+                                  className={`p-1.5 rounded-lg border text-left text-[11px] flex items-center justify-between ${
+                                    isSelected && b.is_occupied
+                                      ? 'border-rose-400 bg-rose-50 text-rose-950 font-bold'
+                                      : isSelected
+                                        ? 'border-emerald-500 bg-emerald-50 text-emerald-950 font-bold'
+                                        : b.is_occupied
+                                          ? 'border-amber-200 bg-amber-50/50 text-slate-600'
+                                          : 'border-slate-200 bg-white text-slate-700'
+                                  }`}
+                                >
+                                  <div>
+                                    <div className="font-bold">Seat {b.bed_number}</div>
+                                    <div className="text-[9px] text-slate-500 truncate max-w-[110px]">
+                                      {b.is_occupied && b.occupant ? b.occupant.name : 'Vacant'}
+                                    </div>
+                                  </div>
+                                  <span className={`text-[9px] px-1 rounded ${
+                                    b.is_occupied ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                                  }`}>
+                                    {b.is_occupied ? 'Taken' : 'Free'}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {editOccupancyWarning && (
+                        <div className="mt-2 p-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs">
+                          <span className="font-bold block text-amber-900">Warning</span>
+                          <p className="text-[11px]">{editOccupancyWarning}</p>
+                          {editRoomOccupancy?.available_beds && editRoomOccupancy.available_beds.length > 0 && (
+                            <div className="mt-1 flex items-center gap-1.5">
+                              <span className="text-[10px] text-slate-600">Pick free seat:</span>
+                              {editRoomOccupancy.available_beds.map((seat) => (
+                                <button
+                                  key={seat}
+                                  type="button"
+                                  onClick={() => setEditForm({ ...editForm, initial_bed: seat })}
+                                  className="px-2 py-0.5 rounded bg-emerald-600 text-white font-bold text-[10px]"
+                                >
+                                  Seat {seat}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
@@ -668,16 +826,26 @@ export const SuperAdminUsersPage = () => {
                 {(selectedIdentity.role === 'WARDEN' || selectedIdentity.role === 'CHIEF_WARDEN') && (
                   <div className="pt-2 border-t border-slate-100">
                     <span className="block font-bold text-slate-700 text-xs mb-1.5">
-                      Assigned Hostel Scope (e.g. BH1, GH1)
+                      Assigned Hostel Scope (1 Warden per Hostel Policy)
                     </span>
                     <div className="grid grid-cols-2 gap-2">
                       {hostels.map((h) => {
-                        const isAssigned = (editForm.assigned_hostel_ids || []).includes(String(h.id)) || (editForm.assigned_hostel_ids || []).includes(h.code);
+                        const isAssignedToThis = (editForm.assigned_hostel_ids || []).includes(String(h.id)) || (editForm.assigned_hostel_ids || []).includes(h.code);
+                        const otherWarden = h.assigned_warden_details &&
+                          h.assigned_warden_details.warden_id !== selectedIdentity.institution_id &&
+                          h.assigned_warden_details.email !== selectedIdentity.trusted_email
+                            ? h.assigned_warden_details
+                            : null;
+
                         return (
                           <button
                             key={h.id || h.code}
                             type="button"
                             onClick={() => {
+                              if (otherWarden && !isAssignedToThis) {
+                                alert(`Hostel ${h.code} (${h.name}) is already assigned to Warden ${otherWarden.name} (${otherWarden.warden_id}).\n\nEach hostel can only have one warden. Please remove Warden ${otherWarden.name} before assigning this hostel to someone else.`);
+                                return;
+                              }
                               const strCode = h.code;
                               const strId = String(h.id);
                               const list = editForm.assigned_hostel_ids || [];
@@ -690,16 +858,29 @@ export const SuperAdminUsersPage = () => {
                               });
                             }}
                             className={`px-3 py-2 rounded-xl border text-left flex items-center justify-between text-xs transition ${
-                              isAssigned
+                              isAssignedToThis
                                 ? 'border-[#f78c30] bg-orange-50/60 text-slate-900 font-bold'
-                                : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                                : otherWarden
+                                  ? 'border-amber-200 bg-amber-50/50 text-slate-600 hover:border-amber-400'
+                                  : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
                             }`}
                           >
-                            <span>{h.name} ({h.code})</span>
-                            <span className={`w-4 h-4 rounded flex items-center justify-center text-[10px] ${
-                              isAssigned ? 'bg-[#f78c30] text-white' : 'border border-slate-300 bg-white'
+                            <div>
+                              <span>{h.name} ({h.code})</span>
+                              {otherWarden && (
+                                <div className="text-[10px] text-amber-700 font-medium">
+                                  Assigned to: {otherWarden.name} ({otherWarden.warden_id})
+                                </div>
+                              )}
+                            </div>
+                            <span className={`w-4 h-4 rounded flex items-center justify-center text-[10px] shrink-0 ml-1.5 ${
+                              isAssignedToThis
+                                ? 'bg-[#f78c30] text-white'
+                                : otherWarden
+                                  ? 'border border-amber-400 bg-amber-100 text-amber-800'
+                                  : 'border border-slate-300 bg-white'
                             }`}>
-                              {isAssigned ? '✓' : ''}
+                              {isAssignedToThis ? '✓' : otherWarden ? '!' : ''}
                             </span>
                           </button>
                         );
