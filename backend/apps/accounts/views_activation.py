@@ -159,22 +159,13 @@ def request_activation_otp_view(request):
             detail_msg = detail_msg.get('detail', str(detail_msg))
         return Response({'detail': detail_msg}, status=status.HTTP_400_BAD_REQUEST)
 
-    import os
-    has_smtp = bool(os.getenv('EMAIL_HOST_USER') and not os.getenv('FORCE_CONSOLE_EMAIL', 'False').lower() in ('true', '1'))
-
     resp_data = {
-        'detail': f"Verification code sent to {email}. Please check your Gmail inbox (and Spam folder).",
+        'detail': f"A 6-digit verification code has been sent to {email}. Please check your email inbox (and Spam folder).",
         'email': email,
         'masked_email': mask_email(email),
         'identifier': identity.institution_id,
         'role': identity.role,
     }
-
-    # If SMTP is not yet configured or in mock mode, provide the code directly so user is never locked out
-    if not has_smtp or hasattr(challenge, 'raw_otp'):
-        resp_data['dev_otp'] = getattr(challenge, 'raw_otp', '')
-        if not has_smtp:
-            resp_data['detail'] = f"Verification code generated: {getattr(challenge, 'raw_otp', '')}. (SMTP server is offline/unconfigured)."
 
     return Response(resp_data, status=status.HTTP_200_OK)
 
