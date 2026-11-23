@@ -364,59 +364,45 @@ export const SuperAdminUsersPage = () => {
                     <td colSpan={8} className="py-12 text-center text-slate-400">
                       No authorized identities match your search or filter criteria.
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-slate-600">
-                      {item.masked_email || item.trusted_email}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      {getRoleBadge(item.role)}
-                    </td>
-                    <td className="py-3.5 px-4 text-[11px] text-slate-500">
-                      {item.role === 'STUDENT'
-                        ? item.eligibility_classification
-                        : Array.isArray(item.assigned_hostel_ids) && item.assigned_hostel_ids.length > 0
-                        ? item.assigned_hostel_ids.join(', ')
-                        : 'All Hostels'}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      {getActivationBadge(item.activation_status)}
-                      {item.active_otp && item.activation_status !== 'ACTIVE' && (
-                        <div className="mt-1 flex items-center gap-1">
-                          <span className="font-mono font-bold text-[10px] bg-orange-100 text-[#ea580c] px-1.5 py-0.5 rounded border border-orange-200">
-                            OTP: {item.active_otp}
-                          </span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-500 font-mono text-[11px]">
-                      {formatDateSafe(item.created_at, 'Recently')}
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="inline-flex items-center gap-1.5 justify-end">
-                        {/* Details Action */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedIdentity(item);
-                            setShowDetailModal(true);
-                          }}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-[#f78c30] hover:bg-orange-50 transition"
-                          title="View Details"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-
-                        {/* Edit Action */}
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEdit(item)}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-[#f78c30] hover:bg-slate-100 transition"
-                          title="Edit Metadata"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Resend Invitation (if not active or revoked) */}
-                        {item.activation_status !== 'ACTIVE' && item.authorization_status !== 'REVOKED' && (
+                  </tr>
+                ) : (
+                  identities.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/60 transition">
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
+                        {item.institution_id}
+                      </td>
+                      <td className="py-3.5 px-4 font-bold text-slate-800">
+                        {item.full_name || '—'}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-slate-600">
+                        {item.masked_email || item.trusted_email}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        {getRoleBadge(item.role)}
+                      </td>
+                      <td className="py-3.5 px-4 text-[11px] text-slate-500">
+                        {item.role === 'STUDENT'
+                          ? item.eligibility_classification
+                          : Array.isArray(item.assigned_hostel_ids) && item.assigned_hostel_ids.length > 0
+                          ? item.assigned_hostel_ids.join(', ')
+                          : 'All Hostels'}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        {getActivationBadge(item.activation_status)}
+                        {item.active_otp && item.activation_status !== 'ACTIVE' && (
+                          <div className="mt-1 flex items-center gap-1">
+                            <span className="font-mono font-bold text-[10px] bg-orange-100 text-[#ea580c] px-1.5 py-0.5 rounded border border-orange-200">
+                              OTP: {item.active_otp}
+                            </span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-500 font-mono text-[11px]">
+                        {formatDateSafe(item.created_at, 'Recently')}
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="inline-flex items-center gap-1.5 justify-end">
+                          {/* Details Action */}
                           <button
                             type="button"
                             onClick={() => {
